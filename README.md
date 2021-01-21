@@ -1,6 +1,7 @@
 # status-cpp
 
 ### Requires
+- gcc
 - conan
 - cmake
 - ninja
@@ -15,4 +16,6 @@ ninja
 ```
 
 ### Run
-cd build/status-cpp
+```
+build/status-cpp
+```
