@@ -1,0 +1,275 @@
+import QtQuick 2.13
+import QtGraphicalEffects 1.13
+import QtQuick.Layouts 1.13
+import "../../../../../imports"
+import "../../../../../shared"
+import "../../../../../shared/status"
+import "./" as MessageComponents
+import "../../../Profile/LeftTab/constants.js" as ProfileConstants
+
+Column {
+    id: root
+    property string linkUrls: ""
+    property var container
+    property bool isCurrentUser: false
+    spacing: Style.current.halfPadding
+
+    ListModel {
+        id: linksModel
+        Component.onCompleted: {
+            if (!root.linkUrls) {
+                return
+            }
+            root.linkUrls.split(" ").forEach(link => {
+                linksModel.append({link})
+            })
+        }
+    }
+
+    Repeater {
+        id: linksRepeater
+        model: linksModel // doesn't work with a JSON object model!
+
+        delegate: Loader {
+            id: linkMessageLoader
+            property var linkData
+            property int linkWidth: linksRepeater.width
+            active: true
+            
+            Connections {
+                target: appSettings
+                onWhitelistedUnfurlingSitesChanged: {
+                    linkMessageLoader.sourceComponent = undefined
+                    linkMessageLoader.sourceComponent = linkMessageLoader.getSourceComponent()
+                }
+                onNeverAskAboutUnfurlingAgainChanged: {
+                    linkMessageLoader.sourceComponent = undefined
+                    linkMessageLoader.sourceComponent = linkMessageLoader.getSourceComponent()
+                }
+                onDisplayChatImagesChanged: {
+                    linkMessageLoader.sourceComponent = undefined
+                    linkMessageLoader.sourceComponent = linkMessageLoader.getSourceComponent()
+                }
+            }
+
+            function getSourceComponent() {
+                // Reset the height in case we set it to 0 below. See note below
+                // for more information
+                this.height = undefined
+                if (appSettings.displayChatImages && Utils.hasImageExtension(link)) {
+                    linkData = {
+                        thumbnailUrl: link
+                    }
+                    return unfurledImageComponent
+                }
+                let linkWhiteListed = false
+                const linkHostname = Utils.getHostname(link)
+                const linkExists = Object.keys(appSettings.whitelistedUnfurlingSites).some(function(whitelistedHostname) {
+                    const exists = linkHostname.endsWith(whitelistedHostname)
+                    if (exists) {
+                        linkWhiteListed = appSettings.whitelistedUnfurlingSites[whitelistedHostname] === true
+                    }
+                    return exists
+                })
+                if (!linkWhiteListed && linkExists && !appSettings.neverAskAboutUnfurlingAgain) {
+                    return enableLinkComponent
+                }
+                if (linkWhiteListed) {
+                    const data = chatsModel.getLinkPreviewData(link)
+                    linkData = JSON.parse(data)
+                    if (linkData.error) {
+                        console.error(linkData.error)
+                        return undefined
+                    }
+                    if (linkData.contentType.startsWith("image/")) {
+                        return unfurledImageComponent
+                    }
+                    if (linkData.site && linkData.title) {
+                        linkData.address = link
+                        return unfurledLinkComponent
+                    }
+                }
+                // setting the height to 0 allows the "enable link" dialog to
+                // disappear correctly when appSettings.neverAskAboutUnfurlingAgain
+                // is true. The height is reset at the top of this method.
+                this.height = 0
+                return undefined
+            }
+            Component.onCompleted: {
+                // putting this is onCompleted prevents automatic binding, where
+                // QML warns of a binding loop detected
+                this.sourceComponent = getSourceComponent()
+            }
+        }
+    }
+
+    Component {
+        id: unfurledImageComponent
+
+        MessageBorder {
+            width: linkImage.width
+            height: linkImage.height
+            isCurrentUser: root.isCurrentUser
+            MessageComponents.ImageLoader {
+                id: linkImage
+                anchors.centerIn: parent
+                container: root.container
+                source: linkData.thumbnailUrl
+                imageWidth: 300
+                isCurrentUser: root.isCurrentUser
+                onClicked: {
+                    clickMessage(false, false, true, linkImage.imageAlias)
+                }
+            }
+        }
+    }
+
+    Component {
+        id: unfurledLinkComponent
+        MessageBorder {
+            width: linkImage.width + 2
+            height: linkImage.height + (Style.current.smallPadding * 2) + linkTitle.height + 2 + linkSite.height
+            isCurrentUser: root.isCurrentUser
+
+            MessageComponents.ImageLoader {
+                id: linkImage
+                container: root.container
+                source: linkData.thumbnailUrl
+                imageWidth: 300
+                isCurrentUser: root.isCurrentUser
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: 1
+            }
+            StyledText {
+                id: linkTitle
+                text: linkData.title
+                font.pixelSize: 13
+                font.weight: Font.Medium
+                elide: Text.ElideRight
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: linkImage.bottom
+                anchors.rightMargin: Style.current.smallPadding
+                anchors.leftMargin: Style.current.smallPadding
+                anchors.topMargin: Style.current.smallPadding
+            }
+
+            StyledText {
+                id: linkSite
+                text: linkData.site
+                font.pixelSize: 12
+                font.weight: Font.Thin
+                color: Style.current.secondaryText
+                anchors.top: linkTitle.bottom
+                anchors.topMargin: 2
+                anchors.left: linkTitle.left
+                anchors.bottomMargin: Style.current.smallPadding
+            }
+
+            MouseArea {
+                anchors.top: linkImage.top
+                anchors.left: linkImage.left
+                anchors.right: linkImage.right
+                anchors.bottom: linkSite.bottom
+                cursorShape: Qt.PointingHandCursor
+                onClicked:  appMain.openLink(linkData.address)
+            }
+        }
+    }
+        
+    
+
+    Component {
+        id: enableLinkComponent
+        Rectangle {
+            id: enableLinkRoot
+            width: 300
+            height: childrenRect.height + Style.current.smallPadding
+            radius: 16
+            border.width: 1
+            border.color: Style.current.border
+            color:Style.current.background
+
+            StatusIconButton {
+                icon.name: "close"
+                icon.width: 20
+                icon.height: 20
+                anchors.top: parent.top
+                anchors.topMargin: Style.current.smallPadding
+                anchors.right: parent.right
+                anchors.rightMargin: Style.current.smallPadding
+                onClicked: {
+                    enableLinkRoot.height = 0
+                    enableLinkRoot.visible = false
+                }
+            }
+
+            Image {
+                id: unfurlingImage
+                source: "../../../../img/unfurling-image.png"
+                width: 132
+                height: 94
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: Style.current.smallPadding
+            }
+
+            StyledText {
+                id: enableText
+                text: qsTr("Enable link previews in chat?")
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                wrapMode: Text.WordWrap
+                anchors.top: unfurlingImage.bottom
+                anchors.topMargin: Style.current.halfPadding
+                font.pixelSize: 15
+            }
+
+            StyledText {
+                id: infoText
+                text: qsTr("Once enabled, links posted in the chat may share your metadata with their owners")
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                wrapMode: Text.WordWrap
+                anchors.top: enableText.bottom
+                font.pixelSize: 13
+                color: Style.current.secondaryText
+            }
+
+            Separator {
+                id: sep1
+                anchors.top: infoText.bottom
+                anchors.topMargin: Style.current.smallPadding
+            }
+
+            StatusButton {
+                id: enableBtn
+                text: qsTr("Enable in Settings")
+                type: "secondary"
+                onClicked: {
+                    appMain.changeAppSection(Constants.profile)
+                    profileLayoutContainer.changeProfileSection(ProfileConstants.PRIVACY_AND_SECURITY)
+                }
+                width: parent.width
+                anchors.top: sep1.bottom
+            }
+
+            Separator {
+                id: sep2
+                anchors.top: enableBtn.bottom
+                anchors.topMargin: 0
+            }
+
+            StatusButton {
+                text: qsTr("Don't ask me again")
+                type: "secondary"
+                onClicked: {
+                    appSettings.neverAskAboutUnfurlingAgain = true
+                }
+                width: parent.width
+                anchors.top: sep2.bottom
+            }
+        }
+    }
+}
