@@ -1,0 +1,62 @@
+{
+  "BrowsersConfig": { "Enabled": true },
+  "ClusterConfig": {
+    "BootNodes": [],
+    "Enabled": true,
+    "Fleet": "eth.prod",
+    "RendezvousNodes": [],
+    "StaticNodes": [],
+    "TrustedMailServers": []
+  },
+  "DataDir": "./ethereum/mainnet",
+  "EnableNTPSync": true,
+  "KeyStoreDir": "./keystore",
+  "ListenAddr": "0.0.0.0:30306",
+  "LogEnabled": true,
+  "LogFile": "./geth.log",
+  "LogLevel": "INFO",
+  "MailserversConfig": {
+    "Enabled": true
+  },
+  "Name": "StatusIM",
+  "NetworkId": 1,
+  "NoDiscovery": false,
+  "PermissionsConfig": {
+    "Enabled": true
+  },
+  "Rendezvous": true,
+  "RequireTopics": {
+    "whisper": {
+      "Max": 2,
+      "Min": 2
+    }
+  },
+  "ShhextConfig": {
+    "BackupDisabledDataDir": "./",
+    "DataSyncEnabled": true,
+    "InstallationID": "%INSTALLATIONID%",
+    "MailServerConfirmations": true,
+    "MaxMessageDeliveryAttempts": 6,
+    "PFSEnabled": true,
+    "VerifyENSContractAddress": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "VerifyENSURL": "https://mainnet.infura.io/v3/%INFURA_KEY%",
+    "VerifyTransactionChainID": 1,
+    "VerifyTransactionURL": "https://mainnet.infura.io/v3/%INFURA_KEY%"
+  },
+  "StatusAccountsConfig": {
+    "Enabled": true
+  },
+  "UpstreamConfig": {
+    "Enabled": true,
+    "URL": "https://mainnet.infura.io/v3/%INFURA_KEY%"
+  },
+  "WakuConfig": {
+    "BloomFilterMode": null,
+    "Enabled": true,
+    "LightClient": true,
+    "MinimumPoW": 0.001
+  },
+  "WalletConfig": {
+    "Enabled": true
+  }
+}
