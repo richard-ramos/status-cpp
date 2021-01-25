@@ -21,6 +21,7 @@
 #include "login-model.hpp"
 #include "status.hpp"
 #include "libstatus.h"
+#include "constants.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -42,12 +43,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-
-
-    // TODO: extract to constant
-    const QString dataDir = "/datadir";
-
-    QString fullDirPath = QCoreApplication::applicationDirPath() + dataDir; // TODO: set correct path
+    QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
     const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
     // TODO: error handling
 

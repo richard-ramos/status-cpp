@@ -15,16 +15,13 @@
 #include "login-model.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
-
-// TODO: extract to constants
-const QString dataDir = "/datadir";
-
+#include "constants.hpp"
 
 QVector<NodeAccount> openAccounts()
 {
     // TODO: call on logout too
 
-    QString fullDirPath = QCoreApplication::applicationDirPath() + dataDir; // TODO: set correct path
+    QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
     const char* result { OpenAccounts(fullDirPath.toUtf8().data()) };
     QJsonArray multiAccounts = QJsonDocument::fromJson(result).array();
 
@@ -59,7 +56,6 @@ QHash<int, QByteArray> LoginModel::roleNames() const
     roles[PublicKey] = "publicKey";
     roles[Identicon] = "identicon";
     roles[Name] = "name";
-    roles[PublicKey] = "publicKey";
     return roles;
 }
 

@@ -3,12 +3,6 @@
 
 #include <QAbstractListModel>
 
-const QString pathWalletRoot("m/44'/60'/0'/0");
-const QString pathEip1581("m/43'/60'/1581'");
-const QString pathDefaultWallet(pathWalletRoot + "/0");
-const QString pathWhisper(pathEip1581  + "/0'/0");
-const QString DEFAULT_NETWORK_NAME = "mainnet_rpc";
-
 struct DerivedKey {
     QString publicKey; 
     QString address;

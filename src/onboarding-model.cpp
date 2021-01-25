@@ -16,6 +16,7 @@
 #include "signing-phrases.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
+#include "constants.hpp"
 
 OnboardingModel::OnboardingModel(QObject * parent): QAbstractListModel(parent)
 {
@@ -34,10 +35,10 @@ GeneratedAccount jsonObjectToAccount(const QJsonObject obj)
 
 void setDerivedKeys(GeneratedAccount& acc, const QJsonObject obj){
     acc.derivedKeys = {
-        {pathWalletRoot,    { obj[pathWalletRoot]["publicKey"].toString(),    obj[pathWalletRoot]["address"].toString()}},
-        {pathEip1581,       { obj[pathEip1581]["publicKey"].toString(),       obj[pathEip1581]["address"].toString()}},
-        {pathWhisper,       { obj[pathWhisper]["publicKey"].toString(),       obj[pathWhisper]["address"].toString()}},
-        {pathDefaultWallet, { obj[pathDefaultWallet]["publicKey"].toString(), obj[pathDefaultWallet]["address"].toString()}}
+        {Constants::PathWalletRoot,    { obj[Constants::PathWalletRoot]["publicKey"].toString(),    obj[Constants::PathWalletRoot]["address"].toString()}},
+        {Constants::PathEip1581,       { obj[Constants::PathEip1581]["publicKey"].toString(),       obj[Constants::PathEip1581]["address"].toString()}},
+        {Constants::PathWhisper,       { obj[Constants::PathWhisper]["publicKey"].toString(),       obj[Constants::PathWhisper]["address"].toString()}},
+        {Constants::PathDefaultWallet, { obj[Constants::PathDefaultWallet]["publicKey"].toString(), obj[Constants::PathDefaultWallet]["address"].toString()}}
     };
 }
 
@@ -48,7 +49,7 @@ QVector<GeneratedAccount> multiAccountGenerateAndDeriveAddresses()
         {"n", 5},
         {"mnemonicPhraseLength", 12},
         {"bip32Passphrase", ""},
-        {"paths", QJsonArray {pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet}}
+        {"paths", QJsonArray {Constants::PathWalletRoot, Constants::PathEip1581, Constants::PathWhisper, Constants::PathDefaultWallet}}
 
     };
     const char * result = MultiAccountGenerateAndDeriveAddresses(Utils::jsonToStr(obj).toUtf8().data()); // TODO: clear from memory    
@@ -98,9 +99,9 @@ QVariant OnboardingModel::data(const QModelIndex &index, int role) const
     switch (role)
     {
         case Id: return QVariant(mData[index.row()].keyUid);
-        case PublicKey: return QVariant(mData[index.row()].derivedKeys.at(pathWhisper).publicKey);
-        case Identicon: return QVariant(Utils::generateIdenticon(mData[index.row()].derivedKeys.at(pathWhisper).publicKey));
-        case Name: return QVariant(Utils::generateAlias(mData[index.row()].derivedKeys.at(pathWhisper).publicKey));
+        case PublicKey: return QVariant(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey);
+        case Identicon: return QVariant(Utils::generateIdenticon(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey));
+        case Name: return QVariant(Utils::generateAlias(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey));
     }
 
     return QVariant();
@@ -132,7 +133,7 @@ void storeDerivedAccount(QString& accountId, QString& hashedPassword)
     QJsonObject obj
     {
         {"accountID", accountId},
-        {"paths", QJsonArray { pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet }},
+        {"paths", QJsonArray { Constants::PathWalletRoot, Constants::PathEip1581, Constants::PathWhisper, Constants::PathDefaultWallet }},
         {"password", hashedPassword}
     };
     
@@ -145,10 +146,10 @@ void storeDerivedAccount(QString& accountId, QString& hashedPassword)
 QJsonObject getAccountData(GeneratedAccount* account)
 {
     return QJsonObject {
-         {"name", Utils::generateAlias(account->derivedKeys[pathWhisper].publicKey)},
+         {"name", Utils::generateAlias(account->derivedKeys[Constants::PathWhisper].publicKey)},
          {"address", account->address},
-         {"photo-path", Utils::generateIdenticon(account->derivedKeys[pathWhisper].publicKey)},
-         {"identicon", Utils::generateIdenticon(account->derivedKeys[pathWhisper].publicKey)},
+         {"photo-path", Utils::generateIdenticon(account->derivedKeys[Constants::PathWhisper].publicKey)},
+         {"identicon", Utils::generateIdenticon(account->derivedKeys[Constants::PathWhisper].publicKey)},
          {"key-uid", account->keyUid},
          {"keycard-pairing", QJsonValue()}
     };
@@ -176,26 +177,26 @@ QJsonObject getAccountSettings(GeneratedAccount* account, QString installationId
     return QJsonObject {
         {"key-uid", account->keyUid},
         {"mnemonic", account->mnemonic},
-        {"public-key", account->derivedKeys[pathWhisper].publicKey},
+        {"public-key", account->derivedKeys[Constants::PathWhisper].publicKey},
         {"name", Utils::generateAlias(account->publicKey)},
         {"address", account->address},
-        {"eip1581-address", account->derivedKeys[pathEip1581].address},
-        {"dapps-address", account->derivedKeys[pathDefaultWallet].address},
-        {"wallet-root-address", account->derivedKeys[pathDefaultWallet].address},
+        {"eip1581-address", account->derivedKeys[Constants::PathEip1581].address},
+        {"dapps-address", account->derivedKeys[Constants::PathDefaultWallet].address},
+        {"wallet-root-address", account->derivedKeys[Constants::PathDefaultWallet].address},
         {"preview-privacy?", true},
         {"signing-phrase", generateSigningPhrase(3)},
         {"log-level", "INFO"},
         {"latest-derived-path", 0},
         {"networks/networks", defaultNetworksJson},
         {"currency", "usd"},
-        {"identicon", Utils::generateIdenticon(account->derivedKeys[pathWhisper].publicKey)},
+        {"identicon", Utils::generateIdenticon(account->derivedKeys[Constants::PathWhisper].publicKey)},
         {"waku-enabled", true},
         {"wallet/visible-tokens", {
             {"mainnet", QJsonArray{ "SNT" }}
           }
         },
         {"appearance", 0},
-        {"networks/current-network", DEFAULT_NETWORK_NAME},
+        {"networks/current-network", Constants::DefaultNetworkName},
         {"installation-id", installationId}
     };
 
@@ -251,19 +252,19 @@ QJsonArray getSubAccountData(GeneratedAccount* account)
 {
     return QJsonArray {
         QJsonObject {
-            {"public-key", account->derivedKeys[pathDefaultWallet].publicKey},
-            {"address", account->derivedKeys[pathDefaultWallet].address},
+            {"public-key", account->derivedKeys[Constants::PathDefaultWallet].publicKey},
+            {"address", account->derivedKeys[Constants::PathDefaultWallet].address},
             {"color", "#4360df"},
             {"wallet", true},
-            {"path", pathDefaultWallet},
+            {"path", Constants::PathDefaultWallet},
             {"name", "Status account"}
         },
         QJsonObject {
-            {"public-key", account->derivedKeys[pathWhisper].publicKey},
-            {"address", account->derivedKeys[pathWhisper].address},
-            {"path", pathWhisper},
-            {"name", Utils::generateAlias(account->derivedKeys[pathWhisper].publicKey)},
-            {"identicon", Utils::generateIdenticon(account->derivedKeys[pathWhisper].publicKey)},
+            {"public-key", account->derivedKeys[Constants::PathWhisper].publicKey},
+            {"address", account->derivedKeys[Constants::PathWhisper].address},
+            {"path", Constants::PathWhisper},
+            {"name", Utils::generateAlias(account->derivedKeys[Constants::PathWhisper].publicKey)},
+            {"identicon", Utils::generateIdenticon(account->derivedKeys[Constants::PathWhisper].publicKey)},
             {"chat", true}
         }
     };
@@ -316,7 +317,7 @@ QString OnboardingModel::importMnemonic(QString mnemonic)
     QJsonObject obj2
     {
         {"accountID", acc.id},
-        {"paths", QJsonArray {pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet}}
+        {"paths", QJsonArray {Constants::PathWalletRoot, Constants::PathEip1581, Constants::PathWhisper, Constants::PathDefaultWallet}}
     };
     const char* deriveResult = MultiAccountDeriveAddresses(Utils::jsonToStr(obj2).toUtf8().data()); // TODO: clear from memory    
     setDerivedKeys(acc, QJsonDocument::fromJson(deriveResult).object());

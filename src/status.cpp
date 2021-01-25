@@ -12,7 +12,7 @@
 #include <QJSEngine>
 #include <QVariant>
 
-const QString dataDir = "/datadir";
+#include "constants.hpp"
 
 
 std::map<QString, Status::SignalType> Status::signalMap;
@@ -89,8 +89,7 @@ QString Status::generateIdenticon(QString publicKey)
 
 QString Status::initKeystore()
 {
-  QString fullDirPath = QCoreApplication::applicationDirPath() + dataDir; // TODO: set correct path
-
+  QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
   const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
   return QString(initKeystoreResult);
   // TODO: error handling
