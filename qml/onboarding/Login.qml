@@ -174,6 +174,15 @@ Item {
             }
         }
 
+        Connections {
+            target: loginModel
+            ignoreUnknownSignals: true
+            onLoginError: {
+                errorSound.play()
+                loginError.open()
+            }
+        }
+
         StatusButton {
             id: generateKeysLinkText
             //% "Generate new keys"

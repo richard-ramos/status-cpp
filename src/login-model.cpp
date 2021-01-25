@@ -71,6 +71,7 @@ int LoginModel::rowCount(const QModelIndex& parent = QModelIndex()) const
     return mData.size();
 }
 
+
 QVariant LoginModel::data(const QModelIndex &index, int role) const
 {
     if(!index.isValid()) {
@@ -87,6 +88,7 @@ QVariant LoginModel::data(const QModelIndex &index, int role) const
 
     return QVariant();
 }
+
 
 void LoginModel::setSelectedAccount(int index)
 {
@@ -105,26 +107,32 @@ QJsonObject getAccountData(NodeAccount* account)
     };
 }
 
-void loginAccount(NodeAccount* nodeAccount, QString password) {
+
+QJsonObject loginAccount(NodeAccount* nodeAccount, QString password) {
     QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256)); 
     QJsonObject accountData( getAccountData(nodeAccount) );
     const char* result { Login(Utils::jsonToStr(accountData).toUtf8().data(), hashedPassword.toUtf8().data()) };
-
+    return QJsonDocument::fromJson(result).object();  
     // TODO: clear password
-    // TODO error handling if wrong login or soemthing
-
 }
+
 
 void LoginModel::login(QString password)
 {
-
     auto nodeAccount = std::find_if(mData.begin(), mData.end(), [this](const NodeAccount& m) -> bool { return m.keyUid == m_selectedAccount; });
     if(nodeAccount != mData.end()){
         QtConcurrent::run([=]{
-            loginAccount(nodeAccount, password);
+            QJsonObject response = loginAccount(nodeAccount, password);
+            QString error = response["error"].toString();
+            if(error != ""){
+                qInfo() << "Login error: " << error;
+                emit loginError(error);
+            }
         });
+    } else {
+        qInfo() << "Login error: Account not found";
+        emit loginError("Account not found");
     }
-    // TODO: error handling   
 }
 
 QString LoginModel::selectedAccount() const

@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
 
     QScopedPointer<Status> status(Status::instance());
 
-
-
     qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
     qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
     qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());

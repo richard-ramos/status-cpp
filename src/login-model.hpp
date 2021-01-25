@@ -28,25 +28,21 @@ public:
 
     explicit LoginModel(QObject * parent = nullptr);
 
+    QHash<int, QByteArray> roleNames() const;
     virtual int rowCount(const QModelIndex&) const;
     virtual QVariant data(const QModelIndex &index, int role) const;
 
     Q_INVOKABLE QString getAccountId(int index);
     Q_INVOKABLE void login(QString password);
-
-    QHash<int, QByteArray> roleNames() const;
-
     Q_INVOKABLE void setSelectedAccount(int index);
-    
+
     QString selectedAccount() const;
-
-
     QVariantMap currentAccount() const;
 
 
 signals:
     void selectedAccountChanged(QString);
-
+    void loginError(QString);
 
 private:
     QVector<NodeAccount> mData;
