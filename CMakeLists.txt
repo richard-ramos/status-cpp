@@ -77,6 +77,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/status.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/onboarding-model.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/login-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp"
 #    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
 )

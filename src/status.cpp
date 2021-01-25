@@ -28,7 +28,6 @@ Status *Status::instance()
 
 Status::Status(QObject * parent): QObject(parent)
 {
-  qDebug() << "INIT";
   SetSignalEventCallback((void *)&Status::statusGoEventCallback);
 
   signalMap = {
@@ -53,7 +52,7 @@ Status::Status(QObject * parent): QObject(parent)
 
 
 void Status::statusGoEventCallback(const char *event) {
-  QJsonObject signalEvent = QJsonDocument::fromJson(event).object();
+  const QJsonObject signalEvent = QJsonDocument::fromJson(event).object();
   SignalType signalType(Unknown);
   if(!signalMap.count(signalEvent["type"].toString())){
     // TODO: log unknwon signal;
@@ -61,12 +60,10 @@ void Status::statusGoEventCallback(const char *event) {
   }
 
   signalType = signalMap[signalEvent["type"].toString()];
-
-  // TODO: parse signal
-  qDebug() << "SIGNALTYPE: "<< signalType;
+  
+  qDebug() << "Signal received: "<< signalType;
   if(signalType == NodeLogin){
-    qDebug() << "EMIT SIGNAL";
-    emit instance()->login();
+    emit instance()->login(signalEvent["event"]["error"].toString());
   }
 }
 
@@ -93,9 +90,6 @@ QString Status::generateIdenticon(QString publicKey)
 QString Status::initKeystore()
 {
   QString fullDirPath = QCoreApplication::applicationDirPath() + dataDir; // TODO: set correct path
-
-  // TODO: move this out of here
-  qDebug() << OpenAccounts(fullDirPath.toUtf8().data());
 
   const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
   return QString(initKeystoreResult);

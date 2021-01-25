@@ -4,8 +4,10 @@ import "../imports"
 
 Item {
     property var onClosed: function () {}
-    id: existingKeyView
+    id: root
     anchors.fill: parent
+
+    property string account: ""
 
     Component.onCompleted: {
         enterSeedPhraseModal.open()
@@ -28,35 +30,39 @@ Item {
             } else {
               wentNext = true
               enterSeedPhraseModal.close()
-              onboardingModel.importMnemonic(mnemonic)
+              root.account = onboardingModel.importMnemonic(mnemonic)
               appSettings.removeMnemonicAfterLogin = true
-              recoverySuccessModal.open()
+              openPopup(recoverySuccessModalComponent)
             }
         }
         onClosed: function () {
             if (!wentNext) {
-                existingKeyView.onClosed()
+                root.onClosed()
             }
         }
     }
 
-    MnemonicRecoverySuccessModal {
-        id: recoverySuccessModal
-        onButtonClicked: {
-            recoverySuccessModal.close()
-            createPasswordModal.open()
-        }
-        onClosed: function () {
-            if (!enterSeedPhraseModal.wentNext) {
-                existingKeyView.onClosed()
+    Component {
+        id: recoverySuccessModalComponent
+        MnemonicRecoverySuccessModal {
+            onButtonClicked: {
+                createPasswordModal.open();
+                close();
+            }
+            onClosed: function () {
+                if (!enterSeedPhraseModal.wentNext) {
+                    root.onClosed()
+                }
+                destroy();
             }
         }
     }
-
+    
     CreatePasswordModal {
         id: createPasswordModal
+        account: root.account
         onClosed: function () {
-            existingKeyView.onClosed()
+            root.onClosed()
         }
     }
 }

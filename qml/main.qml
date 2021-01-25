@@ -18,7 +18,7 @@ import "./shared"
 import "./imports"
 
 ApplicationWindow {
-    property bool hasAccounts: false //TODO: !!loginModel.rowCount()
+    property bool hasAccounts: !!loginModel.rowCount()
 
     Universal.theme: Universal.System
 
@@ -44,6 +44,13 @@ ApplicationWindow {
         }
         
     }
+
+    function openPopup(popupComponent, params = {}) {
+        const popup = popupComponent.createObject(applicationWindow, params);
+        popup.open()
+        return popup
+    }
+
 
     Action {
         shortcut: StandardKey.FullScreen
@@ -293,7 +300,7 @@ ApplicationWindow {
                 DSM.SignalTransition {
                     targetState: appState
                     signal: Status.login
-                    //guard: !error
+                    guard: !error
                 }
             }
 
@@ -304,7 +311,7 @@ ApplicationWindow {
                 DSM.SignalTransition {
                     targetState: appState
                     signal: Status.login
-                    //guard: !error
+                    guard: !error
                 }
             }
 
@@ -315,7 +322,7 @@ ApplicationWindow {
                 DSM.SignalTransition {
                     targetState: appState
                     signal: Status.login
-                    //guard: !error
+                    guard: !error
                 }
 
                 DSM.SignalTransition {
@@ -400,6 +407,10 @@ ApplicationWindow {
 
     OnboardingModel {
         id: onboardingModel
+    }
+
+    LoginModel {
+        id: loginModel
     }
 
     Component {

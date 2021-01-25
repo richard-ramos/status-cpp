@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtQuick.Dialogs 1.3
 import QtGraphicalEffects 1.13
+import im.status.desktop 1.0
 import "../shared"
 import "../shared/status"
 import "../imports"
@@ -15,11 +16,6 @@ Item {
 
     id: loginView
     anchors.fill: parent
-
-    function setCurrentFlow(isLogin) {
-        loginModel.isCurrentFlow = isLogin;
-        onboardingModel.isCurrentFlow = !isLogin;
-    }
 
     Component.onCompleted: {
         txtPassword.forceActiveFocus(Qt.MouseFocusReason)
@@ -35,12 +31,12 @@ Item {
         StatusImageIdenticon {
             id: userImage
             anchors.horizontalCenter: parent.horizontalCenter
-            source: loginModel.currentAccount.thumbnailImage
+            source: loginModel.currentAccount.identicon
         }
 
         StyledText {
             id: usernameText
-            text: loginModel.currentAccount.username
+            text: loginModel.currentAccount.name
             font.weight: Font.Bold
             font.pixelSize: 17
             anchors.top: userImage.bottom
@@ -51,7 +47,6 @@ Item {
         ConfirmAddExistingKeyModal {
             id: confirmAddExstingKeyModal
             onOpenModalClick: function () {
-                setCurrentFlow(false);
                 onExistingKeyClicked()
             }
         }
@@ -59,10 +54,9 @@ Item {
         SelectAnotherAccountModal {
             id: selectAnotherAccountModal
             onAccountSelect: function (index) {
-                loginModel.setCurrentAccount(index)
+                loginModel.setSelectedAccount(index)
             }
             onOpenModalClick: function () {
-                setCurrentFlow(true);
                 onExistingKeyClicked()
             }
         }
@@ -115,9 +109,9 @@ Item {
         }
 
         Address {
-            id: addressText
+            id: publicKeyTxt
             width: 90
-            text: loginModel.currentAccount.address
+            text: loginModel.currentAccount.publicKey
             font.pixelSize: 15
             anchors.top: usernameText.bottom
             anchors.topMargin: 4
@@ -126,7 +120,7 @@ Item {
 
         Input {
             id: txtPassword
-            anchors.top: addressText.bottom
+            anchors.top: publicKeyTxt.bottom
             anchors.topMargin: Style.current.padding * 2
             //% "Enter password"
             placeholderText: qsTrId("enter-password")
@@ -151,7 +145,6 @@ Item {
                 if (loading) {
                     return;
                 }
-                setCurrentFlow(true);
                 loading = true
                 loginModel.login(txtPassword.textField.text)
             }
@@ -171,9 +164,9 @@ Item {
         }
 
         Connections {
-            target: loginModel
+            target: Status
             ignoreUnknownSignals: true
-            onLoginResponseChanged: {
+            onLogin: {
                 if (error) {
                     errorSound.play()
                     loginError.open()
@@ -190,7 +183,6 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: 13
             onClicked: {
-                setCurrentFlow(false);
                 onGenKeyClicked()
             }
         }

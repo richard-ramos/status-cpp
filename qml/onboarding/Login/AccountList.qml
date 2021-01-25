@@ -17,9 +17,9 @@ ListView {
     spacing: Style.current.smallPadding
 
     delegate: AddressView {
-        username: Status.generateAlias(model.publicKey)
+        username: model.name
         address: model.publicKey
-        identicon: Status.generateIdenticon(model.publicKey)
+        identicon: model.identicon
         isSelected: function (index, address) {
             return addressesView.isSelected(index, address)
         }

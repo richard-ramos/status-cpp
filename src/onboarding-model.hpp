@@ -30,7 +30,9 @@ Q_OBJECT
 public:
     enum OnboardingRoles {
         Id = Qt::UserRole + 1,
-        PublicKey = Qt::UserRole + 2
+        PublicKey = Qt::UserRole + 2,
+        Identicon = Qt::UserRole + 3,
+        Name = Qt::UserRole + 4
     };
 
     explicit OnboardingModel(QObject * parent = nullptr);
@@ -45,6 +47,9 @@ public:
     Q_INVOKABLE void setup(QString accountId, QString password);
     Q_INVOKABLE QString getAccountId(int index);
     Q_INVOKABLE QString validateMnemonic(QString mnemonic);
+    Q_INVOKABLE QString importMnemonic(QString mnemonic);
+
+    Q_INVOKABLE QVariantMap get(int index) const;
 
 
 signals:
@@ -52,6 +57,7 @@ signals:
 
 
 private:
+    QVariant getModelData(const GeneratedAccount& acc, int role) const;
     QVector<GeneratedAccount> mData;
 };
 

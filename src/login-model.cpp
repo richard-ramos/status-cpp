@@ -1,0 +1,157 @@
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QDebug>
+#include <QCryptographicHash>
+#include <QUuid>
+#include <QRandomGenerator>
+#include <QFile>
+#include <QFutureWatcher>
+#include <QtConcurrent>
+
+#include <algorithm>
+#include <array>
+
+#include "login-model.hpp"
+#include "libstatus.h"
+#include "utils.hpp"
+
+// TODO: extract to constants
+const QString dataDir = "/datadir";
+
+
+QVector<NodeAccount> openAccounts()
+{
+    // TODO: call on logout too
+
+    QString fullDirPath = QCoreApplication::applicationDirPath() + dataDir; // TODO: set correct path
+    const char* result { OpenAccounts(fullDirPath.toUtf8().data()) };
+    QJsonArray multiAccounts = QJsonDocument::fromJson(result).array();
+
+    QVector<NodeAccount> vector;
+    foreach (const QJsonValue & value, multiAccounts) {
+        const QJsonObject obj = value.toObject();
+        NodeAccount acc = {};
+        acc.name = obj["name"].toString();
+        acc.identicon = obj["identicon"].toString();
+        acc.keyUid = obj["key-uid"].toString();
+        acc.keycardPairing = obj["keycard-pairing"].toString(); // TODO: clear from memory?
+        acc.timestamp = obj["timestamp"].toInt();
+        vector.append(acc);
+    }
+    return vector;
+}
+
+LoginModel::LoginModel(QObject * parent): QAbstractListModel(parent)
+{
+    mData << openAccounts();
+    if(mData.count()){
+        m_selectedAccount = mData[0].keyUid;
+    }
+}
+
+// TODO: destructor. Clear
+
+QHash<int, QByteArray> LoginModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[Id] = "id";
+    roles[PublicKey] = "publicKey";
+    roles[Identicon] = "identicon";
+    roles[Name] = "name";
+    roles[PublicKey] = "publicKey";
+    return roles;
+}
+
+
+QString LoginModel::getAccountId(int index)
+{
+    return mData[index].keyUid; 
+}
+
+
+int LoginModel::rowCount(const QModelIndex& parent = QModelIndex()) const
+{
+    return mData.size();
+}
+
+QVariant LoginModel::data(const QModelIndex &index, int role) const
+{
+    if(!index.isValid()) {
+        return QVariant();
+    }
+
+    switch (role)
+    {
+        case Id: return QVariant(mData[index.row()].keyUid);
+        case Identicon: return QVariant(mData[index.row()].identicon);
+        case Name: return QVariant(mData[index.row()].name);
+        case PublicKey: return QVariant(mData[index.row()].keyUid);
+    }
+
+    return QVariant();
+}
+
+void LoginModel::setSelectedAccount(int index)
+{
+    m_selectedAccount = mData[index].keyUid;
+    emit selectedAccountChanged(m_selectedAccount);
+}
+
+
+QJsonObject getAccountData(NodeAccount* account)
+{
+    return QJsonObject {
+         {"name", account->name},
+         {"photo-path", account->identicon},
+         {"identicon", account->identicon},
+         {"key-uid", account->keyUid},
+    };
+}
+
+void loginAccount(NodeAccount* nodeAccount, QString password) {
+    QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256)); 
+    QJsonObject accountData( getAccountData(nodeAccount) );
+    const char* result { Login(Utils::jsonToStr(accountData).toUtf8().data(), hashedPassword.toUtf8().data()) };
+
+    // TODO: clear password
+    // TODO error handling if wrong login or soemthing
+
+}
+
+void LoginModel::login(QString password)
+{
+
+    auto nodeAccount = std::find_if(mData.begin(), mData.end(), [this](const NodeAccount& m) -> bool { return m.keyUid == m_selectedAccount; });
+    if(nodeAccount != mData.end()){
+        QtConcurrent::run([=]{
+            loginAccount(nodeAccount, password);
+        });
+    }
+    // TODO: error handling   
+}
+
+QString LoginModel::selectedAccount() const
+{ 
+    return m_selectedAccount;
+}
+
+
+QVariantMap LoginModel::currentAccount() const
+{
+    QHash<int, QByteArray> names = roleNames();
+    QHashIterator<int, QByteArray> i(names);
+    QVariantMap res;
+
+    for(int row = 0; row < mData.count(); row++){
+        if(mData[row].keyUid != m_selectedAccount) continue;
+        QModelIndex idx = index(row, 0);
+        while(i.hasNext()) {
+            i.next();
+            QVariant data = idx.data(i.key());
+            res[i.value()] = data;
+        }
+    }
+
+    return res;    
+}

@@ -40,15 +40,13 @@ public:
 
   //Q_INVOKABLE void multiAccountStoreDerivedAccounts(QString accountId, QString password, const QJSValue &callback);
 
-
-
   Q_INVOKABLE QString generateAlias(QString publicKey);
   Q_INVOKABLE QString generateIdenticon(QString publicKey);
   Q_INVOKABLE void logout();
 
 signals:
   void signal(SignalType signal);
-  void login();
+  void login(QString error);
 
 private:
 

@@ -35,12 +35,6 @@ RowLayout {
         return profileModel.contacts.list.rowData(index, useLargeImage ? "largeImage" : "thumbnailImage")
     }
 
-    function openPopup(popupComponent, params = {}) {
-        const popup = popupComponent.createObject(appMain, params);
-        popup.open()
-        return popup
-    }
-
     function getUserNickname(pubKey) {
         // Get contact nickname
         const contactList = profileModel.contacts.list

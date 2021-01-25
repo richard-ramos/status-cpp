@@ -4,6 +4,7 @@ import QtQuick.Dialogs 1.3
 import "../imports"
 import "../shared"
 import "../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -29,7 +30,7 @@ ModalPopup {
 
     StatusImageIdenticon {
         id: identicon
-        source: onboardingModel.currentAccount.identicon
+        source: Status.generateIdenticon(onboardingModel.get(0).publicKey)
         anchors.top: info.bottom
         anchors.topMargin: Style.current.bigPadding
         anchors.horizontalCenter: parent.horizontalCenter
@@ -42,7 +43,7 @@ ModalPopup {
         anchors.top: identicon.bottom
         anchors.topMargin: Style.current.padding
         anchors.horizontalCenter: identicon.horizontalCenter
-        text: onboardingModel.currentAccount.username
+        text: Status.generateAlias(onboardingModel.get(0).publicKey)
         font.weight: Font.Bold
         font.pixelSize: 15
     }
@@ -51,7 +52,7 @@ ModalPopup {
         anchors.top: username.bottom
         anchors.topMargin: Style.current.halfPadding
         anchors.horizontalCenter: username.horizontalCenter
-        text: onboardingModel.currentAccount.address
+        text: onboardingModel.get(0).publicKey
         width: 120
     }
 

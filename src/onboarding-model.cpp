@@ -21,15 +21,34 @@ OnboardingModel::OnboardingModel(QObject * parent): QAbstractListModel(parent)
 {
 }
 
+GeneratedAccount jsonObjectToAccount(const QJsonObject obj)
+{
+    GeneratedAccount acc = {};
+    acc.id = obj["id"].toString();
+    acc.address = obj["address"].toString();
+    acc.keyUid = obj["keyUid"].toString();
+    acc.mnemonic = obj["mnemonic"].toString(); // TODO: clear from memory?
+    acc.publicKey = obj["publicKey"].toString();
+    return acc;
+}
+
+void setDerivedKeys(GeneratedAccount& acc, const QJsonObject obj){
+    acc.derivedKeys = {
+        {pathWalletRoot,    { obj[pathWalletRoot]["publicKey"].toString(),    obj[pathWalletRoot]["address"].toString()}},
+        {pathEip1581,       { obj[pathEip1581]["publicKey"].toString(),       obj[pathEip1581]["address"].toString()}},
+        {pathWhisper,       { obj[pathWhisper]["publicKey"].toString(),       obj[pathWhisper]["address"].toString()}},
+        {pathDefaultWallet, { obj[pathDefaultWallet]["publicKey"].toString(), obj[pathDefaultWallet]["address"].toString()}}
+    };
+}
+
 QVector<GeneratedAccount> multiAccountGenerateAndDeriveAddresses()
 {
-    QJsonArray pathsArr = {pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet};
     QJsonObject obj
     {
         {"n", 5},
         {"mnemonicPhraseLength", 12},
         {"bip32Passphrase", ""},
-        {"paths", pathsArr}
+        {"paths", QJsonArray {pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet}}
 
     };
     const char * result = MultiAccountGenerateAndDeriveAddresses(Utils::jsonToStr(obj).toUtf8().data()); // TODO: clear from memory    
@@ -37,19 +56,8 @@ QVector<GeneratedAccount> multiAccountGenerateAndDeriveAddresses()
 
     QVector<GeneratedAccount> vector;
     foreach (const QJsonValue & value, multiAccounts) {
-        const QJsonObject obj = value.toObject();
-        GeneratedAccount acc = {};
-        acc.id = obj["id"].toString();
-        acc.address = obj["address"].toString();
-        acc.keyUid = obj["keyUid"].toString();
-        acc.mnemonic = obj["mnemonic"].toString(); // TODO: clear from memory?
-        acc.publicKey = obj["publicKey"].toString();
-        acc.derivedKeys = {
-            {pathWalletRoot,    { obj["derived"][pathWalletRoot]["publicKey"].toString(),    obj["derived"][pathWalletRoot]["address"].toString()}},
-            {pathEip1581,       { obj["derived"][pathEip1581]["publicKey"].toString(),       obj["derived"][pathEip1581]["address"].toString()}},
-            {pathWhisper,       { obj["derived"][pathWhisper]["publicKey"].toString(),       obj["derived"][pathWhisper]["address"].toString()}},
-            {pathDefaultWallet, { obj["derived"][pathDefaultWallet]["publicKey"].toString(), obj["derived"][pathDefaultWallet]["address"].toString()}}
-        };
+        GeneratedAccount acc = jsonObjectToAccount(value.toObject());
+        setDerivedKeys(acc, value.toObject()["derived"].toObject());
         vector.append(acc);
     }
     return vector;
@@ -70,6 +78,8 @@ QHash<int, QByteArray> OnboardingModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[Id] = "id";
     roles[PublicKey] = "publicKey";
+    roles[Name] = "name";
+    roles[Identicon] = "identicon";
     return roles;
 }
 
@@ -77,6 +87,7 @@ int OnboardingModel::rowCount(const QModelIndex& parent = QModelIndex()) const
 {
     return mData.size();
 }
+
 
 QVariant OnboardingModel::data(const QModelIndex &index, int role) const
 {
@@ -86,8 +97,10 @@ QVariant OnboardingModel::data(const QModelIndex &index, int role) const
 
     switch (role)
     {
-        case Id: return QVariant(mData[index.row()].id);
-        case PublicKey: return QVariant(mData[index.row()].publicKey);
+        case Id: return QVariant(mData[index.row()].keyUid);
+        case PublicKey: return QVariant(mData[index.row()].derivedKeys.at(pathWhisper).publicKey);
+        case Identicon: return QVariant(Utils::generateIdenticon(mData[index.row()].derivedKeys.at(pathWhisper).publicKey));
+        case Name: return QVariant(Utils::generateAlias(mData[index.row()].derivedKeys.at(pathWhisper).publicKey));
     }
 
     return QVariant();
@@ -95,7 +108,22 @@ QVariant OnboardingModel::data(const QModelIndex &index, int role) const
 
 QString OnboardingModel::getAccountId(int index)
 {
-    return mData[index].id; 
+    return mData[index].keyUid; 
+}
+
+
+QVariantMap OnboardingModel::get(int row) const
+{
+    QHash<int, QByteArray> names = roleNames();
+    QHashIterator<int, QByteArray> i(names);
+    QVariantMap res;
+    QModelIndex idx = index(row, 0);
+    while(i.hasNext()) {
+        i.next();
+        QVariant data = idx.data(i.key());
+        res[i.value()] = data;
+    }
+    return res;
 }
 
 
@@ -124,7 +152,6 @@ QJsonObject getAccountData(GeneratedAccount* account)
          {"key-uid", account->keyUid},
          {"keycard-pairing", QJsonValue()}
     };
-
 }
 
 QString generateSigningPhrase(int count){
@@ -250,12 +277,11 @@ bool saveAccountAndLogin(GeneratedAccount *genAccount, QString password)
     storeDerivedAccount(genAccount->id, hashedPassword);
 
     QString installationId( QUuid::createUuid().toString(QUuid::WithoutBraces) );
-
     QJsonObject accountData( getAccountData(genAccount) );
     QJsonObject settings( getAccountSettings(genAccount, installationId) );
     QJsonObject nodeConfig( getNodeConfig(installationId) );
     QJsonArray subAccountData( getSubAccountData(genAccount) );
-    
+
     qDebug() << SaveAccountAndLogin(
                     Utils::jsonToStr(accountData).toUtf8().data(),
                     hashedPassword.toUtf8().data(),
@@ -276,10 +302,37 @@ QString OnboardingModel::validateMnemonic(QString mnemonic)
     return obj["error"].toString();
 }
 
+QString OnboardingModel::importMnemonic(QString mnemonic)
+{
+    // TODO: clear memory
+    QJsonObject obj1
+    {
+        {"mnemonicPhrase", mnemonic},
+        {"Bip39Passphrase", ""}
+    };
+    const char* importResult = MultiAccountImportMnemonic(Utils::jsonToStr(obj1).toUtf8().data()); // TODO: clear from memory    
+    GeneratedAccount acc = jsonObjectToAccount(QJsonDocument::fromJson(importResult).object());
+
+    QJsonObject obj2
+    {
+        {"accountID", acc.id},
+        {"paths", QJsonArray {pathWalletRoot, pathEip1581, pathWhisper, pathDefaultWallet}}
+    };
+    const char* deriveResult = MultiAccountDeriveAddresses(Utils::jsonToStr(obj2).toUtf8().data()); // TODO: clear from memory    
+    setDerivedKeys(acc, QJsonDocument::fromJson(deriveResult).object());
+
+    beginResetModel();
+    mData.clear();
+    mData << acc;
+    endResetModel();
+
+    return acc.id;
+}
+
 
 void OnboardingModel::setup(QString accountId, QString password)
 {
-    auto genAccount = std::find_if(mData.begin(), mData.end(), [accountId](const GeneratedAccount& m) -> bool { return m.id == accountId; });
+    auto genAccount = std::find_if(mData.begin(), mData.end(), [accountId](const GeneratedAccount& m) -> bool { return m.keyUid == accountId; });
     if(genAccount != mData.end())
     {
         QtConcurrent::run([=]{
@@ -292,20 +345,6 @@ void OnboardingModel::setup(QString accountId, QString password)
         });
     }
 
-
-
-        // TODO: error handling
-        /*
-
-  if error == "":
-    debug "Account saved succesfully"
-    result = account.toAccount
-    return
-
-  raise newException(StatusGoException, "Error saving account and logging in: " & error)*/
-
-
-
-    
+    // TODO: error handling    
     // TODO: clear password
 }
