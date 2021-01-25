@@ -398,6 +398,10 @@ ApplicationWindow {
         }
     }
 
+    OnboardingModel {
+        id: onboardingModel
+    }
+
     Component {
         id: genKey
         GenKey {

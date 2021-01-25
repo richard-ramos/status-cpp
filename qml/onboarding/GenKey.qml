@@ -14,10 +14,6 @@ Item {
         genKeyModal.open()
     }
 
-    OnboardingModel {
-        id: onboardingModel
-    }
-
     GenKeyModal {
         property bool wentNext: false
         id: genKeyModal

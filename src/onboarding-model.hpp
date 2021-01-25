@@ -44,10 +44,11 @@ public:
     Q_INVOKABLE void populate();
     Q_INVOKABLE void setup(QString accountId, QString password);
     Q_INVOKABLE QString getAccountId(int index);
+    Q_INVOKABLE QString validateMnemonic(QString mnemonic);
 
 
 signals:
-  void saveAccountAndLogin(bool result);
+  void accountSaved(bool result);
 
 
 private:

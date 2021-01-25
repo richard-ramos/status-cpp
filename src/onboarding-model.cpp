@@ -6,6 +6,8 @@
 #include <QUuid>
 #include <QRandomGenerator>
 #include <QFile>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 #include <algorithm>
 #include <array>
@@ -241,32 +243,56 @@ QJsonArray getSubAccountData(GeneratedAccount* account)
 }
 
 
+bool saveAccountAndLogin(GeneratedAccount *genAccount, QString password)
+{
+    QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256)); 
+
+    storeDerivedAccount(genAccount->id, hashedPassword);
+
+    QString installationId( QUuid::createUuid().toString(QUuid::WithoutBraces) );
+
+    QJsonObject accountData( getAccountData(genAccount) );
+    QJsonObject settings( getAccountSettings(genAccount, installationId) );
+    QJsonObject nodeConfig( getNodeConfig(installationId) );
+    QJsonArray subAccountData( getSubAccountData(genAccount) );
+    
+    qDebug() << SaveAccountAndLogin(
+                    Utils::jsonToStr(accountData).toUtf8().data(),
+                    hashedPassword.toUtf8().data(),
+                    Utils::jsonToStr(settings).toUtf8().data(),
+                    Utils::jsonToStr(nodeConfig).toUtf8().data(),
+                    Utils::jsonToStr(subAccountData).toUtf8().data()
+                );
+    
+    return true;
+    // TODO: clear hashedPassword, genAccount
+}
+
+QString OnboardingModel::validateMnemonic(QString mnemonic)
+{
+    // TODO: clear memory
+    const char* result(ValidateMnemonic(mnemonic.toUtf8().data()));
+    const QJsonObject obj = QJsonDocument::fromJson(result).object();
+    return obj["error"].toString();
+}
+
+
 void OnboardingModel::setup(QString accountId, QString password)
 {
     auto genAccount = std::find_if(mData.begin(), mData.end(), [accountId](const GeneratedAccount& m) -> bool { return m.id == accountId; });
-    if(genAccount != mData.end()) {
-        QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256)); 
-        // TODO: clear hashedPassword
+    if(genAccount != mData.end())
+    {
+        QtConcurrent::run([=]{
+            bool result(saveAccountAndLogin(genAccount, password));
 
-        storeDerivedAccount(accountId, hashedPassword);
-
-        QString installationId( QUuid::createUuid().toString(QUuid::WithoutBraces) );
-
-        QJsonObject accountData( getAccountData(genAccount) );
-        QJsonObject settings( getAccountSettings(genAccount, installationId) );
-        QJsonObject nodeConfig( getNodeConfig(installationId) );
-        QJsonArray subAccountData( getSubAccountData(genAccount) );
-
-        qDebug() << SaveAccountAndLogin(
-                        Utils::jsonToStr(accountData).toUtf8().data(),
-                        hashedPassword.toUtf8().data(),
-                        Utils::jsonToStr(settings).toUtf8().data(),
-                        Utils::jsonToStr(nodeConfig).toUtf8().data(),
-                        Utils::jsonToStr(subAccountData).toUtf8().data()
-                    );
+            // TODO: clear mnemonic from memory in list
 
 
-        emit saveAccountAndLogin(true);
+            emit accountSaved(result);
+        });
+    }
+
+
 
         // TODO: error handling
         /*
@@ -280,14 +306,6 @@ void OnboardingModel::setup(QString accountId, QString password)
 
 
 
-
-
-        // TODO: this should happen with concurrent run, and trigger a login signal
-
-
-        // TODO: clear mnemonic from memory in list
-
-
-    }
+    
     // TODO: clear password
 }

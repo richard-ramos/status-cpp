@@ -87,21 +87,6 @@ Page {
             height: 44
             background: Rectangle {color: "transparent"}
         }
-
-        StyledButton {
-            id: btnGenKey2
-            height: 44
-            anchors.top: btnExistingKey.bottom
-            anchors.topMargin: 40
-            anchors.horizontalCenter: parent.horizontalCenter
-            //% "I'm new, generate keys"
-            label: qsTrId("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-            onClicked: {
-                console.log("A")
-                var a = '{"jsonrpc":"2.0","method":"eth_gasPrice","params":[],"id":73}';
-                Status.callPrivateRPC(a)
-            }
-        }
     }
 }
 
