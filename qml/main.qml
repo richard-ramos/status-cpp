@@ -75,8 +75,6 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        Status.initKeystore();
-
         // Change the theme to the system theme (dark/light) until we get the
         // user's saved setting from status-go (after login
         Style.changeTheme(Universal.theme === Universal.Dark ? "dark" : "light")

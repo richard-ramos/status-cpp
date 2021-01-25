@@ -11,7 +11,6 @@ class Status : public QObject {
 
 public:
   ~Status() {}
-  Q_INVOKABLE QString initKeystore();
 
   static Status *instance();
 
@@ -37,9 +36,6 @@ public:
   
   Q_ENUM(SignalType)
 
-
-  //Q_INVOKABLE void multiAccountStoreDerivedAccounts(QString accountId, QString password, const QJSValue &callback);
-
   Q_INVOKABLE QString generateAlias(QString publicKey);
   Q_INVOKABLE QString generateIdenticon(QString publicKey);
   Q_INVOKABLE void logout();
@@ -49,9 +45,7 @@ signals:
   void login(QString error);
 
 private:
-
   static Status *theInstance;
-  
   explicit Status(QObject * parent = nullptr);
   static std::map<QString, SignalType> signalMap;
   static void statusGoEventCallback(const char *event);

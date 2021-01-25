@@ -55,7 +55,7 @@ void Status::statusGoEventCallback(const char *event) {
   const QJsonObject signalEvent = QJsonDocument::fromJson(event).object();
   SignalType signalType(Unknown);
   if(!signalMap.count(signalEvent["type"].toString())){
-    // TODO: log unknwon signal;
+    qWarning() << "Unknown signal: " << signalEvent["type"].toString();
     return;
   }
 
@@ -85,29 +85,3 @@ QString Status::generateIdenticon(QString publicKey)
 {
   return Utils::generateIdenticon(publicKey);
 }
-
-
-QString Status::initKeystore()
-{
-  QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
-  const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
-  return QString(initKeystoreResult);
-  // TODO: error handling
-}
-
-
-/*
-
-void Status::multiAccountStoreDerivedAccounts(QString accountId, QString password, const QJSValue &callback) {
-    auto *watcher = new QFutureWatcher<QVariantMap>(this);
-    QObject::connect(watcher, &QFutureWatcher<QVariantMap>::finished,
-                     this, [this,watcher,callback]() {
-        QVariantMap result = watcher->result();
-        QJSValue cbCopy(callback); // needed as callback is captured as const
-        QJSEngine *engine = qjsEngine(this);
-        cbCopy.call(QJSValueList { engine->toScriptValue(result) });
-        watcher->deleteLater();
-    }); 
-    watcher->setFuture(QtConcurrent::run(this, &Status::multiAccountStoreDerivedAccounts, accountId, password));
-}
-*/

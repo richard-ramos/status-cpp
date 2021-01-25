@@ -7,12 +7,15 @@
 #include <string>
 #include <cstring>
 
+#include <QDebug>
 #include <QDir>
 #include <QLockFile>
 #include <QMessageBox>
 #include <QApplication>
 #include <QObject>
 #include <QScopedPointer>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -43,17 +46,26 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+
+    // Init keystore
+    // TODO: extract to separate file
     QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
     const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
-    // TODO: error handling
-
+    QJsonObject initKeystoreJson = QJsonDocument::fromJson(initKeystoreResult).object();
+    qDebug() << initKeystoreResult;
+    if(initKeystoreJson["error"].toString() != ""){
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setText("Could not open keystore: " + initKeystoreJson["error"].toString());
+        msgBox.exec();
+        return 1;
+    }
 
     QScopedPointer<Status> status(Status::instance());
 
     qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
     qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
     qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
-
 
     engine.load(QUrl(QStringLiteral("../qml/main.qml")));
     // engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
