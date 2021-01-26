@@ -16,6 +16,7 @@
 #include <QScopedPointer>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QQmlContext>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -25,6 +26,7 @@
 #include "status.hpp"
 #include "libstatus.h"
 #include "constants.hpp"
+#include "settings.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +54,6 @@ int main(int argc, char *argv[])
     QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
     const char * initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
     QJsonObject initKeystoreJson = QJsonDocument::fromJson(initKeystoreResult).object();
-    qDebug() << initKeystoreResult;
     if(initKeystoreJson["error"].toString() != ""){
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Critical);
@@ -66,6 +67,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
     qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
     qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
+
+    Settings settings;
+    engine.rootContext()->setContextProperty("Settings", &settings);
 
     engine.load(QUrl(QStringLiteral("../qml/main.qml")));
     // engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
