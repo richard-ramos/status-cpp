@@ -68,10 +68,13 @@ void Status::statusGoEventCallback(const char *event) {
 }
 
 
-void Status::logout()
+void Status::closeSession()
 {
-  // TODO:
-  Logout();
+  QtConcurrent::run([=]{
+      // TODO:
+      Logout();
+      emit logout();
+  });
 }
 
 

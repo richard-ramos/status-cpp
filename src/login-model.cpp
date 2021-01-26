@@ -15,12 +15,11 @@
 #include "login-model.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
+#include "status.hpp"
 #include "constants.hpp"
 
 QVector<NodeAccount> openAccounts()
 {
-    // TODO: call on logout too
-
     QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
     const char* result { OpenAccounts(fullDirPath.toUtf8().data()) };
     QJsonArray multiAccounts = QJsonDocument::fromJson(result).array();
@@ -32,7 +31,7 @@ QVector<NodeAccount> openAccounts()
         acc.name = obj["name"].toString();
         acc.identicon = obj["identicon"].toString();
         acc.keyUid = obj["key-uid"].toString();
-        acc.keycardPairing = obj["keycard-pairing"].toString(); // TODO: clear from memory?
+        acc.keycardPairing = obj["keycard-pairing"].toString();
         acc.timestamp = obj["timestamp"].toInt();
         vector.append(acc);
     }
@@ -45,9 +44,21 @@ LoginModel::LoginModel(QObject * parent): QAbstractListModel(parent)
     if(mData.count()){
         m_selectedAccount = mData[0].keyUid;
     }
+
+    QObject::connect(Status::instance(), &Status::logout, this, &LoginModel::reload);
 }
 
-// TODO: destructor. Clear
+
+void LoginModel::reload()
+{
+    beginResetModel();
+    mData.clear();
+    mData << openAccounts();
+    m_selectedAccount = mData[0].keyUid;
+    emit selectedAccountChanged(m_selectedAccount);
+    endResetModel();
+}
+
 
 QHash<int, QByteArray> LoginModel::roleNames() const
 {

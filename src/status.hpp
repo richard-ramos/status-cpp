@@ -38,11 +38,13 @@ public:
 
   Q_INVOKABLE QString generateAlias(QString publicKey);
   Q_INVOKABLE QString generateIdenticon(QString publicKey);
-  Q_INVOKABLE void logout();
+  Q_INVOKABLE void closeSession();
 
 signals:
   void signal(SignalType signal);
   void login(QString error);
+  void logout();
+
 
 private:
   static Status *theInstance;

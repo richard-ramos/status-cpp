@@ -1,6 +1,7 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
+import im.status.desktop 1.0
 import "../../../../imports"
 import "../../../../shared"
 import "./components"
@@ -31,6 +32,16 @@ ScrollView {
                 onClicked: function () {
                     profileMenu.profileCurrentIndex = modelData.id
                 }
+            }
+        }
+
+        MenuButton {
+            menuItemId: 99
+            text: qsTr("LOGOUT")
+            source: "../../../img/profile/myProfile.svg"
+            Layout.fillWidth: true
+            onClicked: function () {
+                Status.closeSession();
             }
         }
     }

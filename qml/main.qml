@@ -40,7 +40,7 @@ ApplicationWindow {
 
     onClosing: {
         if (stateMachine.state == appState){
-            Status.logout();
+            Status.closeSession();
         }
         
     }
@@ -359,7 +359,7 @@ ApplicationWindow {
 
             DSM.SignalTransition {
                 targetState: stateLogin
-                signal: loginModel.onLoggedOut
+                signal: Status.logout
             }
         }
     }
