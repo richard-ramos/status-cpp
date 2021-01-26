@@ -70,11 +70,11 @@ int main(int argc, char *argv[])
 
     Settings settings;
     engine.rootContext()->setContextProperty("Settings", &settings);
-
+    
     engine.load(QUrl(QStringLiteral("../qml/main.qml")));
     // engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    app.exec();
+    return app.exec();
 }
 
 

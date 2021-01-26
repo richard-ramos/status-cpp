@@ -1,18 +1,24 @@
 import QtQuick 2.13
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
+import im.status.desktop 1.0
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 
 Item {
     property string ensName: profileModel.profile.preferredUsername || ""
-    property string username: profileModel.profile.username
-    property string pubkey: profileModel.profile.pubKey
+    property string username
+    property string pubkey
 
     id: profileHeaderContent
     height: parent.height
     Layout.fillWidth: true
+
+    Component.onCompleted: {
+        username = Status.generateAlias(Settings.PublicKey);
+        pubkey = Settings.PublicKey;
+    }
 
     Component {
         id: changeProfileModalComponent
@@ -118,7 +124,7 @@ Item {
         Image {
             asynchronous: true
             fillMode: Image.PreserveAspectFit
-            source: profileModel.qrCode(pubkey)
+            source: Status.generateQRCode(pubkey)
             anchors.verticalCenterOffset: 20
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter

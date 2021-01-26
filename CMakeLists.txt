@@ -46,7 +46,7 @@ ExternalProject_Add(status-go
   INSTALL_COMMAND ""
   BUILD_IN_SOURCE 1
   BUILD_COMMAND make statusgo-shared-library V=1
-  BUILD_BYPRODUCTS ${STATUSGO_LIB_DIR}/libstatus.so   # USE VARIABLES
+  BUILD_BYPRODUCTS ${STATUSGO_LIB_DIR}/libstatus.so
 )
 
 ExternalProject_Get_Property(status-go SOURCE_DIR)
@@ -55,7 +55,32 @@ set_property(TARGET status PROPERTY IMPORTED_LOCATION ${STATUSGO_LIB_DIR}/libsta
 add_dependencies(status status-go)
 include_directories(${STATUSGO_LIB_DIR})
 # End: status-go
+
+
 ################################################################################
+# Begin: QR-Code-generator
+set(QRCODE_ROOT ${CMAKE_BINARY_DIR}/QR-Code-generator)
+set(QRCODE_LIB_DIR ${QRCODE_ROOT}/src/QR-Code-generator/cpp)
+
+ExternalProject_Add(QR-Code-generator
+  PREFIX ${QRCODE_ROOT}
+  GIT_REPOSITORY "git://github.com/status-im/QR-Code-generator"
+  GIT_TAG "master"
+  UPDATE_COMMAND ""
+  PATCH_COMMAND ""
+  CONFIGURE_COMMAND ""
+  INSTALL_COMMAND ""
+  BUILD_IN_SOURCE 1
+  BUILD_COMMAND make -C cpp V=1
+  BUILD_BYPRODUCTS ${QRCODE_LIB_DIR}/libqrcodegen.a
+)
+
+ExternalProject_Get_Property(QR-Code-generator SOURCE_DIR)
+add_library(qrcodegen STATIC IMPORTED)
+set_property(TARGET qrcodegen PROPERTY IMPORTED_LOCATION ${QRCODE_LIB_DIR}/libqrcodegen.a)
+add_dependencies(qrcodegen QR-Code-generator)
+include_directories(${QRCODE_LIB_DIR})
+# End: QR-Code-generator
 
 
 ################################################################################
@@ -100,6 +125,7 @@ target_link_libraries(status-cpp
         OpenSSL::OpenSSL
         std::filesystem
         status
+        qrcodegen
         Qt5::Core
         Qt5::Widgets
         Qt5::Gui

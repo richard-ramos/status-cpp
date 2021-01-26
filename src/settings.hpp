@@ -9,7 +9,7 @@
 
 class Settings : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString PublicKey READ publicKey)
+    Q_PROPERTY(QString PublicKey READ publicKey CONSTANT)
     Q_PROPERTY(QString Currency  READ currency  WRITE setCurrency NOTIFY currencyChanged)
 
 

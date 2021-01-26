@@ -38,13 +38,6 @@ ApplicationWindow {
     }
     visible: true
 
-    onClosing: {
-        if (stateMachine.state == appState){
-            Status.closeSession();
-        }
-        
-    }
-
     function openPopup(popupComponent, params = {}) {
         const popup = popupComponent.createObject(applicationWindow, params);
         popup.open()

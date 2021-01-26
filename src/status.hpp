@@ -38,6 +38,8 @@ public:
 
   Q_INVOKABLE QString generateAlias(QString publicKey);
   Q_INVOKABLE QString generateIdenticon(QString publicKey);
+  Q_INVOKABLE QString generateQRCode(QString publicKey);
+
   Q_INVOKABLE void closeSession();
 
 signals:
