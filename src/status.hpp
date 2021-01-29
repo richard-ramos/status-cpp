@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QJSValue>
 #include <QVariant>
+#include <QVariantList>
 
 class Status : public QObject {
   Q_OBJECT
@@ -39,6 +40,8 @@ public:
   Q_INVOKABLE QString generateAlias(QString publicKey);
   Q_INVOKABLE QString generateIdenticon(QString publicKey);
   Q_INVOKABLE QString generateQRCode(QString publicKey);
+  Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
+  Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue &callback);
 
   Q_INVOKABLE void closeSession();
 

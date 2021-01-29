@@ -80,7 +80,7 @@ QHash<int, QByteArray> OnboardingModel::roleNames() const
     roles[Id] = "id";
     roles[PublicKey] = "publicKey";
     roles[Name] = "name";
-    roles[Identicon] = "identicon";
+    roles[Image] = "image";
     return roles;
 }
 
@@ -100,7 +100,7 @@ QVariant OnboardingModel::data(const QModelIndex &index, int role) const
     {
         case Id: return QVariant(mData[index.row()].keyUid);
         case PublicKey: return QVariant(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey);
-        case Identicon: return QVariant(Utils::generateIdenticon(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey));
+        case Image: return QVariant(Utils::generateIdenticon(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey));
         case Name: return QVariant(Utils::generateAlias(mData[index.row()].derivedKeys.at(Constants::PathWhisper).publicKey));
     }
 

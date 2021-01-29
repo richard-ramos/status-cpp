@@ -30,6 +30,14 @@ QVector<NodeAccount> openAccounts()
         NodeAccount acc = {};
         acc.name = obj["name"].toString();
         acc.identicon = obj["identicon"].toString();
+        if(obj["images"].isArray()){
+            foreach(const QJsonValue image, obj["images"].toArray()){
+                if(image["type"].toString() == "thumbnail"){
+                    acc.image = image["uri"].toString();
+                }
+            }
+        }
+
         acc.keyUid = obj["key-uid"].toString();
         acc.keycardPairing = obj["keycard-pairing"].toString();
         acc.timestamp = obj["timestamp"].toInt();
@@ -65,7 +73,7 @@ QHash<int, QByteArray> LoginModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[Id] = "id";
     roles[PublicKey] = "publicKey";
-    roles[Identicon] = "identicon";
+    roles[Image] = "image";
     roles[Name] = "name";
     return roles;
 }
@@ -92,7 +100,7 @@ QVariant LoginModel::data(const QModelIndex &index, int role) const
     switch (role)
     {
         case Id: return QVariant(mData[index.row()].keyUid);
-        case Identicon: return QVariant(mData[index.row()].identicon);
+        case Image: return QVariant(mData[index.row()].image == "" ? mData[index.row()].identicon : mData[index.row()].image);
         case Name: return QVariant(mData[index.row()].name);
         case PublicKey: return QVariant(mData[index.row()].keyUid);
     }

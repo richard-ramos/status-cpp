@@ -170,6 +170,10 @@ RowLayout {
         tabBar.setCurrentIndex(sectionId)
     }
 
+    IdentityImage {
+        id: identityImage
+    }
+
     TabBar {
         id: tabBar
         width: 78

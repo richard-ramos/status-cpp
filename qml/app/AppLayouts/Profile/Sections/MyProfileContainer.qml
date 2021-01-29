@@ -47,7 +47,7 @@ Item {
                 height: 64
                 border.width: 1
                 border.color: Style.current.border
-                source: profileModel.profile.thumbnailImage || ""
+                source: identityImage.thumbnail || identityImage.identicon
                 smooth: false
                 antialiasing: true
             }

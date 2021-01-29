@@ -5,3 +5,6 @@ singleton Utils 1.0 ./Utils.qml
 singleton Emoji 1.0 ./Emoji.qml
 singleton SelectedMessage 1.0 ./SelectedMessage.qml
 singleton Backpressure 1.0 ./Backpressure/Backpressure.qml
+
+singleton RpcClient 1.0 ./RPC/RpcClient.qml
+IdentityImage 1.0 ./RPC/IdentityImage.qml

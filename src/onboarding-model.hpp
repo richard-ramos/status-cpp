@@ -25,7 +25,7 @@ public:
     enum OnboardingRoles {
         Id = Qt::UserRole + 1,
         PublicKey = Qt::UserRole + 2,
-        Identicon = Qt::UserRole + 3,
+        Image = Qt::UserRole + 3,
         Name = Qt::UserRole + 4
     };
 

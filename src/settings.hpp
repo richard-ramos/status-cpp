@@ -10,6 +10,7 @@
 class Settings : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString PublicKey READ publicKey CONSTANT)
+    Q_PROPERTY(QString KeyUID READ keyUID CONSTANT)
     Q_PROPERTY(QString Currency  READ currency  WRITE setCurrency NOTIFY currencyChanged)
 
 
@@ -26,6 +27,7 @@ public:
         Currency,
         EtherscanLink,
         InstallationId,
+        KeyUID,
         Mnemonic,
         Networks_Networks,
         Networks_CurrentNetwork,
@@ -47,6 +49,7 @@ public:
     std::map<SettingTypes, QString> settingsMap = {
         {Appearance, "appareance"},
         {Bookmarks, "bookmarks"},
+        {KeyUID, "key-uid"},
         {Currency, "currency"},
         {EtherscanLink, "etherscan-link"},
         {InstallationId, "installation-id"},
@@ -70,6 +73,8 @@ public:
 
 
     QString publicKey();
+    QString keyUID();
+
 
     QString currency();
     void setCurrency(const QString &value);
@@ -83,6 +88,8 @@ private:
     bool m_initialized;
     QString m_currency;
     QString m_publicKey;
+    QString m_keyUID;
+
     QReadWriteLock lock;
 
     void saveSettings(SettingTypes setting, QString value);

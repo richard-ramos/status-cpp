@@ -31,7 +31,7 @@ Item {
         StatusImageIdenticon {
             id: userImage
             anchors.horizontalCenter: parent.horizontalCenter
-            source: loginModel.currentAccount.identicon
+            source: loginModel.currentAccount.image || loginModel.currentAccount.identicon 
         }
 
         StyledText {

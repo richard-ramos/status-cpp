@@ -3,6 +3,7 @@ import QtQuick.Dialogs 1.3
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     property string selectedImage // selectedImage is for us to be able to analyze it before setting it as current
@@ -29,7 +30,7 @@ ModalPopup {
 
         RoundedImage {
             id: profilePic
-            source: profileModel.profile.largeImage
+            source: identityImage.largeImage || identityImage.identicon
             width: 160
             height: 160
             anchors.verticalCenter: parent.verticalCenter
@@ -93,7 +94,11 @@ ModalPopup {
                     const bX = Math.round(bXPercent * image.sourceSize.width)
                     const bY = Math.round(bYPercent * image.sourceSize.height)
 
-                    uploadError = profileModel.uploadNewProfilePic(selectedImage, aX, aY, bX, bY)
+                    try {
+                        identityImage.upload(selectedImage, aX, aY, bX, bY);
+                    } catch (err) {
+                        uploadError = qsTr("Error storing identity image");
+                    }
                     cropImageModal.close()
                 }
             }
@@ -105,7 +110,7 @@ ModalPopup {
         height: uploadBtn.height
 
         StatusButton {
-            visible: profileModel.profile.hasIdentityImage
+            visible: !!identityImage.largeImage
             type: "secondary"
             flat: true
             color: Style.current.danger
@@ -114,7 +119,7 @@ ModalPopup {
             anchors.rightMargin: Style.current.padding
             anchors.bottom: parent.bottom
             onClicked: {
-                uploadError = profileModel.deleteProfilePic()
+                identityImage.remove()
             }
         }
 
@@ -134,7 +139,8 @@ ModalPopup {
                 folder: shortcuts.pictures
                 nameFilters: [
                     //% "Image files (*.jpg *.jpeg *.png)"
-                    qsTrId("image-files----jpg---jpeg---png-")
+                    // qsTrId("image-files----jpg---jpeg---png-")
+                    "Image files (*.jpg *.jpeg *.png)"
                 ]
                 onAccepted: {
                     selectedImage = imageDialog.fileUrls[0]

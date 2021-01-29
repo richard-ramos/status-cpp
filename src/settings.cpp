@@ -34,9 +34,9 @@ void Settings::init()
     const char * result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());  
     // TODO: error handling for callrpc
 
-
     const QJsonObject settings = QJsonDocument::fromJson(result).object();
     m_publicKey = settings["result"][settingsMap[SettingTypes::PublicKey]].toString();
+    m_keyUID  = settings["result"][settingsMap[SettingTypes::KeyUID]].toString();
     m_currency  = settings["result"][settingsMap[SettingTypes::Currency]].toString();
 
     m_initialized = true;
@@ -72,6 +72,17 @@ QString Settings::publicKey()
     lock.unlock();
     return result;
 }
+
+
+QString Settings::keyUID()
+{
+    lock.lockForRead();
+    if(!m_initialized) return QString();
+    QString result(m_keyUID);
+    lock.unlock();
+    return result;
+}
+
 
 void Settings::setCurrency(const QString &value)
 {
