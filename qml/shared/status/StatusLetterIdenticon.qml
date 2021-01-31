@@ -6,18 +6,13 @@ Rectangle {
     id: root
 
     property string chatName
+    property string chatColor
 
     width: 40
     height: 40
     radius: width / 2
 
-    color: {
-        const color = chatsModel.getChannelColor(root.chatName.startsWith("#") ? root.chatName.substr(1) : root.chatName)
-        if (!color) {
-            return Style.current.orange
-        }
-        return color
-    }
+    color: root.chatColor || Style.current.orange
 
     StyledText {
         text: (root.chatName.charAt(0) == "#" ? root.chatName.charAt(1) : root.chatName.charAt(0)).toUpperCase()

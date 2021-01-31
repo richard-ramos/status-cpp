@@ -1,6 +1,7 @@
 import QtQuick 2.13
 import "../../../../imports"
 import "../../../../shared"
+import im.status.desktop 1.0
 
 Rectangle {
     property string channel: "status"
@@ -29,7 +30,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            chatsModel.joinChat(channel, Constants.chatTypePublic)
+            chatsModel.join(ChatType.Public, channel);
             onJoin()
         }
         cursorShape: Qt.PointingHandCursor

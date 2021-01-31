@@ -105,10 +105,17 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/onboarding-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/login-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/chats-model.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/chat.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/chat-type.cpp"
+
 #    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib-qt-qml-tricks/include
+)
 
 
 add_executable(status-cpp ${SOURCES})

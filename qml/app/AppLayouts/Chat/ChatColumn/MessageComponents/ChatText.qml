@@ -2,6 +2,7 @@ import QtQuick 2.13
 import "../../../../../shared"
 import "../../../../../imports"
 import QtGraphicalEffects 1.0
+import im.status.desktop 1.0
 
 Item {
     property bool longChatText: true
@@ -44,7 +45,7 @@ Item {
         clip: true
         onLinkActivated: function (link) {
             if(link.startsWith("#")) {
-                chatsModel.joinChat(link.substring(1), Constants.chatTypePublic);
+                chatsModel.join(ChatType.Public, link.substring(1));
                 return;
             }
 

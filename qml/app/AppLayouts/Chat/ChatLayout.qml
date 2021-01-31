@@ -5,6 +5,7 @@ import "../../../imports"
 import "../../../shared"
 import "."
 import "components"
+import im.status.desktop 1.0
 
 SplitView {
     id: chatView
@@ -61,7 +62,9 @@ SplitView {
         SplitView.preferredWidth: Style.current.leftTabPrefferedSize
         SplitView.minimumWidth: Style.current.leftTabMinimumWidth
         SplitView.maximumWidth: Style.current.leftTabMaximumWidth
-        sourceComponent: appSettings.communitiesEnabled && chatsModel.activeCommunity.active ? communtiyColumnComponent : contactsColumnComponent
+     // TODO:   sourceComponent: appSettings.communitiesEnabled && chatsModel.activeCommunity.active ? communtiyColumnComponent : contactsColumnComponent
+
+     sourceComponent:  contactsColumnComponent
     }
 
     Component {
@@ -85,7 +88,7 @@ SplitView {
         if(parentPopup){
             popup.parentPopup = parentPopup;
         }
-        popup.openPopup(profileModel.profile.pubKey !== fromAuthorParam, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam);
+        popup.openPopup(Settings.PublicKey !== fromAuthorParam, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam);
     }
 
     property Component profilePopupComponent: ProfilePopup {

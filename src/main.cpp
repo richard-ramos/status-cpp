@@ -27,6 +27,10 @@
 #include "libstatus.h"
 #include "constants.hpp"
 #include "settings.hpp"
+#include "chats-model.hpp"
+#include "chat.hpp"
+#include "chat-type.hpp"
+
 
 int main(int argc, char *argv[])
 {
@@ -66,6 +70,12 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
     qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
+    qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
+    qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
+
+    qRegisterMetaType<ChatType>("ChatType");
+    qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
+    
     qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 
     Settings settings;

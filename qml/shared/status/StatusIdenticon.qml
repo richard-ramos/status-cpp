@@ -9,6 +9,7 @@ Item {
     property string chatName
     property int chatType
     property string identicon
+    property string chatColor
 
     width: 40
     height: 40
@@ -23,6 +24,7 @@ Item {
 
         StatusLetterIdenticon {
             chatName: root.chatName
+            chatColor: root.chatColor
             width: parent.width
             height: parent.height
         }

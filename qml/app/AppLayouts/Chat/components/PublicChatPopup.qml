@@ -6,6 +6,7 @@ import "../../../../shared"
 import "../../../../shared/status"
 import "../data/channelList.js" as ChannelJSON
 import "./"
+import im.status.desktop 1.0
 
 ModalPopup {
     property string channelNameValidationError: ""
@@ -24,9 +25,9 @@ ModalPopup {
 
     function doJoin() {
         if (!validate()) {
-            return
+            return;
         }
-        chatsModel.joinChat(channelName.text, Constants.chatTypePublic);
+        chatsModel.join(ChatType.Public, channelName.text);
         popup.close();
     }
 

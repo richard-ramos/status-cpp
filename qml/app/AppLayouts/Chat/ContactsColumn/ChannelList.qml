@@ -40,6 +40,7 @@ Rectangle {
             hasMentions: model.hasMentions
             contentType: model.contentType
             searchStr: channelListContent.searchStr
+            chatColor: model.color
             chatId: model.id
         }
         onCountChanged: {

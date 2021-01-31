@@ -4,6 +4,7 @@ import "../../../../shared"
 import "../../../../shared/status"
 import "../../../../imports"
 import "../components"
+import im.status.desktop 1.0
 
 Rectangle {
     property string chatId: ""
@@ -11,9 +12,10 @@ Rectangle {
     property string lastMessage: "My latest message\n with a return"
     property string timestamp: "1605212622434"
     property string unviewedMessagesCount: "2"
-    property string identicon
+    property string identicon: ""
+    property string chatColor: ""
     property bool hasMentions: false
-    property int chatType: Constants.chatTypePublic
+    property int chatType: ChatType.Public
     property string searchStr: ""
     property bool isCompact: appSettings.compactMode
     property int contentType: 1
@@ -21,8 +23,10 @@ Rectangle {
     property bool hovered: false
     property bool enableMouseArea: true
 
-    property string profileImage: chatType === Constants.chatTypeOneToOne ? appMain.getProfileImage(chatId) || ""  : ""
+    property string profileImage: chatType === ChatType.OneToOne ? appMain.getProfileImage(chatId) || ""  : ""
 
+    /*
+    TODO:
     Connections {
         enabled: chatType === Constants.chatTypeOneToOne
         target: profileModel.contacts.list
@@ -31,7 +35,7 @@ Rectangle {
                 wrapper.profileImage = appMain.getProfileImage(wrapper.chatId)
             }
         }
-    }
+    }*/
 
     id: wrapper
     color: {
@@ -53,6 +57,7 @@ Rectangle {
         id: contactImage
         height: !isCompact ? 40 : 20
         width: !isCompact ? 40 : 20
+        chatColor: wrapper.chatColor
         chatName: wrapper.name
         chatType: wrapper.chatType
         identicon: wrapper.profileImage || wrapper.identicon

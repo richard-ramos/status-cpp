@@ -8,6 +8,7 @@ import "./AppLayouts"
 import "./AppLayouts/Timeline"
 import "./AppLayouts/Wallet"
 import "./AppLayouts/Chat/components"
+import im.status.desktop 1.0
 
 RowLayout {
     id: appMain
@@ -172,6 +173,10 @@ RowLayout {
 
     IdentityImage {
         id: identityImage
+    }
+
+    ChatsModel {
+        id: chatsModel
     }
 
     TabBar {

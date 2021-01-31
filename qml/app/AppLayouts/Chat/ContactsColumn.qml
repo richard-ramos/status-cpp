@@ -117,10 +117,12 @@ Item {
         leftPadding: Style.current.halfPadding
         rightPadding: Style.current.halfPadding
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-        contentHeight: communitiesListLoader.height + channelList.height + 2 * Style.current.padding + emptyViewAndSuggestions.height
+        // contentHeight: communitiesListLoader.height + channelList.height + 2 * Style.current.padding + emptyViewAndSuggestions.height
+        contentHeight: channelList.height+ 2 * Style.current.padding + emptyViewAndSuggestions.height
+        
         clip: true
 
-        Loader {
+        /* TODO: Loader {
             id: communitiesListLoader
             active: appSettings.communitiesEnabled
             width: parent.width
@@ -138,21 +140,21 @@ Item {
                     searchStr: contactsColumn.searchStr.toLowerCase()
                 }
             }
-        }
+        }*/
 
-        Separator {
+        /*Separator {
             id: communitySep
             visible: communitiesListLoader.active && communitiesListLoader.height > 0
             anchors.top: communitiesListLoader.bottom
             anchors.topMargin: visible ? Style.current.halfPadding : 0
-        }
+        }*/
 
         ChannelList {
             id: channelList
             anchors.top: communitySep.bottom
             anchors.topMargin: Style.current.halfPadding
             searchStr: contactsColumn.searchStr.toLowerCase()
-            channelModel: chatsModel.chats
+            channelModel: chatsModel
         }
 
         EmptyView {
