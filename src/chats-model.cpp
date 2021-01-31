@@ -1,6 +1,7 @@
 #include <QAbstractListModel>
 #include "chats-model.hpp"
 #include "chat.hpp"
+#include "utils.hpp"
 #include "status.hpp"
 #include "chat-type.hpp"
 #include <QDebug>
@@ -17,6 +18,7 @@ ChatsModel::ChatsModel(QObject * parent): QAbstractListModel(parent)
     startMessenger();
     loadChats();
     QObject::connect(Status::instance(), &Status::logout, this, &ChatsModel::terminate);
+    QObject::connect(Status::instance(), &Status::message, this, &ChatsModel::update);
     QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
 
 }
@@ -42,6 +44,7 @@ QHash<int, QByteArray> ChatsModel::roleNames() const
     roles[ContentType] = "contentType";
     roles[Type] = "chatType";
     roles[Color] = "color";
+    roles[Timestamp] = "timestamp";
     return roles;
 }
 
@@ -69,6 +72,7 @@ QVariant ChatsModel::data(const QModelIndex &index, int role) const
         case UnreadMessages: return QVariant(chat->get_unviewedMessagesCount());
         case Type: return QVariant(chat->get_chatType());
         case Color: return QVariant(chat->get_color());
+        case Timestamp: return QVariant(chat->get_timestamp());
 
         // TODO: case HasMentions: return QVariant(chat->get_hasMentions());
         //TODO: case ContentType: return QVariant(chat->get_contentType());
@@ -111,6 +115,7 @@ void ChatsModel::startMessenger()
 void ChatsModel::loadChats()
 {
     const auto response = Status::instance()->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList()).toJsonObject();
+
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     foreach (const QJsonValue & value, response["result"].toArray()) {
         const QJsonObject obj = value.toObject();
@@ -121,10 +126,39 @@ void ChatsModel::loadChats()
     endInsertRows();
 
     // TODO: emit channel loaded?, request latest 24hrs
-    // TODO: connect loaded to added?
 }
 
 Chat* ChatsModel::get(int row) const
 {
     return m_chats[row];
+}
+
+
+void ChatsModel::update(QJsonValue updates)
+{
+    // Process chats
+    foreach(QJsonValue chatJson, updates["chats"].toArray()){
+        Chat* updatedChat = new Chat(chatJson, this);
+        bool found = false;
+        for(int i = 0; i < m_chats.count(); i++){
+            if(m_chats[i]->get_id() == updatedChat->get_id()){
+                found = true;
+                delete m_chats[i];
+                m_chats[i] = updatedChat;
+                QModelIndex idx = createIndex(i,0);
+                dataChanged(idx, idx);
+                break;
+            }
+        }
+        if(!found){
+            beginInsertRows(QModelIndex(), rowCount(), rowCount());
+            m_chats << updatedChat;
+            emit added(updatedChat->get_chatType(), updatedChat->get_id(), m_chats.count() - 1);
+            endInsertRows();
+        }
+    }
+
+    // Messages
+
+    // Emoji reactions
 }

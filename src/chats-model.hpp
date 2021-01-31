@@ -49,6 +49,7 @@ signals:
 private:
     void startMessenger();
     void loadChats();
+    void update(QJsonValue updates);
 
     QVector<Chat*> m_chats;
 };
