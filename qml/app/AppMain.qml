@@ -300,7 +300,7 @@ RowLayout {
             }
 
             if(this.children[currentIndex] === chatLayoutContainer){
-                chatLayoutContainer.chatColumn.chatMessages.chatLogView.scrollToBottom(true);
+                // TODO: chatLayoutContainer.chatColumn.chatMessages.chatLogView.scrollToBottom(true);
             }
 
             if(this.children[currentIndex] === walletLayoutContainer){
@@ -315,7 +315,7 @@ RowLayout {
             Layout.fillHeight: true
         }
 
-        WalletLayout {
+        /*WalletLayout {
             id: walletLayoutContainer
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -347,7 +347,7 @@ RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillHeight: true
-        }
+        }*/
 
         ProfileLayout {
             id: profileLayoutContainer
@@ -356,18 +356,13 @@ RowLayout {
             Layout.fillHeight: true
         }
 
+        /*
         NodeLayout {
             id: nodeLayoutContainer
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillHeight: true
-        }
-
-        UIComponents {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-            Layout.fillHeight: true
-        }
+        }*/
     }
 }
 
