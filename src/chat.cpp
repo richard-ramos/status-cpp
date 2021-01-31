@@ -14,7 +14,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 
-Chat::Chat(QString id, ChatType chatType, QString name, QString profile, QString color, bool active, int timestamp, int lastClockValue, int deletedAtClockValue, int unviewedMessagesCount, bool muted, QObject * parent):
+Chat::Chat(QString id, ChatType chatType, QString name, QString profile, QString color, bool active, QString timestamp, QString lastClockValue, QString deletedAtClockValue, int unviewedMessagesCount, bool muted, QObject * parent):
     QObject(parent),
     m_id(id),
     m_chatType(chatType),
@@ -38,12 +38,12 @@ Chat::Chat(const QJsonValue data, QObject * parent):
     m_profile(data["profile"].toString()),
     m_color(data["color"].toString()),
     m_active(data["active"].toBool()),
-    m_timestamp(data["timestamp"].toInt()),
-    m_lastClockValue(data["lastClockValue"].toInt()),
-    m_deletedAtClockValue(data["deletedAtClockValue"].toInt()),
+    m_timestamp(data["timestamp"].toString()),
+    m_lastClockValue(data["lastClockValue"].toString()),
+    m_deletedAtClockValue(data["deletedAtClockValue"].toString()),
     m_unviewedMessagesCount(data["unviewedMessagesCount"].toInt()),
     m_muted(data["muted"].toBool())
-{  
+{
 }
 
 
@@ -69,7 +69,7 @@ void Chat::sendMessage(QString message, bool isReply, bool isEmoji){
 
 void Chat::save()
 {
-    m_timestamp = QDateTime::currentMSecsSinceEpoch();
+    m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
     if(m_chatType == ChatType::Public){
         m_name = m_id;

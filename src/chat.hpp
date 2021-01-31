@@ -15,7 +15,7 @@ class Chat : public QObject
 Q_OBJECT
 
 public:
-    explicit Chat(QString id, ChatType chatType, QString name = "", QString profile = "", QString color = "", bool active = true, int timestamp = 0, int lastClockValue = 0, int deletedAtClockValue = 0, int unviewedMessagesCount = 0, bool muted = false, QObject * parent = 0); //, QJsonValue jsonChat);
+    explicit Chat(QString id, ChatType chatType, QString name = "", QString profile = "", QString color = "", bool active = true, QString timestamp = "0", QString lastClockValue = "0", QString deletedAtClockValue = "0", int unviewedMessagesCount = 0, bool muted = false, QObject * parent = 0); //, QJsonValue jsonChat);
     explicit Chat(const QJsonValue data, QObject * parent);
 
     QML_READONLY_PROPERTY(QString, id)
@@ -27,9 +27,9 @@ public:
     QML_READONLY_PROPERTY(QString, identicon)
     QML_READONLY_PROPERTY(bool, active)
     QML_READONLY_PROPERTY(ChatType, chatType)
-    QML_READONLY_PROPERTY(int, timestamp)
-    QML_READONLY_PROPERTY(int, lastClockValue)
-    QML_READONLY_PROPERTY(int, deletedAtClockValue)
+    QML_READONLY_PROPERTY(QString, timestamp)
+    QML_READONLY_PROPERTY(QString, lastClockValue)
+    QML_READONLY_PROPERTY(QString, deletedAtClockValue)
     QML_READONLY_PROPERTY(int, unviewedMessagesCount)
     // QML_READONLY_PROPERTY(Message, lastMessage)
     //QSet<ChatMember> m_members;

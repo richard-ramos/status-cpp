@@ -8,7 +8,6 @@
 #include <QJSEngine>
 #include <QVariant>
 #include <QStringList>
-
 #include "status.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
@@ -52,8 +51,23 @@ Status::Status(QObject * parent): QObject(parent)
 }
 
 
+void uint64ToStrReplacements(QString& input)
+{
+  input.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":(\\d+)")), QStringLiteral("\"lastClockValue\":\"\\1\""));
+  input.replace(QRegularExpression(QStringLiteral("\"timestamp\":(\\d+)")), QStringLiteral("\"timestamp\":\"\\1\""));
+  input.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":(\\d+)")), QStringLiteral("\"deletedAtClockValue\":\"\\1\""));
+  input.replace(QRegularExpression(QStringLiteral("\"clock\":(\\d+)")), QStringLiteral("\"clock\":\"\\1\""));
+  input.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":(\\d+)")), QStringLiteral("\"whisperTimestamp\":\"\\1\""));
+}
+
+
 void Status::statusGoEventCallback(const char *event) {
-  const QJsonObject signalEvent = QJsonDocument::fromJson(event).object();
+
+  // WARNING: Signals are returning bigints as numeric values instead of strings
+  QString ev = QString(event);
+  uint64ToStrReplacements(ev);
+
+  const QJsonObject signalEvent = QJsonDocument::fromJson(ev.toUtf8()).object();
   SignalType signalType(Unknown);
   if(!signalMap.count(signalEvent["type"].toString())){
     qWarning() << "Unknown signal: " << signalEvent["type"].toString();
@@ -63,8 +77,20 @@ void Status::statusGoEventCallback(const char *event) {
   signalType = signalMap[signalEvent["type"].toString()];
   
   qDebug() << "Signal received: "<< signalType;
-  if(signalType == NodeLogin){
-    emit instance()->login(signalEvent["event"]["error"].toString());
+
+  switch(signalType){
+    case NodeLogin: 
+      emit instance()->login(signalEvent["event"]["error"].toString());
+      break;
+    case NodeReady:
+      emit instance()->nodeReady(signalEvent["event"]["error"].toString());
+      break;
+    case NodeStopped:
+      emit instance()->nodeStopped(signalEvent["event"]["error"].toString());
+      break;
+    case Message:
+      emit instance()->message(signalEvent["event"].toObject());
+      break;
   }
 }
 
@@ -124,8 +150,23 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
     {"method", method},
     {"params", QJsonValue::fromVariant(params)}
   };
-  const char* result = CallPrivateRPC(Utils::jsonToStr(payload).toUtf8().data());
-  return QJsonDocument::fromJson(result).toVariant();
+
+  QString payloadStr = Utils::jsonToStr(payload);
+
+  // WARNING: uint64 are expected instead of strings.
+  payloadStr.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"lastClockValue\":\\1"));
+  payloadStr.replace(QRegularExpression(QStringLiteral("\"timestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"timestamp\":\\1"));
+  payloadStr.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"deletedAtClockValue\":\\1"));
+  payloadStr.replace(QRegularExpression(QStringLiteral("\"clock\":\\s\"(\\d+?)\"")), QStringLiteral("\"clock\":\\1"));
+  payloadStr.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"whisperTimestamp\":\\1"));
+
+  const char* result = CallPrivateRPC(payloadStr.toUtf8().data());
+
+  // WARNING: Signals are returning bigints as numeric values instead of strings
+  QString r = QString(result);
+  uint64ToStrReplacements(r);
+
+  return QJsonDocument::fromJson(r.toUtf8()).toVariant();
 }
 
 

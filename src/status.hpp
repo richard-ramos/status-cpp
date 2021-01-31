@@ -42,12 +42,14 @@ public:
   Q_INVOKABLE QString generateQRCode(QString publicKey);
   Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
   Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue &callback);
-
   Q_INVOKABLE void closeSession();
 
 signals:
   void signal(SignalType signal);
   void login(QString error);
+  void nodeReady(QString error);
+  void nodeStopped(QString error);
+  void message(QJsonObject update);
   void logout();
 
 
