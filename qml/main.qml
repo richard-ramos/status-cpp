@@ -45,6 +45,12 @@ ApplicationWindow {
     }
 
 
+    onClosing: {
+        applicationWindow.visible = false;
+        close.accepted = false;
+    }
+
+
     Action {
         shortcut: StandardKey.FullScreen
         onTriggered: {
@@ -64,6 +70,13 @@ ApplicationWindow {
             } else {
                 showMinimized()
             }
+        }
+    }
+
+    Action {
+        shortcut: "Ctrl+W"
+        onTriggered: {
+            Qt.quit()
         }
     }
 
@@ -246,6 +259,19 @@ ApplicationWindow {
         icon.source: "shared/img/status-logo.png"
         menu: Menu {
             MenuItem {
+                visible: !applicationWindow.visible
+                text: qsTr("Open Status")
+                onTriggered: {
+                    applicationWindow.visible = true;
+                    applicationWindow.requestActivate();
+                }
+            }
+            
+            MenuSeparator { 
+                visible: !applicationWindow.visible
+            }
+
+            MenuItem {
                 //% "Quit"
                 text: qsTrId("quit")
                 onTriggered: Qt.quit()
@@ -290,7 +316,7 @@ ApplicationWindow {
 
                 DSM.SignalTransition {
                     targetState: appState
-                    signal: Status.login
+                    signal: Status.nodeReady
                     guard: !error
                 }
             }

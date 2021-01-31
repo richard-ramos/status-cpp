@@ -167,6 +167,12 @@ Item {
             target: Status
             ignoreUnknownSignals: true
             onLogin: {
+                if (error){
+                    errorSound.play()
+                    loginError.open()
+                }
+            }
+            onNodeReady: {
                 if (error) {
                     errorSound.play()
                     loginError.open()
