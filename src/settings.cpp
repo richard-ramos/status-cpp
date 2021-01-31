@@ -10,6 +10,15 @@
 #include "libstatus.h"
 #include "utils.hpp"
 
+Settings *Settings::theInstance;
+
+Settings *Settings::instance()
+{
+    if (theInstance == 0)
+      theInstance = new Settings();
+    return theInstance;
+}
+
 Settings::Settings(QObject * parent): QObject(parent)
 {
     m_initialized = false;
@@ -38,6 +47,7 @@ void Settings::init()
     m_publicKey = settings["result"][settingsMap[SettingTypes::PublicKey]].toString();
     m_keyUID  = settings["result"][settingsMap[SettingTypes::KeyUID]].toString();
     m_currency  = settings["result"][settingsMap[SettingTypes::Currency]].toString();
+    m_preferredName  = settings["result"][settingsMap[SettingTypes::PreferredUsername]].toString();
 
     m_initialized = true;
     lock.unlock();
@@ -101,6 +111,27 @@ QString Settings::currency()
     lock.lockForRead();
     if(!m_initialized) return QString();
     QString result(m_currency);
+    lock.unlock();
+    return result;
+}
+
+void Settings::setPreferredName(const QString &value)
+{
+    lock.lockForWrite();
+    if (value != m_preferredName) {
+        m_preferredName = value;
+        saveSettings(SettingTypes::PreferredUsername, value);
+        emit preferredNameChanged();
+    }
+    lock.unlock();
+}
+
+
+QString Settings::preferredName()
+{
+    lock.lockForRead();
+    if(!m_initialized) return QString();
+    QString result(m_preferredName);
     lock.unlock();
     return result;
 }

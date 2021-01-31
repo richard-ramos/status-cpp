@@ -102,7 +102,7 @@ SplitView {
         if(parentPopup){
             popup.parentPopup = parentPopup;
         }
-        popup.openPopup(Settings.PublicKey !== fromAuthorParam, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam);
+        popup.openPopup(StatusSettings.PublicKey !== fromAuthorParam, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam);
     }
 
     property Component profilePopupComponent: ProfilePopup {

@@ -16,8 +16,8 @@ Item {
     Layout.fillWidth: true
 
     Component.onCompleted: {
-        username = Status.generateAlias(Settings.PublicKey);
-        pubkey = Settings.PublicKey;
+        username = Status.generateAlias(StatusSettings.PublicKey);
+        pubkey = StatusSettings.PublicKey;
     }
 
     Component {

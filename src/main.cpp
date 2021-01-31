@@ -67,19 +67,18 @@ int main(int argc, char *argv[])
     }
 
     QScopedPointer<Status> status(Status::instance());
+    QScopedPointer<Settings> settings(Settings::instance());
 
     qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
     qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
     qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
     qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
-
+    qRegisterMetaType<Chat*>("Chat *");
     qRegisterMetaType<ChatType>("ChatType");
     qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
     
     qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
-
-    Settings settings;
-    engine.rootContext()->setContextProperty("Settings", &settings);
+    qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
     
     engine.load(QUrl(QStringLiteral("../qml/main.qml")));
     // engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

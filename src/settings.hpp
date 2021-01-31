@@ -11,11 +11,11 @@ class Settings : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString PublicKey READ publicKey CONSTANT)
     Q_PROPERTY(QString KeyUID READ keyUID CONSTANT)
-    Q_PROPERTY(QString Currency  READ currency  WRITE setCurrency NOTIFY currencyChanged)
-
+    Q_PROPERTY(QString Currency READ currency WRITE setCurrency NOTIFY currencyChanged)
+    Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY preferredNameChanged)
 
 public:
-    explicit Settings(QObject * parent = nullptr);
+    static Settings *instance();
     ~Settings();
 
     Q_INVOKABLE void init();
@@ -79,16 +79,24 @@ public:
     QString currency();
     void setCurrency(const QString &value);
 
+    QString preferredName();
+    void setPreferredName(const QString &value);
+
     
 signals:
     void currencyChanged();
+    void preferredNameChanged();
 
 
 private:
+    static Settings *theInstance;
+    explicit Settings(QObject * parent = nullptr);
+
     bool m_initialized;
     QString m_currency;
     QString m_publicKey;
     QString m_keyUID;
+    QString m_preferredName;
 
     QReadWriteLock lock;
 

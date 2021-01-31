@@ -41,7 +41,7 @@ Item {
                     parent.font.underline = false
                 }
                 onClicked: {
-                    openProfilePopup(profileModel.profile.username, profileModel.profile.pubKey, profileModel.profile.thumbnailImage);
+                    openProfilePopup("SET USERNAME HERE"/*TODO: profileModel.profile.username*/, StatusSettings.PublicKey, identityImage.thumbnail || identityImage.identicon);
                 }
             }
         }

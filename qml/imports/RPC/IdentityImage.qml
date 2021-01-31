@@ -20,19 +20,19 @@ QtObject {
     }
 
     Component.onCompleted: {
-        const result = RpcClient.call("multiaccounts_getIdentityImages", [Settings.KeyUID]);
+        const result = RpcClient.call("multiaccounts_getIdentityImages", [StatusSettings.KeyUID]);
         parseResponse(result);
-        identicon = Status.generateIdenticon(Settings.PublicKey);
+        identicon = Status.generateIdenticon(StatusSettings.PublicKey);
     }
 
     function upload(imagePath, aX, aY, bX, bY){
         const path = imagePath.replace(/^(file:\/{2})/,"");
-        const result = RpcClient.call("multiaccounts_storeIdentityImage", [Settings.KeyUID, path, aX, aY, bX, bY]);
+        const result = RpcClient.call("multiaccounts_storeIdentityImage", [StatusSettings.KeyUID, path, aX, aY, bX, bY]);
         parseResponse(result);
     }
 
     function remove(){
-        const result = RpcClient.call("multiaccounts_deleteIdentityImage", [Settings.KeyUID]);
+        const result = RpcClient.call("multiaccounts_deleteIdentityImage", [StatusSettings.KeyUID]);
         largeImage = "";
         thumbnail = "";
     }
