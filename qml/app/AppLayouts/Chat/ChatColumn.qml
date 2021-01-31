@@ -11,7 +11,10 @@ import "./data"
 import "../Wallet"
 
 StackLayout {
-    id: chatColumnLayout
+    id: root
+
+    property var chat  // TODO: should be the data type of model
+
     property alias chatMessages: chatMessages
 
     property int chatGroupsListViewCount: 0
@@ -39,7 +42,7 @@ StackLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: 300
 
-    currentIndex:  chatsModel.activeChannelIndex > -1 && chatGroupsListViewCount > 0 ? 0 : 1
+    currentIndex: 0 // TODO:  chatsModel.activeChannelIndex > -1 && chatGroupsListViewCount > 0 ? 0 : 1
 
     function showReplyArea() {
         isReply = true;
@@ -89,6 +92,7 @@ StackLayout {
             spacing: 0
             TopBar {
                 id: topBar
+                chat: root.chat
             }
         }
 
@@ -288,8 +292,6 @@ StackLayout {
             }
         }
     }
-
-    EmptyChat {}
 
     Loader {
         id: txModalLoader

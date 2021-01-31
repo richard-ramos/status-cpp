@@ -16,6 +16,8 @@ ChatsModel::ChatsModel(QObject * parent): QAbstractListModel(parent)
 {
     loadChats();
     QObject::connect(Status::instance(), &Status::logout, this, &ChatsModel::terminate);
+    QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
+
 }
 
 
@@ -86,7 +88,7 @@ void ChatsModel::join(ChatType chatType, QString id)
             beginInsertRows(QModelIndex(), rowCount(), rowCount());
             m_chats << c;
             endInsertRows();
-            emit joined(chatType, id);
+            emit joined(chatType, id, m_chats.count() - 1);
         } catch (const std::exception& e) {
             qWarning() << "ChatsModel::join - Error saving chat: " << e.what();
             emit joinError(e.what());
@@ -104,6 +106,10 @@ void ChatsModel::loadChats()
         const QJsonObject obj = value.toObject();
         Chat* c = new Chat(obj, this);
         m_chats << c;
+        emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
     }
     endInsertRows();
+
+    // TODO: emit channel loaded?, request latest 24hrs
+    // TODO: connect loaded to added?
 }

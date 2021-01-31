@@ -11,6 +11,7 @@ import "./CommunityComponents"
 Item {
     property alias chatGroupsListViewCount: channelList.channelListCount
     property alias searchStr: searchBox.text
+    property alias list: channelList.list 
 
     id: contactsColumn
     Layout.fillHeight: true

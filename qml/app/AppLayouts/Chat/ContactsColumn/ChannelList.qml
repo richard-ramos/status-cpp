@@ -8,6 +8,7 @@ import "./"
 
 Rectangle {
     property var channelModel
+    property alias list: chatGroupsListView
     property alias channelListCount: chatGroupsListView.count
     property string searchStr: ""
     id: channelListContent
@@ -19,7 +20,10 @@ Rectangle {
         id: timer
     }
 
+
     ListView {
+        Component.onCompleted : currentIndex = 0
+
         id: chatGroupsListView
         spacing: Style.current.halfPadding
         anchors.top: parent.top
@@ -29,6 +33,7 @@ Rectangle {
         anchors.left: parent.left
         interactive: false
         model: channelListContent.channelModel
+        currentIndex: 0
         delegate: Channel {
             name: model.name
             muted: model.muted
@@ -233,6 +238,14 @@ Rectangle {
             SelectedMessage.reset();
             chatColumn.isReply = false;
         }
+    }
+
+    Connections {
+        target: chatsModel
+        onAdded: {
+            chatGroupsListView.currentIndex = index;
+        }
+
     }
 
 }

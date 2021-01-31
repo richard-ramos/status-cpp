@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import "../../imports"
 import "../../shared"
 import "../../shared/status"
+import im.status.desktop 1.0
 
 Button {
     id: control
@@ -11,6 +12,7 @@ Button {
     property string chatName
     property int chatType
     property string identicon
+    property string chatColor
     property int identiconSize: 40
     property bool isCompact: false
     property bool muted: false
@@ -25,9 +27,10 @@ Button {
         chatId: control.chatId
         chatName: control.chatName
         chatType: control.chatType
+        chatColor: control.chatColor
         muted: control.muted
         identicon: {
-            if (control.chatType === Constants.chatTypeOneToOne) {
+            if (control.chatType === ChatType.OneToOne) {
                 return appMain.getProfileImage(control.chatId) || control.identicon
             }
             return control.identicon

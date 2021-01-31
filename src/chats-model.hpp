@@ -5,34 +5,6 @@
 #include "chat.hpp"
 #include "chat-type.hpp"
 
-/*
-class Message : public QObject
-{
-Q_OBJECT
-public:
-    explicit Message(QObject * parent = nullptr);
-}
-
-
-class MessageModel : public QAbstractListModel
-{
-Q_OBJECT
-
-public:
-    enum MessageModel {
-        Id = Qt::UserRole + 1,
-        
-    };
-
-    explicit MessageModel(QObject * parent = nullptr);
-
-    QHash<int, QByteArray> roleNames() const;
-    virtual int rowCount(const QModelIndex&) const;
-    virtual QVariant data(const QModelIndex &index, int role) const;
-
-}
-*/
-
 class ChatsModel : public QAbstractListModel
 {
 Q_OBJECT
@@ -70,7 +42,8 @@ public:
 
 signals:
     void joinError(QString message);
-    void joined(ChatType chatType, QString id);
+    void joined(ChatType chatType, QString id, int index);
+    void added(ChatType chatType, QString id, int index);
     
 private:
     void loadChats();

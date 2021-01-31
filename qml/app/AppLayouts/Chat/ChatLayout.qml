@@ -1,8 +1,12 @@
+import QtQuick.Layouts 1.14
+
+
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import Qt.labs.settings 1.0
 import "../../../imports"
 import "../../../shared"
+import "./ChatColumn"
 import "."
 import "components"
 import im.status.desktop 1.0
@@ -11,7 +15,7 @@ SplitView {
     id: chatView
     handle: SplitViewHandle {}
 
-    property alias chatColumn: chatColumn
+    // property alias chatColumn: chatColumn
 
     property var onActivated: function () {
         chatsModel.restorePreviousActiveChannel()
@@ -64,7 +68,7 @@ SplitView {
         SplitView.maximumWidth: Style.current.leftTabMaximumWidth
      // TODO:   sourceComponent: appSettings.communitiesEnabled && chatsModel.activeCommunity.active ? communtiyColumnComponent : contactsColumnComponent
 
-     sourceComponent:  contactsColumnComponent
+        sourceComponent:  contactsColumnComponent
     }
 
     Component {
@@ -78,10 +82,20 @@ SplitView {
         CommunityColumn {}
     }
 
-    ChatColumn {
-        id: chatColumn
-        chatGroupsListViewCount: contactColumnLoader.item.chatGroupsListViewCount
+    StackLayout {
+        id: chatMsgStackLayout
+        currentIndex: contactColumnLoader.item.list.count == 0 ? 0 : contactColumnLoader.item.list.currentIndex + 1
+        EmptyChat {}
+        Repeater {
+            model: chatsModel
+            ChatColumn {
+                id: chatColumn
+                chat: model
+                chatGroupsListViewCount: contactColumnLoader.item.chatGroupsListViewCount
+            }
+        }
     }
+   
 
     function openProfilePopup(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam, parentPopup){
         var popup = profilePopupComponent.createObject(chatView);

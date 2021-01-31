@@ -5,8 +5,10 @@ import "../../../../shared"
 import "../../../../shared/status"
 import "../../../../imports"
 import "../components"
+import im.status.desktop 1.0
 
 Rectangle {
+    property var chat
     property int iconSize: 16
     id: chatTopBarContent
     color: Style.current.background
@@ -16,8 +18,7 @@ Rectangle {
     border.width: 1
 
     Loader {
-      property bool isGroupChatOrOneToOne: (chatsModel.activeChannel.chatType === Constants.chatTypePrivateGroupChat || 
-        chatsModel.activeChannel.chatType === Constants.chatTypeOneToOne)
+      property bool isGroupChatOrOneToOne: chat.chatType === ChatType.PrivateGroupChat || chat.chatType === ChatType.OneToOne
       anchors.left: parent.left
       anchors.leftMargin: this.isGroupChatOrOneToOne ? Style.current.padding : Style.current.padding + 4
       anchors.top: parent.top
@@ -28,19 +29,20 @@ Rectangle {
     Component {
         id: chatInfoButton
         StatusChatInfoButton {
-            chatId: chatsModel.activeChannel.id
-            chatName: chatsModel.activeChannel.name
-            chatType: chatsModel.activeChannel.chatType
+            chatId: chat.id
+            chatColor: chat.color;
+            chatName: chat.name
+            chatType: chat.chatType
             identicon: chatsModel.activeChannel.identicon
-            muted: chatsModel.activeChannel.muted
+            muted: chat.muted
             identiconSize: 36
 
             onClicked: {
-                switch (chatsModel.activeChannel.chatType) {
-                    case Constants.chatTypePrivateGroupChat: 
+                switch (chat.chatType) {
+                    case ChatType.PrivateGroupChat: 
                         groupInfoPopup.open()
                         break;
-                    case Constants.chatTypeOneToOne:
+                    case ChatType.OneToOne:
                         const profileImage = appMain.getProfileImage(chatsModel.activeChannel.id)
                         openProfilePopup(chatsModel.activeChannel.name, chatsModel.activeChannel.id, profileImage || chatsModel.activeChannel.identicon)
                         break;
@@ -53,10 +55,10 @@ Rectangle {
         id: chatInfo
         StatusChatInfo {
             identiconSize: 36
-            chatName: chatsModel.activeChannel.name
-            chatType: chatsModel.activeChannel.chatType
-            identicon: chatsModel.activeChannel.identicon
-            muted: chatsModel.activeChannel.muted
+            chatName: chat.name
+            chatType: chat.chatType
+            chatColor: chat.color
+            muted: chat.muted
         }
     }
 
@@ -95,7 +97,7 @@ Rectangle {
 
             onClicked: {
                 var menu = chatContextMenu;
-                if(chatsModel.activeChannel.chatType === Constants.chatTypePrivateGroupChat){
+                if(chat.chatType === ChatType.PrivateGroupChat){
                     menu = groupContextMenu
                 }
 

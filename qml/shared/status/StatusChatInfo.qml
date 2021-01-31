@@ -4,6 +4,7 @@ import QtGraphicalEffects 1.13
 import "../../imports"
 import "../../shared"
 import "../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: root
@@ -12,17 +13,18 @@ Item {
     property string chatName
     property int chatType
     property string identicon
+    property string chatColor
     property int identiconSize: 40
     property bool isCompact: false
     property bool muted: false
 
-    property string profileImage: chatType === Constants.chatTypeOneToOne ? appMain.getProfileImage(chatId) || ""  : ""
+    property string profileImage: chatType === ChatType.OneToOne ? appMain.getProfileImage(chatId) || ""  : ""
 
     height: 48
     width: nameAndInfo.width + chatIdenticon.width + Style.current.smallPadding
 
     Connections {
-        enabled: chatType === Constants.chatTypeOneToOne
+        enabled: chatType === ChatType.OneToOne
         target: profileModel.contacts.list
         onContactChanged: {
             if (pubkey === root.chatId) {
@@ -35,6 +37,7 @@ Item {
         id: chatIdenticon
         chatType: root.chatType
         chatName: root.chatName
+        chatColor: root.chatColor
         identicon: root.profileImage || root.identicon
         width: root.isCompact ? 20 : root.identiconSize
         height: root.isCompact ? 20 : root.identiconSize
@@ -53,8 +56,8 @@ Item {
             id: chatName
             text: {
                 switch(root.chatType) {
-                    case Constants.chatTypePublic: return "#" + root.chatName;
-                    case Constants.chatTypeOneToOne: return Utils.removeStatusEns(root.chatName)
+                    case ChatType.Public: return "#" + root.chatName;
+                    case ChatType.OneToOne: return Utils.removeStatusEns(root.chatName)
                     default: return root.chatName
                 }
             }
@@ -111,13 +114,13 @@ Item {
             text: {
                 switch(root.chatType){
                     //% "Public chat"
-                    case Constants.chatTypePublic: return qsTrId("public-chat")
-                    case Constants.chatTypeOneToOne: return (profileModel.contacts.isAdded(root.chatId) ?
+                    case ChatType.Public: return qsTrId("public-chat")
+                    case ChatType.OneToOne: return (profileModel.contacts.isAdded(root.chatId) ?
                     //% "Contact"
                     qsTrId("chat-is-a-contact") :
                     //% "Not a contact"
                     qsTrId("chat-is-not-a-contact"))
-                    case Constants.chatTypePrivateGroupChat: 
+                    case ChatType.PrivateGroupChat: 
                         let cnt = chatsModel.activeChannel.members.rowCount();
                         //% "%1 members"
                         if(cnt > 1) return qsTrId("%1-members").arg(cnt);

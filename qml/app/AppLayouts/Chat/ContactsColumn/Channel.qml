@@ -174,7 +174,6 @@ Rectangle {
                 channelContextMenu.openMenu(index, muted, chatType, name, chatId, identicon)
                 return;
             }
-            chatsModel.setActiveChannelByIndex(index)
             chatGroupsListView.currentIndex = index
         }
     }

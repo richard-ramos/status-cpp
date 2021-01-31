@@ -2,6 +2,7 @@ import QtQuick 2.13
 import "../../imports"
 import "../../shared"
 import "../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: root
@@ -15,7 +16,7 @@ Item {
     height: 40
 
     Loader {
-        sourceComponent: root.chatType == Constants.chatTypeOneToOne || !!root.identicon ? imageIdenticon : letterIdenticon
+        sourceComponent: root.chatType == ChatType.OneToOne || !!root.identicon ? imageIdenticon : letterIdenticon
         anchors.fill: parent
     }
 
