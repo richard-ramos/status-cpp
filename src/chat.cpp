@@ -10,6 +10,9 @@
 #include "status.hpp"
 #include <QJsonArray>
 #include "chat-type.hpp"
+#include "settings.hpp"
+#include <QtConcurrent>
+#include <QFutureWatcher>
 
 Chat::Chat(QString id, ChatType chatType, QString name, QString profile, QString color, bool active, int timestamp, int lastClockValue, int deletedAtClockValue, int unviewedMessagesCount, bool muted, QObject * parent):
     QObject(parent),
@@ -42,6 +45,27 @@ Chat::Chat(const QJsonValue data, QObject * parent):
     m_muted(data["muted"].toBool())
 {  
 }
+
+
+void Chat::sendMessage(QString message, bool isReply, bool isEmoji){
+    QString preferredUsername = Settings::instance()->preferredName();
+    QtConcurrent::run([=]{
+        QJsonObject obj {
+            {"chatId", m_id},
+            {"text", message},
+            // TODO: {"responseTo", replyTo},
+            {"ensName", preferredUsername},
+            {"sticker", QJsonValue()},
+            {"contentType", 1} // TODO: replace by enum class
+           // TODO: {"communityId", communityId}
+        };
+        const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
+        if(!response["error"].isUndefined()){
+            throw std::domain_error(response["error"]["message"].toString().toUtf8());
+        }
+    });
+}
+
 
 void Chat::save()
 {

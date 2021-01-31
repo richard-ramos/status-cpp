@@ -35,6 +35,7 @@ public:
     // Q_INVOKABLE void init();
     Q_INVOKABLE void join(ChatType chatType, QString id);
     Q_INVOKABLE void terminate();
+    Q_INVOKABLE Chat* get(int row) const;
 
     //Q_INVOKABLE void update();
     //Q_INVOKABLE void leave(chatType, id);
@@ -46,6 +47,7 @@ signals:
     void added(ChatType chatType, QString id, int index);
     
 private:
+    void startMessenger();
     void loadChats();
 
     QVector<Chat*> m_chats;

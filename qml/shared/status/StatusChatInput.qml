@@ -94,7 +94,7 @@ Rectangle {
 
     function onKeyPress(event){
         if (event.modifiers === Qt.NoModifier && (event.key === Qt.Key_Enter || event.key === Qt.Key_Return)) {
-            if (emojiSuggestions.visible) {
+            /*if (emojiSuggestions.visible) {
                 emojiSuggestions.addEmoji();
                 event.accepted = true;
                 return
@@ -107,15 +107,15 @@ Rectangle {
             if (control.isStatusUpdateInput) {
                 return // Status update require the send button to be clicked
             }
-            if (messageInputField.length < messageLimit) {
+            if (messageInputField.length < messageLimit) {*/
                 control.sendMessage(event)
                 control.hideExtendedArea();
-                return;
+                return;/* 
             }
             if(event) event.accepted = true
-            messageTooLongDialog.open()
+            messageTooLongDialog.open()*/
         }
-
+        /*
         const message = control.extrapolateCursorPosition();
 
         // handle new line in blockquote
@@ -164,7 +164,7 @@ Rectangle {
             suggestionsBox.hide()
         }
 
-        isColonPressed = (event.key === Qt.Key_Colon) && (event.modifiers & Qt.ShiftModifier);
+        isColonPressed = (event.key === Qt.Key_Colon) && (event.modifiers & Qt.ShiftModifier);*/
     }
 
     function wrapSelection(wrapWith) {
@@ -175,6 +175,7 @@ Rectangle {
     }
 
     function onRelease(event) {
+        return; // TODO:
         // the text doesn't get registered to the textarea fast enough
         // we can only get it in the `released` event
         if (paste) {

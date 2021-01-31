@@ -278,10 +278,14 @@ StackLayout {
                     if (chatInput.fileUrls.length > 0){
                         chatsModel.sendImage(chatInput.fileUrls[0], false);
                     }
-                    var msg = chatsModel.plainText(Emoji.deparse(chatInput.textInput.text))
+                    
+                    // var msg = chatsModel.plainText(Emoji.deparse(chatInput.textInput.text))
+                    // TODO:
+                    var msg = chatInput.textInput.text;
+                    
                     if (msg.length > 0){
                         msg = chatInput.interpretMessage(msg)
-                        chatsModel.sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType, false);
+                        chatsModel.get(index).sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType); // TODO:, false);
                         chatInput.textInput.text = "";
                         if(event) event.accepted = true
                         chatInput.messageSound.stop()

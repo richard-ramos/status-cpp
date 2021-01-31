@@ -14,6 +14,7 @@
 
 ChatsModel::ChatsModel(QObject * parent): QAbstractListModel(parent)
 {
+    startMessenger();
     loadChats();
     QObject::connect(Status::instance(), &Status::logout, this, &ChatsModel::terminate);
     QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
@@ -98,6 +99,15 @@ void ChatsModel::join(ChatType chatType, QString id)
 }
 
 
+void ChatsModel::startMessenger()
+{
+    const auto response = Status::instance()->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList()).toJsonObject();
+    // TODO:
+    qDebug() << response;
+
+}
+
+
 void ChatsModel::loadChats()
 {
     const auto response = Status::instance()->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList()).toJsonObject();
@@ -112,4 +122,9 @@ void ChatsModel::loadChats()
 
     // TODO: emit channel loaded?, request latest 24hrs
     // TODO: connect loaded to added?
+}
+
+Chat* ChatsModel::get(int row) const
+{
+    return m_chats[row];
 }

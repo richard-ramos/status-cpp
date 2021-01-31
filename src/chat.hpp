@@ -41,6 +41,7 @@ public:
 public:
     //Q_INVOKABLE update(QJsonValue jsonChat);
     Q_INVOKABLE void save();
+    Q_INVOKABLE void sendMessage(QString message, bool isReply, bool isEmoji);
 };
 
 #endif // CHAT_H
