@@ -1,6 +1,3 @@
 #include "message-type.hpp"
 
-MessageTypeClass::MessageTypeClass()
-{
-
-}
+MessageTypeClass::MessageTypeClass() { }

@@ -1,137 +1,134 @@
-#include <QDebug>
 #include <QCoreApplication>
+#include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QReadWriteLock>
 
+#include "libstatus.h"
 #include "settings.hpp"
 #include "status.hpp"
-#include "libstatus.h"
 #include "utils.hpp"
 
-Settings *Settings::theInstance;
+Settings* Settings::theInstance;
 
-Settings *Settings::instance()
+Settings* Settings::instance()
 {
-    if (theInstance == 0)
-      theInstance = new Settings();
-    return theInstance;
+	if(theInstance == 0)
+		theInstance = new Settings();
+	return theInstance;
 }
 
-Settings::Settings(QObject * parent): QObject(parent)
+Settings::Settings(QObject* parent)
+	: QObject(parent)
 {
-    m_initialized = false;
-    QObject::connect(Status::instance(), &Status::login, this, &Settings::init); // TODO: check if there is a login error?
-    QObject::connect(Status::instance(), &Status::logout, this, &Settings::terminate);
+	m_initialized = false;
+	QObject::connect(Status::instance(),
+					 &Status::login,
+					 this,
+					 &Settings::init); // TODO: check if there is a login error?
+	QObject::connect(Status::instance(), &Status::logout, this, &Settings::terminate);
 }
 
 Settings::~Settings()
 {
-    terminate();
+	terminate();
 }
 
 void Settings::init()
 {
-    // TODO: extract to callPrivateRPC helper function
-    lock.lockForWrite();
-    QJsonObject obj
-    {
-        {"method", "settings_getSettings"},
-        {"params", QJsonArray {}}
-    };
-    const char * result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
-    // TODO: error handling for callrpc
+	// TODO: extract to callPrivateRPC helper function
+	lock.lockForWrite();
+	QJsonObject obj{{"method", "settings_getSettings"}, {"params", QJsonArray{}}};
+	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
+	// TODO: error handling for callrpc
 
-    const QJsonObject settings = QJsonDocument::fromJson(result).object();
-    m_publicKey = settings["result"][settingsMap[SettingTypes::PublicKey]].toString();
-    m_keyUID  = settings["result"][settingsMap[SettingTypes::KeyUID]].toString();
-    m_currency  = settings["result"][settingsMap[SettingTypes::Currency]].toString();
-    m_preferredName  = settings["result"][settingsMap[SettingTypes::PreferredUsername]].toString();
+	const QJsonObject settings = QJsonDocument::fromJson(result).object();
+	m_publicKey = settings["result"][settingsMap[SettingTypes::PublicKey]].toString();
+	m_keyUID = settings["result"][settingsMap[SettingTypes::KeyUID]].toString();
+	m_currency = settings["result"][settingsMap[SettingTypes::Currency]].toString();
+	m_preferredName = settings["result"][settingsMap[SettingTypes::PreferredUsername]].toString();
 
-    m_initialized = true;
-    lock.unlock();
+	m_initialized = true;
+	lock.unlock();
 }
 
 void Settings::terminate()
 {
-    // TODO: clear mnemonic from memory
-    lock.lockForWrite();
-    m_initialized = false;
-    lock.unlock();
+	// TODO: clear mnemonic from memory
+	lock.lockForWrite();
+	m_initialized = false;
+	lock.unlock();
 }
-
 
 void Settings::saveSettings(SettingTypes setting, QString value)
 {
-    QJsonObject obj
-    {
-        {"method", "settings_saveSetting"},
-        {"params", QJsonArray {settingsMap[setting], value}}
-    };
-    const char * result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
-    qDebug() << "SAVE SETTING RESULT" << result;
+	QJsonObject obj{{"method", "settings_saveSetting"},
+					{"params", QJsonArray{settingsMap[setting], value}}};
+	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
+	qDebug() << "SAVE SETTING RESULT" << result;
 }
-
 
 QString Settings::publicKey()
 {
-    lock.lockForRead();
-    if(!m_initialized) return QString();
-    QString result(m_publicKey);
-    lock.unlock();
-    return result;
+	lock.lockForRead();
+	if(!m_initialized)
+		return QString();
+	QString result(m_publicKey);
+	lock.unlock();
+	return result;
 }
-
 
 QString Settings::keyUID()
 {
-    lock.lockForRead();
-    if(!m_initialized) return QString();
-    QString result(m_keyUID);
-    lock.unlock();
-    return result;
+	lock.lockForRead();
+	if(!m_initialized)
+		return QString();
+	QString result(m_keyUID);
+	lock.unlock();
+	return result;
 }
 
-
-void Settings::setCurrency(const QString &value)
+void Settings::setCurrency(const QString& value)
 {
-    lock.lockForWrite();
-    if (value != m_currency) {
-        m_currency = value;
-        saveSettings(SettingTypes::Currency, value);
-        emit currencyChanged();
-    }
-    lock.unlock();
+	lock.lockForWrite();
+	if(value != m_currency)
+	{
+		m_currency = value;
+		saveSettings(SettingTypes::Currency, value);
+		emit currencyChanged();
+	}
+	lock.unlock();
 }
-
 
 QString Settings::currency()
 {
-    lock.lockForRead();
-    if(!m_initialized) return QString();
-    QString result(m_currency);
-    lock.unlock();
-    return result;
+	lock.lockForRead();
+	if(!m_initialized)
+		return QString();
+	QString result(m_currency);
+	lock.unlock();
+	return result;
 }
 
-void Settings::setPreferredName(const QString &value)
+void Settings::setPreferredName(const QString& value)
 {
-    lock.lockForWrite();
-    if (value != m_preferredName) {
-        m_preferredName = value;
-        saveSettings(SettingTypes::PreferredUsername, value);
-        emit preferredNameChanged();
-    }
-    lock.unlock();
+	lock.lockForWrite();
+	if(value != m_preferredName)
+	{
+		m_preferredName = value;
+		saveSettings(SettingTypes::PreferredUsername, value);
+		emit preferredNameChanged();
+	}
+	lock.unlock();
 }
-
 
 QString Settings::preferredName()
 {
-    lock.lockForRead();
-    if(!m_initialized) return QString();
-    QString result(m_preferredName);
-    lock.unlock();
-    return result;
+	lock.lockForRead();
+	if(!m_initialized)
+		return QString();
+	QString result(m_preferredName);
+	lock.unlock();
+	return result;
 }

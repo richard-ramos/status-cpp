@@ -1,6 +1,3 @@
 #include "chat-type.hpp"
 
-ChatTypeClass::ChatTypeClass()
-{
-
-}
+ChatTypeClass::ChatTypeClass() { }

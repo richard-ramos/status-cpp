@@ -4,22 +4,22 @@
 
 class ChatTypeClass
 {
-    Q_GADGET
+	Q_GADGET
 public:
-    explicit ChatTypeClass();
+	explicit ChatTypeClass();
 
-    enum Value {
-        Unknown,
-        OneToOne,
-        Public,
-        PrivateGroupChat,
-        Profile,
-        Timeline,
-        ComunityChat
-    };
-    
-    Q_ENUM(Value)
+	enum Value
+	{
+		Unknown,
+		OneToOne,
+		Public,
+		PrivateGroupChat,
+		Profile,
+		Timeline,
+		ComunityChat
+	};
 
+	Q_ENUM(Value)
 };
 
 typedef ChatTypeClass::Value ChatType;

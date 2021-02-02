@@ -1,63 +1,61 @@
-#ifndef STATUS_H
-#define STATUS_H
+#pragma once
 
-#include <QString>
-#include <QObject>
 #include <QJSValue>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 #include <QVariantList>
 
-class Status : public QObject {
-  Q_OBJECT
+class Status : public QObject
+{
+	Q_OBJECT
 
 public:
-  ~Status() {}
+	~Status() { }
 
-  static Status *instance();
+	static Status* instance();
 
-  enum SignalType { 
-    Unknown,
-    Message,
-    EnvelopeSent,
-    EnvelopeExpired,
-    WhisperFilterAdded,
-    Wallet,
-    NodeLogin,
-    NodeReady,
-    NodeStarted,
-    NodeStopped,
-    MailserverRequestCompleted,
-    MailserverRequestExpired,
-    DiscoveryStarted,
-    DiscoveryStopped,
-    DiscoverySummary,
-    SubscriptionsData,
-    SubscriptionsError
-  };
-  
-  Q_ENUM(SignalType)
+	enum SignalType
+	{
+		Unknown,
+		Message,
+		EnvelopeSent,
+		EnvelopeExpired,
+		WhisperFilterAdded,
+		Wallet,
+		NodeLogin,
+		NodeReady,
+		NodeStarted,
+		NodeStopped,
+		MailserverRequestCompleted,
+		MailserverRequestExpired,
+		DiscoveryStarted,
+		DiscoveryStopped,
+		DiscoverySummary,
+		SubscriptionsData,
+		SubscriptionsError
+	};
 
-  Q_INVOKABLE QString generateAlias(QString publicKey);
-  Q_INVOKABLE QString generateIdenticon(QString publicKey);
-  Q_INVOKABLE QString generateQRCode(QString publicKey);
-  Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
-  Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue &callback);
-  Q_INVOKABLE void closeSession();
+	Q_ENUM(SignalType)
+
+	Q_INVOKABLE QString generateAlias(QString publicKey);
+	Q_INVOKABLE QString generateIdenticon(QString publicKey);
+	Q_INVOKABLE QString generateQRCode(QString publicKey);
+	Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
+	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);
+	Q_INVOKABLE void closeSession();
 
 signals:
-  void signal(SignalType signal);
-  void login(QString error);
-  void nodeReady(QString error);
-  void nodeStopped(QString error);
-  void message(QJsonObject update);
-  void logout();
-
+	void signal(SignalType signal);
+	void login(QString error);
+	void nodeReady(QString error);
+	void nodeStopped(QString error);
+	void message(QJsonObject update);
+	void logout();
 
 private:
-  static Status *theInstance;
-  explicit Status(QObject * parent = nullptr);
-  static std::map<QString, SignalType> signalMap;
-  static void statusGoEventCallback(const char *event);
+	static Status* theInstance;
+	explicit Status(QObject* parent = nullptr);
+	static std::map<QString, SignalType> signalMap;
+	static void statusGoEventCallback(const char* event);
 };
-
-#endif // STATUS_H
