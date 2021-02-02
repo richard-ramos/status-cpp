@@ -40,7 +40,7 @@ void Settings::init()
         {"method", "settings_getSettings"},
         {"params", QJsonArray {}}
     };
-    const char * result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());  
+    const char * result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
     // TODO: error handling for callrpc
 
     const QJsonObject settings = QJsonDocument::fromJson(result).object();

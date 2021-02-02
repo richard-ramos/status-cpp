@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 
+
 project(status-cpp VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_BUILD_TYPE Debug)
+
 
 # Dependencies
 # If dependencies are managed with conan, we set the CMake module path (where
@@ -108,6 +112,11 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/chats-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/chat.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/chat-type.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/messages-model.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/message.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/message-type.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/content-type.cpp"
+
 
 #    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
 )

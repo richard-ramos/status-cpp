@@ -1,5 +1,4 @@
-#ifndef CHAT_H
-#define CHAT_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -9,13 +8,15 @@
 #include <QQmlHelpers>
 #include <QVariant>
 #include "chat-type.hpp"
+#include "messages-model.hpp"
+#include <QDebug>
 
 class Chat : public QObject
 {
 Q_OBJECT
 
 public:
-    explicit Chat(QString id, ChatType chatType, QString name = "", QString profile = "", QString color = "", bool active = true, QString timestamp = "0", QString lastClockValue = "0", QString deletedAtClockValue = "0", int unviewedMessagesCount = 0, bool muted = false, QObject * parent = 0); //, QJsonValue jsonChat);
+    explicit Chat(QString id, ChatType chatType, QObject * parent = 0, QString name = "", QString profile = "", QString color = "", bool active = true, QString timestamp = "0", QString lastClockValue = "0", QString deletedAtClockValue = "0", int unviewedMessagesCount = 0, bool muted = false); //, QJsonValue jsonChat);
     explicit Chat(const QJsonValue data, QObject * parent);
 
     QML_READONLY_PROPERTY(QString, id)
@@ -38,10 +39,12 @@ public:
 
     // hasMentions
     // ensName
+
+    QML_READONLY_PROPERTY(MessagesModel*, messages)
+    
 public:
-    //Q_INVOKABLE update(QJsonValue jsonChat);
     Q_INVOKABLE void save();
     Q_INVOKABLE void sendMessage(QString message, bool isReply, bool isEmoji);
+    void update(const QJsonValue data);
+    void loadFilter();
 };
-
-#endif // CHAT_H

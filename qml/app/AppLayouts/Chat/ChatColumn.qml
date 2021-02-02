@@ -154,7 +154,7 @@ StackLayout {
             spacing: 0
             ChatMessages {
                 id: chatMessages
-                messageList: chatsModel.messageList
+                messageList: chat.messages
             }
        }
 
@@ -285,7 +285,7 @@ StackLayout {
                     
                     if (msg.length > 0){
                         msg = chatInput.interpretMessage(msg)
-                        chatsModel.get(index).sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType); // TODO:, false);
+                        chat.sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType); // TODO:, false);
                         chatInput.textInput.text = "";
                         if(event) event.accepted = true
                         chatInput.messageSound.stop()

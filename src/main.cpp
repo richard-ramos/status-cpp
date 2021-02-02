@@ -28,6 +28,8 @@
 #include "constants.hpp"
 #include "settings.hpp"
 #include "chats-model.hpp"
+#include "messages-model.hpp"
+
 #include "chat.hpp"
 #include "chat-type.hpp"
 
@@ -74,6 +76,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
     qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
     qRegisterMetaType<Chat*>("Chat *");
+    qRegisterMetaType<MessagesModel*>("MessagesModel *");
     qRegisterMetaType<ChatType>("ChatType");
     qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
     

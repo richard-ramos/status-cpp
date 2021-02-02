@@ -2,6 +2,8 @@
 #define CHATSMODEL_H
 
 #include <QAbstractListModel>
+#include <QHash>
+#include <QVector>
 #include "chat.hpp"
 #include "chat-type.hpp"
 
@@ -22,7 +24,8 @@ public:
         LastMessage = Qt::UserRole + 9,
         UnreadMessages = Qt::UserRole + 10,
         HasMentions = Qt::UserRole + 11,
-        Description = Qt::UserRole + 12
+        Description = Qt::UserRole + 12,
+        Messages = Qt::UserRole + 13
     };
 
     explicit ChatsModel(QObject * parent = nullptr);
@@ -52,6 +55,7 @@ private:
     void update(QJsonValue updates);
 
     QVector<Chat*> m_chats;
+    QHash<QString, Chat*> m_chatMap;
 };
 
 #endif // CHATSMODEL_H
