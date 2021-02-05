@@ -13,6 +13,7 @@ public:
 	enum MessageRoles
 	{
 		Id = Qt::UserRole + 1,
+		Text = Qt::UserRole + 2
 	};
 
 	explicit MessagesModel(QObject* parent = nullptr);

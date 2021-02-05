@@ -35,6 +35,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
 	roles[Id] = "messageId";
+	roles[Text] = "text";
 	return roles;
 }
 
@@ -50,10 +51,15 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 	}
 
-	/* switch (role)
+	switch (role)
     {
         case Id: return QVariant(m_messages[index.row()]->get_id());
-    }*/
+		case Text: {
+			qDebug() << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << m_messages[index.row()]->get_text();
+			return QVariant(m_messages[index.row()]->get_text());
+		}
+
+    }
 
 	return QVariant();
 }

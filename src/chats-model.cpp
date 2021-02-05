@@ -16,8 +16,9 @@
 ChatsModel::ChatsModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
-	startMessenger();
 	loadChats();
+	startMessenger();
+
 	QObject::connect(Status::instance(), &Status::logout, this, &ChatsModel::terminate);
 	QObject::connect(Status::instance(), &Status::message, this, &ChatsModel::update);
 	QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
@@ -44,6 +45,7 @@ QHash<int, QByteArray> ChatsModel::roleNames() const
 	roles[Color] = "color";
 	roles[Timestamp] = "timestamp";
 	roles[Messages] = "messages";
+	roles[LastMessage] = "lastMessage";
 
 	return roles;
 }
@@ -80,6 +82,8 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 		return QVariant(chat->get_color());
 	case Timestamp:
 		return QVariant(chat->get_timestamp());
+	case LastMessage:
+		return QVariant(QVariant::fromValue(chat->get_lastMessage()));
 	case Messages:
 		return QVariant(QVariant::fromValue(chat->get_messages()));
 
@@ -90,6 +94,13 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
+void ChatsModel::insert(Chat* chat){
+	QQmlApplicationEngine::setObjectOwnership(chat, QQmlApplicationEngine::CppOwnership);
+	chat->setParent(this);
+	m_chats << chat;
+	m_chatMap[chat->get_id()] = chat;
+}
+
 void ChatsModel::join(ChatType chatType, QString id)
 {
 	if(!m_chatMap.contains(id))
@@ -98,12 +109,9 @@ void ChatsModel::join(ChatType chatType, QString id)
 		try
 		{
 			Chat* c = new Chat(id, chatType);
-			QQmlApplicationEngine::setObjectOwnership(c, QQmlApplicationEngine::CppOwnership);
-			c->setParent(this);
 			c->save();
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
-			m_chats << c;
-			m_chatMap[id] = c;
+			insert(c);
 			endInsertRows();
 			c->loadFilter();
 			emit joined(chatType, id, m_chats.count() - 1);
@@ -123,7 +131,16 @@ void ChatsModel::startMessenger()
 		Status::instance()
 			->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList())
 			.toJsonObject();
-	// TODO: do something with filters and ranges
+	// TODO: do something with mailservers/ranges
+
+	foreach(const QJsonValue& filter, response["result"]["filters"].toArray()){
+		// Add code for private chats
+		QString chatId = filter["chatId"].toString();
+		if(m_chatMap.contains(chatId)){
+			m_chatMap[chatId]->setFilterId(filter["filterId"].toString());
+		}
+	}
+
 }
 
 void ChatsModel::loadChats()
@@ -136,11 +153,9 @@ void ChatsModel::loadChats()
 	foreach(const QJsonValue& value, response["result"].toArray())
 	{
 		const QJsonObject obj = value.toObject();
-		Chat* c = new Chat(obj, this);
-		QQmlApplicationEngine::setObjectOwnership(c, QQmlApplicationEngine::CppOwnership);
-		c->setParent(this);
-		m_chatMap[c->get_id()] = c;
-		m_chats << c;
+		if(!value["active"].toBool()) continue;
+		Chat* c = new Chat(obj);
+		insert(c);
 		emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
 	}
 	endInsertRows();
@@ -151,6 +166,16 @@ void ChatsModel::loadChats()
 Chat* ChatsModel::get(int row) const
 {
 	return m_chats[row];
+}
+
+void ChatsModel::remove(int row)
+{
+	m_chats[row]->leave();
+	m_chatMap.remove(m_chats[row]->get_id());
+	beginRemoveRows(QModelIndex(), row, row);
+	delete m_chats[row];
+	m_chats.remove(row);
+	endRemoveRows();
 }
 
 void ChatsModel::update(QJsonValue updates)
@@ -180,11 +205,8 @@ void ChatsModel::update(QJsonValue updates)
 		else
 		{
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
-			Chat* newChat = new Chat(chatJson, this);
-			newChat->setParent(this);
-			QQmlApplicationEngine::setObjectOwnership(newChat, QQmlApplicationEngine::CppOwnership);
-			m_chats << newChat;
-			m_chatMap[newChat->get_id()] = newChat;
+			Chat* newChat = new Chat(chatJson);
+			insert(newChat);
 			emit added(newChat->get_chatType(), newChat->get_id(), m_chats.count() - 1);
 			endInsertRows();
 		}
@@ -193,7 +215,7 @@ void ChatsModel::update(QJsonValue updates)
 	// Messages
 	foreach(QJsonValue msgJson, updates["messages"].toArray())
 	{
-		Message* message = new Message(msgJson, this);
+		Message* message = new Message(msgJson);
 		m_chatMap[message->get_chatId()]->get_messages()->push(message);
 	}
 

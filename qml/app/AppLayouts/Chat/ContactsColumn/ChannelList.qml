@@ -37,7 +37,7 @@ Rectangle {
         delegate: Channel {
             name: model.name
             muted: model.muted
-            lastMessage: model.lastMessage
+            lastMessage: model.lastMessage.text
             timestamp: model.timestamp
             chatType: model.chatType
             identicon: model.identicon
@@ -215,7 +215,7 @@ Rectangle {
             }
             icon.width: 16
             icon.height: 16
-            onTriggered: chatsModel.leaveChatByIndex(channelContextMenu.channelIndex)
+            onTriggered: chatsModel.remove(channelContextMenu.channelIndex)
         }
     }
 

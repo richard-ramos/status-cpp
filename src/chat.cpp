@@ -9,11 +9,12 @@
 #include <QFutureWatcher>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QQmlApplicationEngine>
 #include <QRandomGenerator>
+#include <QString>
 #include <QVariant>
 #include <QtConcurrent>
 #include <stdexcept>
-#include <QString>
 
 Chat::Chat(QString id,
 		   ChatType chatType,
@@ -42,6 +43,29 @@ Chat::Chat(QString id,
 {
 	// Needs to be initialized because it's undefined
 	m_messages = new MessagesModel();
+	m_messages->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
+
+	m_lastMessage = new Message();
+	m_lastMessage->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
+}
+
+Chat::~Chat()
+{
+	delete m_messages;
+	delete m_lastMessage;
+}
+
+bool Chat::operator==(const Chat &c)
+{
+	return m_id == c.get_id();
+}
+
+
+void Chat::setFilterId(QString filterId)
+{
+	m_filterId = filterId;
 }
 
 Chat::Chat(const QJsonValue data, QObject* parent)
@@ -69,10 +93,21 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 
 	// Needs to be initialized because it's undefined
 	m_messages = new MessagesModel();
+	m_messages->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
+
+	m_lastMessage = new Message(data["lastMessage"]);
+	m_lastMessage->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
 }
 
 void Chat::update(const QJsonValue data)
 {
+	delete m_lastMessage;
+	m_lastMessage = new Message(data["lastMessage"]);
+	m_lastMessage->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
+
 	update_name(data["name"].toString());
 	update_timestamp(data["timestamp"].toString());
 	update_lastClockValue(data["lastClockValue"].toString());
@@ -85,6 +120,7 @@ void Chat::sendMessage(QString message, bool isReply, bool isEmoji)
 {
 	QString preferredUsername = Settings::instance()->preferredName();
 	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{
 			{"chatId", m_id},
 			{"text", message},
@@ -105,53 +141,107 @@ void Chat::sendMessage(QString message, bool isReply, bool isEmoji)
 	});
 }
 
+void Chat::leave()
+{
+	m_active = false;
+	// TODO: ideally this should happen in a separate thread and notify parent to remove item from vector
+	deleteChatHistory();
+	removeFilter();
+	save();
+	left(m_id);	
+}
+
 void Chat::loadFilter()
 {
 	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{{"ChatID", m_id}, {"OneToOne", m_chatType == ChatType::OneToOne}};
 		const auto response =
 			Status::instance()
 				->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{obj}}.toVariantList())
+				.toJsonObject();
+
+		if(!response["error"].isUndefined())
+		{
+			throw std::domain_error(response["error"]["message"].toString().toUtf8());
+		}
+
+		foreach(const QJsonValue& value, response["result"].toArray())
+		{
+			// Handle non public chats
+			if(value["chatId"].toString() == m_id)
+			{
+				m_filterId = value["filterId"].toString();
+				break;
+			}
+		}
+	});
+}
+
+void Chat::removeFilter()
+{
+	QJsonObject obj{{"ChatID", m_id}, {"FilterID", m_filterId}};
+	const auto response =
+		Status::instance()
+			->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList())
+			.toJsonObject();
+
+	qDebug() << response;
+	if(!response["error"].isUndefined())
+	{
+		throw std::domain_error(response["error"]["message"].toString().toUtf8());
+	}
+}
+
+void Chat::deleteChatHistory()
+{
+	const auto response =
+		Status::instance()
+			->callPrivateRPC("wakuext_deleteMessagesByChatID", QJsonArray{m_id}.toVariantList())
+			.toJsonObject();
+
+	qDebug() << response;
+	if(!response["error"].isUndefined())
+	{
+		throw std::domain_error(response["error"]["message"].toString().toUtf8());
+	}
+}
+
+void Chat::save()
+{
+	QtConcurrent::run([=] {
+		m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
+
+		if(m_chatType == ChatType::Public)
+		{
+			m_name = m_id;
+		}
+
+		if(m_color == "")
+		{
+			const QString accountColors[7]{
+				"#9B832F", "#D37EF4", "#1D806F", "#FA6565", "#7CDA00", "#887af9", "#8B3131"};
+			m_color = accountColors[QRandomGenerator::global()->bounded(7)];
+		}
+
+		QJsonObject chat{{"id", m_id},
+						 {"name", m_name},
+						 {"lastClockValue", m_lastClockValue},
+						 {"color", m_color},
+						 {"lastMessage", QJsonValue()},
+						 {"active", m_active},
+						 {"profile", m_profile},
+						 {"unviewedMessagesCount", m_unviewedMessagesCount},
+						 {"chatType", m_chatType},
+						 {"timestamp", m_timestamp}};
+
+		const auto response =
+			Status::instance()
+				->callPrivateRPC("wakuext_saveChat", QJsonArray{chat}.toVariantList())
 				.toJsonObject();
 		if(!response["error"].isUndefined())
 		{
 			throw std::domain_error(response["error"]["message"].toString().toUtf8());
 		}
 	});
-}
-
-void Chat::save()
-{
-	m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
-
-	if(m_chatType == ChatType::Public)
-	{
-		m_name = m_id;
-	}
-
-	if(m_color == "")
-	{
-		const QString accountColors[7]{
-			"#9B832F", "#D37EF4", "#1D806F", "#FA6565", "#7CDA00", "#887af9", "#8B3131"};
-		m_color = accountColors[QRandomGenerator::global()->bounded(7)];
-	}
-
-	QJsonObject chat{{"id", m_id},
-					 {"name", m_name},
-					 {"lastClockValue", m_lastClockValue},
-					 {"color", m_color},
-					 {"lastMessage", QJsonValue()},
-					 {"active", m_active},
-					 {"profile", m_profile},
-					 {"unviewedMessagesCount", m_unviewedMessagesCount},
-					 {"chatType", m_chatType},
-					 {"timestamp", m_timestamp}};
-
-	const auto response = Status::instance()
-							  ->callPrivateRPC("wakuext_saveChat", QJsonArray{chat}.toVariantList())
-							  .toJsonObject();
-	if(!response["error"].isUndefined())
-	{
-		throw std::domain_error(response["error"]["message"].toString().toUtf8());
-	}
 }

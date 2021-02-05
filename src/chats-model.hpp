@@ -38,6 +38,7 @@ public:
 	Q_INVOKABLE void join(ChatType chatType, QString id);
 	Q_INVOKABLE void terminate();
 	Q_INVOKABLE Chat* get(int row) const;
+	Q_INVOKABLE void remove(int row);
 
 	//Q_INVOKABLE void update();
 	//Q_INVOKABLE void leave(chatType, id);
@@ -52,6 +53,7 @@ private:
 	void startMessenger();
 	void loadChats();
 	void update(QJsonValue updates);
+	void insert(Chat* chat);
 
 	QVector<Chat*> m_chats;
 	QHash<QString, Chat*> m_chatMap;

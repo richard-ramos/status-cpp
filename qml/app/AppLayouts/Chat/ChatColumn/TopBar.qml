@@ -196,7 +196,7 @@ Rectangle {
         id: deleteChatConfirmationDialog
         btnType: "warn"
         onConfirmButtonClicked: {
-            chatsModel.leaveActiveChat()
+            chatsModel.remove(index)
             deleteChatConfirmationDialog.close()
         }
     }
