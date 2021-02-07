@@ -37,10 +37,12 @@ public:
 	// TODO: ???? QML_READONLY_PROPERTY(QVector<QString>, images)
 
 	Q_PROPERTY(bool isAdded READ isAdded NOTIFY contactToggled)
+	Q_PROPERTY(bool isBlocked READ isBlocked NOTIFY blockedToggled)
 
 
 signals:
 	void contactToggled(QString chatId);
+	void blockedToggled(QString chatId);
 
 private:
 	QMutex m_mutex;
@@ -51,8 +53,11 @@ public:
 
 	void update(const QJsonValue data);
 	bool isAdded();
-	
+	bool isBlocked();
+
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void changeNickname(QString newNickname);
 	Q_INVOKABLE void toggleAdd();
+	Q_INVOKABLE void toggleBlock();
+
 };

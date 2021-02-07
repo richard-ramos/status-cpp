@@ -76,6 +76,13 @@ bool Contact::isAdded()
 	return m_systemTags.indexOf(tag) > -1;
 }
 
+bool Contact::isBlocked()
+{
+	// TODO: DRY
+	QString tag(":contact/blocked");
+	return m_systemTags.indexOf(tag) > -1;
+}
+
 void Contact::toggleAdd()
 {
 	QString tag(":contact/added");
@@ -89,6 +96,22 @@ void Contact::toggleAdd()
 	save();
 
 	// TODO: react to contactToggled to add/remove timeline chat
+}
+
+void Contact::toggleBlock()
+{
+	// TODO: DRY
+	QString tag(":contact/blocked");
+	int index = m_systemTags.indexOf(tag);
+	if(index == -1){
+		m_systemTags << tag;
+	} else {
+		m_systemTags.remove(index);
+	}
+	emit blockedToggled(m_id);
+	save();
+
+	// TODO: react to blockedToggled to add/remove timeline chat
 }
 
 void Contact::save()
@@ -114,7 +137,7 @@ void Contact::save()
 							{"tributeToTalk", m_tributeToTalk},
 							{"systemTags", systemTagsArr},
 							// TODO: DeviceInfo ???
-							// TODO: ???? QML_READONLY_PROPERTY(QVector<QString>, images)
+							// TODO: images ???
 							{"localNickname", m_localNickname}};
 
 		const auto response =
@@ -145,7 +168,7 @@ void Contact::update(const QJsonValue data)
 	update_tributeToTalk(data["tributeToTalk"].toString());
 	update_localNickname(data["localNickname"].toString());
 
-	// TODO: test this
+	// TODO: test this when syncing
 	m_systemTags.clear();
 	foreach(const QJsonValue& value, data["systemTags"].toArray())
 	{

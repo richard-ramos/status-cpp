@@ -275,18 +275,14 @@ ModalPopup {
             color: Style.current.red
             showBorder: true
             borderColor: Style.current.border
-            text: isBlocked ?
+            text: contact.isBlocked ?
                       qsTr("Unblock User") :
                       qsTr("Block User")
             onClicked: {
-                if (isBlocked) {
-                    unblockContactConfirmationDialog.contactName = userName;
-                    unblockContactConfirmationDialog.contactAddress = fromAuthor;
+                if (contact.isBlocked) {
                     unblockContactConfirmationDialog.open();
                     return;
                 }
-                blockContactConfirmationDialog.contactName = userName;
-                blockContactConfirmationDialog.contactAddress = fromAuthor;
                 blockContactConfirmationDialog.open();
             }
         }
@@ -327,7 +323,7 @@ ModalPopup {
             anchors.bottom: parent.bottom
             //% "Send Message"
             text: qsTrId("send-message")
-            visible: !isBlocked && chatsModel.activeChannel.id !== popup.fromAuthor
+            visible: !contact.isBlocked && chatsModel.activeChannel.id !== contact.id
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (tabBar.currentIndex !== 0)
@@ -340,21 +336,20 @@ ModalPopup {
         BlockContactConfirmationDialog {
             id: blockContactConfirmationDialog
             onBlockButtonClicked: {
-                profileModel.contacts.blockContact(fromAuthor)
+                contact.toggleBlock();
                 blockContactConfirmationDialog.close();
                 popup.close()
-
-                contactBlocked(fromAuthor)
+                contactBlocked(contact.id)
             }
         }
 
         UnblockContactConfirmationDialog {
             id: unblockContactConfirmationDialog
             onUnblockButtonClicked: {
-                profileModel.unblockContact(fromAuthor)
+                contact.toggleBlock();
                 unblockContactConfirmationDialog.close();
                 popup.close()
-                contactUnblocked(fromAuthor)
+                contactUnblocked(contact.id)
             }
         }
 

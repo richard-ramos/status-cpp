@@ -29,6 +29,7 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[Name] = "name";
 	roles[Identicon] = "identicon";
 	roles[IsAdded] = "isAdded";
+	roles[IsBlocked] = "isBlocked";
 	return roles;
 }
 
@@ -46,9 +47,6 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 
 	Contact* contact = m_contacts[index.row()];
 
-	qDebug() << "GETTING MODEL INFO!!!!!!!!!!!! ==============================="  ;
-	qDebug() << role;
-
 	switch(role)
 	{
 	case Id:
@@ -59,6 +57,8 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 		return QVariant(contact->get_identicon());
 	case IsAdded:
 		return QVariant(contact->isAdded());
+	case IsBlocked:
+		return QVariant(contact->isBlocked());
 	}
 
 	return QVariant();
@@ -71,6 +71,7 @@ void ContactsModel::insert(Contact* contact)
 	m_contacts << contact;
 	m_contactsMap[contact->get_id()] = contact;
 	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactUpdated);
+	QObject::connect(contact, &Contact::blockedToggled, this, &ContactsModel::contactUpdated);
 }
 
 void ContactsModel::contactUpdated(QString contactId){

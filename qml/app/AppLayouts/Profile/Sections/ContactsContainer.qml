@@ -109,7 +109,17 @@ Item {
             ContactList {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                contacts: profileModel.contacts.blockedContacts
+                contacts: SortFilterProxyModel {
+                    sourceModel: contactsModel
+                    filters: [
+                        ValueFilter {
+                            enabled: true
+                            roleName: "isBlocked"
+                            value: true
+                        }
+                    ]
+                    sorters: StringSorter { roleName: "name" }
+                }
                 selectable: false
             }
         }
@@ -227,11 +237,18 @@ Item {
         SortFilterProxyModel {
             id: addedContacts
             sourceModel: contactsModel
-            filters: ValueFilter {
-                enabled: true
-                roleName: "isAdded"
-                value: true
-            }
+            filters: [
+                ValueFilter {
+                    enabled: true
+                    roleName: "isAdded"
+                    value: true
+                },
+                ValueFilter {
+                    enabled: true
+                    roleName: "isBlocked"
+                    value: false
+                }
+            ]
             sorters: StringSorter { roleName: "name" }
         }
 
@@ -247,7 +264,7 @@ Item {
 
         Item {
             id: element
-            visible: profileModel.contacts.list.rowCount() === 0
+            visible: contactListView.count === 0
             anchors.fill: parent
 
             StyledText {
