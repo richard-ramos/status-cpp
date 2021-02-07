@@ -125,7 +125,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: chatBox.chatHorizontalPadding
             container: root.container
-	    chatHorizontalPadding: chatBox.chatHorizontalPadding
+	        chatHorizontalPadding: chatBox.chatHorizontalPadding
         }
 
         ChatText {

@@ -3,17 +3,15 @@ import "../../../../shared"
 import "../../../../imports"
 import "./MessageComponents"
 import "../components"
+import im.status.desktop 1.0
 
 Item {
     property var contact;
-    property string fromAuthor: "0x0011223344556677889910"
     property string userName: "Jotaro Kujo"
-    property string alias: ""
-    property string localName: ""
     property string message: "That's right. We're friends...  Of justice, that is."
     property string plainText: "That's right. We're friends...  Of justice, that is."
     property string identicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQAQMAAAC6caSPAAAABlBMVEXMzMz////TjRV2AAAAAWJLR0QB/wIt3gAAACpJREFUGBntwYEAAAAAw6D7Uw/gCtUAAAAAAAAAAAAAAAAAAAAAAAAAgBNPsAABAjKCqQAAAABJRU5ErkJggg=="
-    property bool isCurrentUser: false
+    property bool isCurrentUser: StatusSettings.PublicKey == contact.id
     property string timestamp: "1234567"
     property string sticker: "Qme8vJtyrEHxABcSVGPF95PtozDgUyfr1xGjePmFdZgk9v"
     property int contentType: 2 // constants don't work in default props
@@ -54,7 +52,7 @@ Item {
         if (contentType === Constants.chatIdentifier) {
             return chatId
         }
-        return fromAuthor
+        return contact.from
     }
     property bool useLargeImage: contentType === Constants.chatIdentifier
 
@@ -70,6 +68,15 @@ Item {
         }
     }
 
+    Component {
+        id: messageContextMenuComponent
+        MessageContextMenu {
+            onClosed: {
+                destroy();
+            }
+        }
+    }
+    
     id: root
     width: parent.width
     anchors.right: !isCurrentUser ? undefined : parent.right
@@ -88,14 +95,16 @@ Item {
         }
 
         if (!isProfileClick) {
-            SelectedMessage.set(messageId, fromAuthor);
+            SelectedMessage.set(messageId, contact.id);
         }
         // Get contact nickname
-        let nickname = appMain.getUserNickname(fromAuthor)
+
+        const messageContextMenu = messageContextMenuComponent.createObject(root, {contact: root.contact});
         messageContextMenu.isProfile = !!isProfileClick
         messageContextMenu.isSticker = isSticker
         messageContextMenu.emojiOnly = emojiOnly
-        messageContextMenu.show(userName, fromAuthor, root.profileImageSource || identicon, "", nickname)
+        messageContextMenu.show(root.profileImageSource)
+        
         // Position the center of the menu where the mouse is
         messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2
     }
@@ -103,10 +112,7 @@ Item {
     Loader {
         active: true
         width: parent.width
-        sourceComponent: messageComponent
-        /*{
-            //TODO:
-            /*switch(contentType) {
+        sourceComponent: switch(contentType) {
                 case Constants.chatIdentifier:
                     return channelIdentifierComponent
                 case Constants.fetchMoreMessagesButton:
@@ -120,7 +126,7 @@ Item {
                 default:
                     return appSettings.compactMode  ? compactMessageComponent : 
                       isStatusUpdate ? statusUpdateComponent : messageComponent
-            }*/
+            }
         //}
     }
 

@@ -14,9 +14,24 @@ public:
 	enum MessageRoles
 	{
 		Id = Qt::UserRole + 1,
-		Text = Qt::UserRole + 2,
-		Contact = Qt::UserRole + 3
-		
+		PlainText = Qt::UserRole + 2,
+		Contact = Qt::UserRole + 3,
+		Timestamp = Qt::UserRole + 4,
+		ContentType = Qt::UserRole + 5,
+		// Sticker
+		Clock = Qt::UserRole + 6,
+		ChatId = Qt::UserRole + 7,
+		SectionIdentifier = Qt::UserRole + 8,
+		// OutgoingStatus
+		// ResponseTo
+		// Index?
+		// Image
+		// Audio
+		// AUdioDurationMs
+		// EmojiReactions
+		// CommandParameters
+		// LinkUrls
+		// CommunityId
 	};
 
 	explicit MessagesModel(QObject* parent = nullptr);

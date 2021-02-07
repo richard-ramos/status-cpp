@@ -15,18 +15,11 @@ PopupMenu {
     id: messageContextMenu
     width: messageContextMenu.isProfile ? profileHeader.width : emojiContainer.width
 
-    property var identicon: ""
-    property var userName: ""
-    property string nickname: ""
-    property var fromAuthor: ""
-    property var text: ""
 
-    function show(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam) {
-        userName = userNameParam || ""
-        nickname = nicknameParam || ""
-        fromAuthor = fromAuthorParam || ""
-        identicon = identiconParam || ""
-        text = textParam || ""
+    property var contact
+   
+
+    function show() {
         popup();
     }
 
@@ -67,7 +60,7 @@ PopupMenu {
 
         StatusImageIdenticon {
             id: profileImage
-            source: identicon
+            source: contact.identicon // TODO: image
             anchors.top: parent.top
             anchors.topMargin: 4
             anchors.horizontalCenter: parent.horizontalCenter
@@ -75,7 +68,7 @@ PopupMenu {
 
         StyledText {
             id: username
-            text: Utils.removeStatusEns(userName)
+            text: Utils.getUsernameLabel(contact, isCurrentUser)
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             anchors.top: profileImage.bottom
@@ -99,8 +92,8 @@ PopupMenu {
                 profileHeader.hovered = false
             }
             onClicked: {
-                openProfilePopup(userName, fromAuthor, identicon);
-                messageContextMenu.close()
+                profilePopup.contact = messageContextMenu.contact;
+                profilePopup.open();
             }
         }
     }
@@ -115,8 +108,8 @@ PopupMenu {
         //% "View profile"
         text: qsTrId("view-profile")
         onTriggered: {
-            openProfilePopup(userName, fromAuthor, identicon, "", nickname);
-            messageContextMenu.close()
+            profilePopup.contact = messageContextMenu.contact;
+                profilePopup.open();
         }
         icon.source: "../../../img/profileActive.svg"
         icon.width: 16

@@ -28,18 +28,27 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
 	roles[Id] = "messageId";
-	roles[Text] = "text";
+	roles[PlainText] = "plainText";
 	roles[Contact] = "contact";
-
-
-	// TODO: roles[From] = fromVariant(messagesmodel->get[message->get_from()])
-
+	roles[ContentType] = "contentType";
+	roles[Clock] = "clock";
+	roles[ChatId] = "chatId";
+	roles[SectionIdentifier] = "sectionIdentifier";
+	roles[Timestamp] = "timestamp";
 	return roles;
 }
 
 int MessagesModel::rowCount(const QModelIndex& parent = QModelIndex()) const
 {
 	return m_messages.size();
+}
+
+QString sectionIdentifier(const Message* msg){
+	if(msg->get_contentType() == ContentType::Group){
+		return "GroupChatMessage";
+	} else {
+		return msg->get_from();
+	}
 }
 
 QVariant MessagesModel::data(const QModelIndex& index, int role) const
@@ -54,10 +63,20 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	switch (role)
     {
         case Id: return QVariant(msg->get_id());
-		case Text: 
+		case PlainText: 
 			return QVariant(msg->get_text());
 		case Contact:
 			return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
+		case ContentType:
+			return QVariant(msg->get_contentType());
+		case Clock:
+			return QVariant(msg->get_clock());
+		case ChatId:
+			return QVariant(msg->get_chatId());
+		case Timestamp:
+			return QVariant(msg->get_timestamp());
+		case SectionIdentifier:
+			return QVariant(sectionIdentifier(msg));
     }
 
 	return QVariant();

@@ -11,23 +11,8 @@ Item {
 
     StyledTextEdit {
         id: chatName
-        text: {
-            // TODO: 
-            return contact.alias + " -- " + contact.name;
-            if (isCurrentUser) {
-                return qsTr("You")
-            }
-
-            if (localName !== "") {
-                return localName
-            }
-
-            if (userName !== "") {
-                return Utils.removeStatusEns(userName)
-            }
-            return Utils.removeStatusEns(alias)
-        }
-        color: text.startsWith("@") || isCurrentUser || localName !== "" ? Style.current.blue : Style.current.secondaryText
+        text: Utils.getUsernameLabel(contact, isCurrentUser)
+        color: text.startsWith("@") || isCurrentUser || (contact.ensVerified && contact.name !== "") || contact.localNickname !== "" ? Style.current.blue : Style.current.secondaryText
         font.weight: Font.Medium
         font.pixelSize: Style.current.secondaryTextFontSize
         readOnly: true
@@ -52,8 +37,20 @@ Item {
 
     StyledText {
         id: ensOrAlias
-        visible: true //TODO: localName !== "" && userName.startsWith("@")
-        text: contact.alias + " -- " + contact.name // TODO:
+        visible: (contact.ensVerified && contact.name !== "") || contact.localNickname
+        text: {
+            if(contact.name !== ""){
+                if(contact.localNickname){
+                    return contact.localNickname;
+                } else {
+                    return contact.alias;
+                }
+            } else if(contact.localNickname) {
+                return contact.alias;
+            } else {
+                return "";
+            }
+        }
         color: Style.current.secondaryText
         font.pixelSize: chatName.font.pixelSize
         anchors.left: chatName.right

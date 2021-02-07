@@ -146,6 +146,10 @@ StackLayout {
             }
         }
 
+        ProfilePopup {
+            id: profilePopup
+        }
+
         RowLayout {
             id: chatContainer
             Layout.fillWidth: true
@@ -166,10 +170,6 @@ StackLayout {
             id: reactionModel
         }
 
-        MessageContextMenu {
-            id: messageContextMenu
-        }
- 
         Connections {
             target: chatsModel
             onActiveChannelChanged: {

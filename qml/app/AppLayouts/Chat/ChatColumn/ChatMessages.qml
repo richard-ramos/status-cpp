@@ -286,16 +286,10 @@ ScrollView {
         delegate: Message {
             id: msgDelegate
             contact: model.contact
-            fromAuthor: model.fromAuthor
             chatId: model.chatId
-            userName: model.userName
-            alias: model.alias
-            localName: model.localName
             message: model.message
             plainText: model.plainText
-            identicon: model.identicon
-            isCurrentUser: model.isCurrentUser
-            timestamp: model.timestamp
+            timestamp: parseInt(model.timestamp, 10)
             sticker: model.sticker
             contentType: model.contentType
             outgoingStatus: model.outgoingStatus

@@ -266,4 +266,19 @@ QtObject {
     function hasImageExtension(url) {
         return [".png", ".jpg", ".jpeg", ".svg", ".gif"].some(ext => url.includes(ext))
     }
+
+    function getUsernameLabel(contact, isCurrentUser){
+        if (isCurrentUser) {
+            return qsTr("You")
+        }
+
+        if(contact.ensVerified && contact.name !== ""){
+            return removeStatusEns(contact.name)
+        } else if (contact.localNickname !== "") {
+            return contact.localNickname;
+        } else {
+            return contact.alias
+        }
+    }
+    
 }
