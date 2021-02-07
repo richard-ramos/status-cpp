@@ -12,6 +12,9 @@ ModalPopup {
 
     property Popup parentPopup
 
+
+    property var contact
+
     property var identicon: ""
     property var userName: ""
     property string nickname: ""
@@ -62,7 +65,7 @@ ModalPopup {
             border.color: Style.current.border
             border.width: 1
             anchors.verticalCenter: parent.verticalCenter
-            source: identicon
+            source: contact.identicon
         }
 
         StyledTextEdit {
@@ -119,7 +122,7 @@ ModalPopup {
             Image {
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
-                source: profileModel.qrCode(fromAuthor)
+                source: profileModel.qrCode(contact.id)
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: 212
                 width: 212
@@ -136,11 +139,11 @@ ModalPopup {
             id: ensText
             //% "ENS username"
             label: qsTrId("ens-username")
-            text: userName
+            text: contact.name
             anchors.top: parent.top
             visible: isEnsVerified
             height: visible ? implicitHeight : 0
-            textToCopy: userName
+            textToCopy: contact.name
         }
 
         StyledText {
@@ -156,7 +159,7 @@ ModalPopup {
 
         Address {
             id: valueChatKey
-            text: fromAuthor
+            text: contact.id
             width: 160
             maxWidth: parent.width - (3 * Style.current.smallPadding) - copyBtn.width
             color: Style.current.textColor
@@ -169,7 +172,7 @@ ModalPopup {
             id: copyBtn
             anchors.top: labelChatKey.bottom
             anchors.left: valueChatKey.right
-            textToCopy: valueChatKey.text
+            textToCopy: contact.id
         }
 
         Separator {
@@ -185,11 +188,11 @@ ModalPopup {
         TextWithLabel {
             id: valueShareURL
             label: qsTr("Share Profile URL")
-            text: "https://join.status.im/u/" + fromAuthor.substr(
-                      0, 4) + "..." + fromAuthor.substr(fromAuthor.length - 5)
+            text: "https://join.status.im/u/" + contact.id.substr(
+                      0, 4) + "..." + contact.id.substr(contact.id.length - 5)
             anchors.top: separator.top
             anchors.topMargin: popup.innerMargin
-            textToCopy: "https://join.status.im/u/" + fromAuthor
+            textToCopy: "https://join.status.im/u/" + contact.id
         }
 
         Separator {
@@ -232,7 +235,7 @@ ModalPopup {
         StyledText {
             id: nicknameText
             //% "None"
-            text: nickname ? nickname : qsTrId("none")
+            text: contact.localNickname ? contact.localNickname : qsTrId("none")
             anchors.right: nicknameCaret.left
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: nicknameCaret.verticalCenter
@@ -252,12 +255,7 @@ ModalPopup {
 
         NicknamePopup {
             id: nicknamePopup
-            changeUsername: function (newUsername) {
-                popup.userName = newUsername
-            }
-            changeNickname: function (newNickname) {
-                popup.nickname = newNickname
-            }
+            contact: popup.contact
         }
     }
 

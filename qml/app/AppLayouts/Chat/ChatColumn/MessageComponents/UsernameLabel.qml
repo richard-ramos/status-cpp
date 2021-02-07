@@ -7,11 +7,13 @@ Item {
     height: childrenRect.height
     width: chatName.width + (ensOrAlias.visible ? ensOrAlias.width + ensOrAlias.anchors.leftMargin : 0)
     property alias label: chatName
-    visible: isMessage && authorCurrentMsg != authorPrevMsg
+    visible: true // TODO: isMessage && authorCurrentMsg != authorPrevMsg
 
     StyledTextEdit {
         id: chatName
         text: {
+            // TODO: 
+            return contact.alias + " -- " + contact.name;
             if (isCurrentUser) {
                 return qsTr("You")
             }
@@ -50,8 +52,8 @@ Item {
 
     StyledText {
         id: ensOrAlias
-        visible: localName !== "" && userName.startsWith("@")
-        text: userName
+        visible: true //TODO: localName !== "" && userName.startsWith("@")
+        text: contact.alias + " -- " + contact.name // TODO:
         color: Style.current.secondaryText
         font.pixelSize: chatName.font.pixelSize
         anchors.left: chatName.right

@@ -55,7 +55,7 @@ void Settings::init()
 
 void Settings::terminate()
 {
-	// TODO: clear mnemonic from memory
+	// TODO: clear all settings from memory
 	lock.lockForWrite();
 	m_initialized = false;
 	lock.unlock();

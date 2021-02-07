@@ -5,6 +5,7 @@ import "./MessageComponents"
 import "../components"
 
 Item {
+    property var contact;
     property string fromAuthor: "0x0011223344556677889910"
     property string userName: "Jotaro Kujo"
     property string alias: ""
@@ -102,8 +103,10 @@ Item {
     Loader {
         active: true
         width: parent.width
-        sourceComponent: {
-            switch(contentType) {
+        sourceComponent: messageComponent
+        /*{
+            //TODO:
+            /*switch(contentType) {
                 case Constants.chatIdentifier:
                     return channelIdentifierComponent
                 case Constants.fetchMoreMessagesButton:
@@ -117,8 +120,8 @@ Item {
                 default:
                     return appSettings.compactMode  ? compactMessageComponent : 
                       isStatusUpdate ? statusUpdateComponent : messageComponent
-            }
-        }
+            }*/
+        //}
     }
 
     Timer {

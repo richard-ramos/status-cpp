@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
+import "../../../Chat/components"
 
 Rectangle {
     property string name: "Jotaro Kujo"
@@ -26,6 +27,12 @@ Rectangle {
     border.width: 0
     radius: Style.current.radius
     color: Style.current.transparent
+
+    Component {
+        id: profilePopupComponent
+        ProfilePopup {
+        }
+    }
 
     StatusImageIdenticon {
         id: accountImage
@@ -94,7 +101,11 @@ Rectangle {
                     icon.width: menuButton.iconSize
                     icon.height: menuButton.iconSize
                     text: qsTrId("view-profile")
-                    onTriggered: profileClick(true, name, address, identicon, "", localNickname)
+                    onTriggered: {
+                        openPopup(profilePopupComponent, {
+                            contact: contactsModel.get(index)
+                        });
+                    }
                     enabled: true
                 }
                 Action {

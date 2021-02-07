@@ -16,19 +16,24 @@
 ChatsModel::ChatsModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
-	loadChats();
-	startMessenger();
+	init();
 
-	QObject::connect(Status::instance(), &Status::logout, this, &ChatsModel::terminate);
 	QObject::connect(Status::instance(), &Status::message, this, &ChatsModel::update);
 	QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
+	QObject::connect(this, &ChatsModel::contactsChanged, this, &ChatsModel::setupMessageModel);
 }
 
-void ChatsModel::terminate()
+void ChatsModel::init()
 {
-	qDebug() << "ChatsModel::terminate - Deleting chats";
-	qDeleteAll(m_chats);
-	m_chats.clear();
+	loadChats();
+	startMessenger();
+}
+
+void ChatsModel::setupMessageModel()
+{
+	foreach(Chat* chat, m_chats){
+		chat->get_messages()->set_contacts(m_contacts);
+	}
 }
 
 QHash<int, QByteArray> ChatsModel::roleNames() const
@@ -94,9 +99,11 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
-void ChatsModel::insert(Chat* chat){
+void ChatsModel::insert(Chat* chat)
+{
 	QQmlApplicationEngine::setObjectOwnership(chat, QQmlApplicationEngine::CppOwnership);
 	chat->setParent(this);
+	chat->get_messages()->set_contacts(m_contacts);
 	m_chats << chat;
 	m_chatMap[chat->get_id()] = chat;
 }
@@ -133,14 +140,15 @@ void ChatsModel::startMessenger()
 			.toJsonObject();
 	// TODO: do something with mailservers/ranges
 
-	foreach(const QJsonValue& filter, response["result"]["filters"].toArray()){
+	foreach(const QJsonValue& filter, response["result"]["filters"].toArray())
+	{
 		// Add code for private chats
 		QString chatId = filter["chatId"].toString();
-		if(m_chatMap.contains(chatId)){
+		if(m_chatMap.contains(chatId))
+		{
 			m_chatMap[chatId]->setFilterId(filter["filterId"].toString());
 		}
 	}
-
 }
 
 void ChatsModel::loadChats()
@@ -149,11 +157,14 @@ void ChatsModel::loadChats()
 							  ->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList())
 							  .toJsonObject();
 
+	if(response["result"].isNull()) return;
+
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	foreach(const QJsonValue& value, response["result"].toArray())
 	{
 		const QJsonObject obj = value.toObject();
-		if(!value["active"].toBool()) continue;
+		if(!value["active"].toBool())
+			continue;
 		Chat* c = new Chat(obj);
 		insert(c);
 		emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
@@ -186,15 +197,7 @@ void ChatsModel::update(QJsonValue updates)
 		QString chatId = chatJson["id"].toString();
 		if(m_chatMap.contains(chatId))
 		{
-			int chatIndex = -1;
-			for(int i = 0; i < m_chats.count(); i++)
-			{
-				if(m_chats[i]->get_id() == chatId)
-				{
-					chatIndex = i;
-					break;
-				}
-			}
+			int chatIndex = m_chats.indexOf(m_chatMap[chatId]);
 			m_chatMap[chatId]->update(chatJson);
 			if(chatIndex > -1)
 			{
@@ -210,6 +213,8 @@ void ChatsModel::update(QJsonValue updates)
 			emit added(newChat->get_chatType(), newChat->get_id(), m_chats.count() - 1);
 			endInsertRows();
 		}
+		// TODO: tell @cammellos that the messages are not returning the ens name
+		m_contacts->upsert(m_chatMap[chatId]->get_lastMessage());
 	}
 
 	// Messages
@@ -217,6 +222,9 @@ void ChatsModel::update(QJsonValue updates)
 	{
 		Message* message = new Message(msgJson);
 		m_chatMap[message->get_chatId()]->get_messages()->push(message);
+
+		// Create a contact if necessary
+		m_contacts->upsert(message);
 	}
 
 	// Emoji reactions*/

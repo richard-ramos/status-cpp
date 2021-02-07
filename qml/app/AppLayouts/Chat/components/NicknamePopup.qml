@@ -10,8 +10,7 @@ ModalPopup {
     property int nicknameLength: nicknameInput.textField.text.length
     readonly property int maxNicknameLength: 32
     property bool nicknameTooLong: nicknameLength > maxNicknameLength
-    property var changeUsername: function () {}
-    property var changeNickname: function () {}
+    property var contact
 
     id: popup
     width: 400
@@ -73,7 +72,7 @@ ModalPopup {
         id: nicknameInput
         //% "Nickname"
         placeholderText: qsTrId("nickname")
-        text: nickname
+        text: contact.localNickname
         anchors.top: descriptionText.bottom
         anchors.topMargin: Style.current.padding
         //% "Your nickname is too long"
@@ -104,18 +103,8 @@ ModalPopup {
         anchors.bottom: parent.bottom
         disabled: popup.nicknameTooLong
         onClicked: {
-            if (!isEnsVerified) {
-                // Change username title only if it was not an ENS name
-                 if (nicknameInput.textField.text === "") {
-                     // If we removed the nickname, go back to showing the alias
-                     popup.changeUsername(alias)
-                 } else {
-                     popup.changeUsername(nicknameInput.textField.text)
-                 }
-            }
-            popup.changeNickname(nicknameInput.textField.text)
-            profileModel.contacts.changeContactNickname(fromAuthor, nicknameInput.textField.text)
-            popup.close()
+            contact.changeNickname(nicknameInput.textField.text);
+            popup.close();
         }
     }
 }

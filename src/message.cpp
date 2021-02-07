@@ -23,7 +23,6 @@ Message::Message(const QJsonValue data, QObject* parent)
 	, m_timestamp(data["timestamp"].toString())
 	, m_whisperTimestamp(data["whisperTimestamp"].toString())
 {
-
 	int contentType = data["contentType"].toInt();
 	if(contentType < ContentType::FetchMoreMessagesButton || contentType > ContentType::Community)
 	{
@@ -43,9 +42,6 @@ Message::Message(const QJsonValue data, QObject* parent)
 	{
 		m_messageType = static_cast<MessageType>(messageType);
 	}
-
-	// TODO: if ensName not empty, upsert contact using from?
-	// TODO: if ensName not empty use to show message author?
 }
 // commandParameters: null
 // parsedText

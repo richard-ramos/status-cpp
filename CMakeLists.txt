@@ -116,7 +116,8 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/message.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/message-type.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/content-type.cpp"
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/contact.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/contacts-model.cpp"
 
 #    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
 )

@@ -1,10 +1,13 @@
 #pragma once
 
+#include <QQmlHelpers>
 #include "chat-type.hpp"
 #include "chat.hpp"
+#include "contacts-model.hpp"
 #include <QAbstractListModel>
 #include <QHash>
 #include <QVector>
+#include <QDebug>
 
 class ChatsModel : public QAbstractListModel
 {
@@ -34,12 +37,14 @@ public:
 	virtual int rowCount(const QModelIndex&) const;
 	virtual QVariant data(const QModelIndex& index, int role) const;
 
-	// Q_INVOKABLE void init();
+	Q_INVOKABLE void init();
 	Q_INVOKABLE void join(ChatType chatType, QString id);
-	Q_INVOKABLE void terminate();
 	Q_INVOKABLE Chat* get(int row) const;
 	Q_INVOKABLE void remove(int row);
 
+	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
+
+	Q_INVOKABLE void setupMessageModel();
 	//Q_INVOKABLE void update();
 	//Q_INVOKABLE void leave(chatType, id);
 	//Q_INVOKABLE void mute(chatType, id);

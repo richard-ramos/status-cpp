@@ -29,7 +29,6 @@ ListView {
         isContact: model.isContact
         isBlocked: model.isBlocked
         selectable: contactList.selectable
-        profileClick: profilePopup.openPopup.bind(profilePopup)
         visible: searchString === "" ||
                  model.name.toLowerCase().includes(lowerCaseSearchString) ||
                  model.address.toLowerCase().includes(lowerCaseSearchString)
@@ -42,10 +41,6 @@ ListView {
             removeContactConfirmationDialog.value = address
             removeContactConfirmationDialog.open()
         }
-    }
-
-    ProfilePopup {
-      id: profilePopup
     }
 
     // TODO: Make BlockContactConfirmationDialog a dynamic component on a future refactor

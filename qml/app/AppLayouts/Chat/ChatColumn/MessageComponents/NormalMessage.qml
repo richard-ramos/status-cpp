@@ -30,7 +30,7 @@ Item {
 
     UsernameLabel {
         id: chatName
-        visible: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && authorCurrentMsg != authorPrevMsg && !root.isCurrentUser
+        visible: true// chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && authorCurrentMsg != authorPrevMsg && !root.isCurrentUser
         anchors.leftMargin: 20
         anchors.top: dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
         anchors.topMargin: 0

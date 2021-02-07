@@ -20,7 +20,7 @@ class Chat : public QObject
 public:
 	explicit Chat(QString id,
 				  ChatType chatType,
-				  QObject* parent = 0,
+				  QObject* parent = nullptr,
 				  QString name = "",
 				  QString profile = "",
 				  QString color = "",
@@ -31,7 +31,7 @@ public:
 				  int unviewedMessagesCount = 0,
 				  bool muted = false
 				  );
-	explicit Chat(const QJsonValue data, QObject* parent = 0);
+	explicit Chat(const QJsonValue data, QObject* parent = nullptr);
 	virtual ~Chat();
 	
 	QML_READONLY_PROPERTY(QString, id)

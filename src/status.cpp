@@ -59,6 +59,12 @@ void uint64ToStrReplacements(QString& input)
 				  QStringLiteral("\"clock\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":(\\d+)")),
 				  QStringLiteral("\"whisperTimestamp\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":(\\d+)")),
+				  QStringLiteral("\"ensVerifiedAt\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":(\\d+)")),
+				  QStringLiteral("\"lastENSClockValue\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":(\\d+)")),
+				  QStringLiteral("\"lastUpdated\":\"\\1\""));
 }
 
 void Status::statusGoEventCallback(const char* event)
@@ -162,6 +168,12 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 					   QStringLiteral("\"clock\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":\\s\"(\\d+?)\"")),
 					   QStringLiteral("\"whisperTimestamp\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":\\s\"(\\d+?)\"")),
+					   QStringLiteral("\"ensVerifiedAt\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":\\s\"(\\d+?)\"")),
+					   QStringLiteral("\"lastENSClockValue\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":\\s\"(\\d+?)\"")),
+					   QStringLiteral("\"lastUpdated\":\\1"));
 
 	const char* result = CallPrivateRPC(payloadStr.toUtf8().data());
 

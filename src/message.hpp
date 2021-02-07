@@ -3,6 +3,7 @@
 #include "chat-type.hpp"
 #include "content-type.hpp"
 #include "message-type.hpp"
+//#include "contact.hpp"
 #include <QDebug>
 #include <QJsonObject>
 #include <QObject>
@@ -17,8 +18,8 @@ class Message : public QObject
 	Q_OBJECT
 
 public:
-	explicit Message(QObject* parent = 0);
-	explicit Message(const QJsonValue data, QObject* parent = 0);
+	explicit Message(QObject* parent = nullptr);
+	explicit Message(const QJsonValue data, QObject* parent = nullptr);
 
 	QML_READONLY_PROPERTY(QString, id)
 	QML_READONLY_PROPERTY(QString, alias)

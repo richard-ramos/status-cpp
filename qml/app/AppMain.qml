@@ -175,8 +175,13 @@ RowLayout {
         id: identityImage
     }
 
+    ContactsModel {
+        id: contactsModel
+    }
+
     ChatsModel {
         id: chatsModel
+        contacts: contactsModel
     }
 
     TabBar {

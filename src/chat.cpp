@@ -53,8 +53,6 @@ Chat::Chat(QString id,
 
 Chat::~Chat()
 {
-	delete m_messages;
-	delete m_lastMessage;
 }
 
 bool Chat::operator==(const Chat &c)
@@ -103,8 +101,10 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 
 void Chat::update(const QJsonValue data)
 {
+	// TODO: replace by update instead of creating a new Message
 	delete m_lastMessage;
 	m_lastMessage = new Message(data["lastMessage"]);
+
 	m_lastMessage->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
 
@@ -210,6 +210,8 @@ void Chat::deleteChatHistory()
 void Chat::save()
 {
 	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+
 		m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
 		if(m_chatType == ChatType::Public)

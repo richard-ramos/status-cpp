@@ -15,20 +15,13 @@
 
 #include "message.hpp"
 #include "messages-model.hpp"
+#include "contacts-model.hpp"
 #include "status.hpp"
 
 MessagesModel::MessagesModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
-	QObject::connect(Status::instance(), &Status::logout, this, &MessagesModel::terminate);
 	qDebug() << "MessagesModel::constructor";
-}
-
-void MessagesModel::terminate()
-{
-	qDebug() << "MessagesModel::terminate - Deleting messages";
-	qDeleteAll(m_messages);
-	m_messages.clear();
 }
 
 QHash<int, QByteArray> MessagesModel::roleNames() const
@@ -36,6 +29,11 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	QHash<int, QByteArray> roles;
 	roles[Id] = "messageId";
 	roles[Text] = "text";
+	roles[Contact] = "contact";
+
+
+	// TODO: roles[From] = fromVariant(messagesmodel->get[message->get_from()])
+
 	return roles;
 }
 
@@ -51,14 +49,15 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 	}
 
+	Message* msg = m_messages[index.row()];
+
 	switch (role)
     {
-        case Id: return QVariant(m_messages[index.row()]->get_id());
-		case Text: {
-			qDebug() << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << m_messages[index.row()]->get_text();
-			return QVariant(m_messages[index.row()]->get_text());
-		}
-
+        case Id: return QVariant(msg->get_id());
+		case Text: 
+			return QVariant(msg->get_text());
+		case Contact:
+			return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
     }
 
 	return QVariant();

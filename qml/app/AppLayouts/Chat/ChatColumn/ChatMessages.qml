@@ -285,6 +285,7 @@ ScrollView {
 
         delegate: Message {
             id: msgDelegate
+            contact: model.contact
             fromAuthor: model.fromAuthor
             chatId: model.chatId
             userName: model.userName
