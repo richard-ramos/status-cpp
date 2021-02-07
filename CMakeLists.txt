@@ -27,6 +27,8 @@ include(CheckIncludeFileCXX)
 include(CheckIncludeFiles)
 include(ExternalProject)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/SortFilterProxyModel)
+target_compile_options(SortFilterProxyModel PRIVATE -fPIC)
 
 # Add the current CMake modules folder to the CMake search path.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -128,7 +130,10 @@ include_directories(
 )
 
 
-add_executable(status-cpp ${SOURCES})
+add_executable(status-cpp 
+    ${SOURCES}
+    $<TARGET_OBJECTS:SortFilterProxyModel> 
+)
 
 target_compile_features(status-cpp
     PRIVATE

@@ -1,3 +1,6 @@
 [submodule "vendor/lib-qt-qml-tricks"]
 	path = vendor/lib-qt-qml-tricks
 	url = https://github.com/Cavewhere/lib-qt-qml-tricks/
+[submodule "vendor/SortFilterProxyModel"]
+	path = vendor/SortFilterProxyModel
+	url = https://github.com/oKcerG/SortFilterProxyModel
