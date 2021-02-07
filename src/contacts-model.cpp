@@ -28,7 +28,7 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[Id] = "contactId";
 	roles[Name] = "name";
 	roles[Identicon] = "identicon";
-
+	roles[IsAdded] = "isAdded";
 	return roles;
 }
 
@@ -46,6 +46,9 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 
 	Contact* contact = m_contacts[index.row()];
 
+	qDebug() << "GETTING MODEL INFO!!!!!!!!!!!! ==============================="  ;
+	qDebug() << role;
+
 	switch(role)
 	{
 	case Id:
@@ -54,6 +57,8 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 		return QVariant(contact->get_name());
 	case Identicon:
 		return QVariant(contact->get_identicon());
+	case IsAdded:
+		return QVariant(contact->isAdded());
 	}
 
 	return QVariant();
@@ -65,6 +70,14 @@ void ContactsModel::insert(Contact* contact)
 	contact->setParent(this);
 	m_contacts << contact;
 	m_contactsMap[contact->get_id()] = contact;
+	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactUpdated);
+}
+
+void ContactsModel::contactUpdated(QString contactId){
+	if(!m_contactsMap.contains(contactId)) return;
+	int index = m_contacts.indexOf(m_contactsMap[contactId]);
+	QModelIndex idx = createIndex(index, 0);
+	dataChanged(idx, idx);
 }
 
 void ContactsModel::loadContacts()

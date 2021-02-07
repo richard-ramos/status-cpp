@@ -31,20 +31,28 @@ public:
 	QML_READONLY_PROPERTY(QString, alias)
 	QML_READONLY_PROPERTY(QString, identicon)
 	QML_READONLY_PROPERTY(QString, lastUpdated)
-	QML_READONLY_PROPERTY(QVector<QString>, systemTags)
 	// TODO: DeviceInfo ???
 	QML_READONLY_PROPERTY(QString, tributeToTalk)
 	QML_READONLY_PROPERTY(QString, localNickname)
 	// TODO: ???? QML_READONLY_PROPERTY(QVector<QString>, images)
 
+	Q_PROPERTY(bool isAdded READ isAdded NOTIFY contactToggled)
+
+
+signals:
+	void contactToggled(QString chatId);
+
 private:
 	QMutex m_mutex;
+	QVector<QString> m_systemTags;
 
 public:
 	bool operator==(const Contact& m);
 
 	void update(const QJsonValue data);
+	bool isAdded();
 	
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void changeNickname(QString newNickname);
+	Q_INVOKABLE void toggleAdd();
 };

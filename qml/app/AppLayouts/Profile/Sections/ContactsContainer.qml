@@ -6,6 +6,7 @@ import "../../../../shared"
 import "../../../../shared/status"
 import "../../Chat/components"
 import "./Contacts"
+import SortFilterProxyModel 0.2
 
 Item {
     id: contactsContainer
@@ -223,12 +224,23 @@ Item {
             }
         }
 
+        SortFilterProxyModel {
+            id: addedContacts
+            sourceModel: contactsModel
+            filters: ValueFilter {
+                enabled: true
+                roleName: "isAdded"
+                value: true
+            }
+            sorters: StringSorter { roleName: "name" }
+        }
+
         ContactList {
             id: contactListView
             anchors.top: blockedContactsButton.bottom
             anchors.topMargin: Style.current.bigPadding
             anchors.bottom: parent.bottom
-            contacts: contactsModel
+            contacts: addedContacts
             selectable: false
             searchString: searchBox.text
         }

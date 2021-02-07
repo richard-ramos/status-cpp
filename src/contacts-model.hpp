@@ -14,7 +14,8 @@ public:
 	{
 		Id = Qt::UserRole + 1,
 		Name = Qt::UserRole + 2,
-		Identicon = Qt::UserRole + 3
+		Identicon = Qt::UserRole + 3,
+		IsAdded = Qt::UserRole + 4,
 	};
 
 	explicit ContactsModel(QObject* parent = nullptr);
@@ -25,6 +26,7 @@ public:
 
 	Q_INVOKABLE Contact* get(int row) const;
 	Q_INVOKABLE Contact* get(QString id) const;
+	Q_INVOKABLE void contactUpdated(QString id);
 
 	Contact* upsert(Message* msg);
 

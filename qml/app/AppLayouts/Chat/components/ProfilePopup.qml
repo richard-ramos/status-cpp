@@ -6,6 +6,7 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -70,7 +71,7 @@ ModalPopup {
 
         StyledTextEdit {
             id: profileName
-            text:  Utils.removeStatusEns(userName)
+            text:  Utils.removeStatusEns(contact.name || contact.alias)
             anchors.top: parent.top
             anchors.topMargin: Style.current.padding
             anchors.left: profilePic.right
@@ -82,8 +83,8 @@ ModalPopup {
         }
 
         StyledText {
-            text: isEnsVerified ? alias : fromAuthor
-            elide: !isEnsVerified ? Text.ElideMiddle : Text.ElideNone
+            text: contact.ensVerified ? contact.alias : contact.id
+            elide: !contact.ensVerified ? Text.ElideMiddle : Text.ElideNone
             anchors.left: profilePic.right
             anchors.leftMargin: Style.current.smallPadding
             anchors.bottom: parent.bottom
@@ -122,7 +123,7 @@ ModalPopup {
             Image {
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
-                source: profileModel.qrCode(contact.id)
+                source: Status.generateQRCode(contact.id)
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: 212
                 width: 212
@@ -141,7 +142,7 @@ ModalPopup {
             label: qsTrId("ens-username")
             text: contact.name
             anchors.top: parent.top
-            visible: isEnsVerified
+            visible: contact.ensVerified
             height: visible ? implicitHeight : 0
             textToCopy: contact.name
         }
@@ -291,7 +292,7 @@ ModalPopup {
         }
 
         StatusButton {
-            property bool isAdded:  profileModel.contacts.isAdded(fromAuthor)
+            property bool isAdded: contact.isAdded
 
             id: addToContactsButton
             anchors.right: sendMessageBtn.left
@@ -309,13 +310,13 @@ ModalPopup {
             visible: !isBlocked
             width: visible ? implicitWidth : 0
             onClicked: {
-                if (profileModel.contacts.isAdded(fromAuthor)) {
-                    removeContactConfirmationDialog.parentPopup = profilePopup;
+                if (contact.isAdded) {
+                    removeContactConfirmationDialog.parentPopup = popup;
                     removeContactConfirmationDialog.open();
                 } else {
-                    profileModel.contacts.addContact(fromAuthor);
-                    contactAdded(fromAuthor);
-                    profilePopup.close();
+                    contact.toggleAdd();
+                    contactAdded(contact.id);
+                    popup.close();
                 }
             }
         }
@@ -364,13 +365,10 @@ ModalPopup {
             //% "Are you sure you want to remove this contact?"
             confirmationText: qsTrId("are-you-sure-you-want-to-remove-this-contact-")
             onConfirmButtonClicked: {
-                if (profileModel.contacts.isAdded(fromAuthor)) {
-                    profileModel.contacts.removeContact(fromAuthor);
-                }
+                contact.toggleAdd();
                 removeContactConfirmationDialog.close();
                 popup.close();
-
-                contactRemoved(fromAuthor);
+                contactRemoved(contact.id);
             }
         }
     }

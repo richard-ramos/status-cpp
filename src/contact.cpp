@@ -70,10 +70,37 @@ void Contact::changeNickname(QString newNickname)
 	save();
 }
 
+bool Contact::isAdded()
+{
+	QString tag(":contact/added");
+	return m_systemTags.indexOf(tag) > -1;
+}
+
+void Contact::toggleAdd()
+{
+	QString tag(":contact/added");
+	int index = m_systemTags.indexOf(tag);
+	if(index == -1){
+		m_systemTags << tag;
+	} else {
+		m_systemTags.remove(index);
+	}
+	emit contactToggled(m_id);
+	save();
+
+	// TODO: react to contactToggled to add/remove timeline chat
+}
+
 void Contact::save()
 {
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
+
+		QJsonArray systemTagsArr;
+		for (auto & tag : m_systemTags)
+			systemTagsArr.append(tag);
+
+
 		QJsonObject contact{{"id", m_id},
 							{"address", m_address},
 							{"name", m_name},
@@ -85,7 +112,7 @@ void Contact::save()
 							{"identicon", m_identicon},
 							{"lastUpdated", m_lastUpdated.toLongLong()},
 							{"tributeToTalk", m_tributeToTalk},
-							//	QML_READONLY_PROPERTY(QVector<QString>, systemTags)
+							{"systemTags", systemTagsArr},
 							// TODO: DeviceInfo ???
 							// TODO: ???? QML_READONLY_PROPERTY(QVector<QString>, images)
 							{"localNickname", m_localNickname}};
