@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: privacyContainer
@@ -36,8 +37,8 @@ Item {
             id: backupSeedPhrase
             //% "Backup Seed Phrase"
             text: qsTrId("backup-seed-phrase")
-            isBadge: !profileModel.mnemonic.isBackedUp
-            isEnabled: !profileModel.mnemonic.isBackedUp
+            isBadge: !StatusSettings.isMnemonicBackedUp
+            isEnabled: !StatusSettings.isMnemonicBackedUp
             onClicked: {
                 backupSeedModal.open()
             }

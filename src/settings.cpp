@@ -43,12 +43,12 @@ void Settings::init()
 	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
 	// TODO: error handling for callrpc
 
-	const QJsonObject settings = QJsonDocument::fromJson(result).object();
-	m_publicKey = settings["result"][settingsMap[SettingTypes::PublicKey]].toString();
-	m_keyUID = settings["result"][settingsMap[SettingTypes::KeyUID]].toString();
-	m_currency = settings["result"][settingsMap[SettingTypes::Currency]].toString();
-	m_preferredName = settings["result"][settingsMap[SettingTypes::PreferredUsername]].toString();
-
+	const QJsonObject settings = QJsonDocument::fromJson(result).object()["result"].toObject();
+	m_publicKey = settings[settingsMap[SettingTypes::PublicKey]].toString();
+	m_keyUID = settings[settingsMap[SettingTypes::KeyUID]].toString();
+	m_currency = settings[settingsMap[SettingTypes::Currency]].toString();
+	m_preferredName = settings[settingsMap[SettingTypes::PreferredUsername]].toString();
+	m_mnemonic = settings[settingsMap[SettingTypes::Mnemonic]].toString();
 	m_initialized = true;
 	lock.unlock();
 }
@@ -85,6 +85,16 @@ QString Settings::keyUID()
 	if(!m_initialized)
 		return QString();
 	QString result(m_keyUID);
+	lock.unlock();
+	return result;
+}
+
+QString Settings::mnemonic()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+		return QString();
+	QString result(m_mnemonic);
 	lock.unlock();
 	return result;
 }
@@ -129,6 +139,26 @@ QString Settings::preferredName()
 	if(!m_initialized)
 		return QString();
 	QString result(m_preferredName);
+	lock.unlock();
+	return result;
+}
+
+void Settings::removeMnemonic()
+{
+	lock.lockForWrite();
+	m_mnemonic = ""; // TODO: clear from memory
+	saveSettings(SettingTypes::Mnemonic, m_mnemonic);
+	lock.unlock();
+
+	emit mnemonicRemoved();
+}
+
+bool Settings::isMnemonicBackedUp()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+		return false;
+	bool result(m_mnemonic == "");
 	lock.unlock();
 	return result;
 }

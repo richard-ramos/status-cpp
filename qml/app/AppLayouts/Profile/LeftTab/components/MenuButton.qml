@@ -2,7 +2,7 @@ import QtQuick 2.13
 import "../../../../../imports"
 import "../../../../../shared"
 import "../constants.js" as ProfileConstants
-
+import im.status.desktop 1.0
 
 Rectangle {
     property int menuItemId: -1
@@ -40,7 +40,7 @@ Rectangle {
     }
 
     Rectangle {
-        visible: !profileModel.mnemonic.isBackedUp && !active && ProfileConstants.PRIVACY_AND_SECURITY === menuItemId
+        visible: !StatusSettings.isMnemonicBackedUp && !active && ProfileConstants.PRIVACY_AND_SECURITY === menuItemId
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: menuButton.right
         anchors.rightMargin: 10

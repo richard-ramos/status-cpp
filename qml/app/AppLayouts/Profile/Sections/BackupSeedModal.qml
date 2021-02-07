@@ -3,6 +3,7 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import "../../../../imports"
 import "../../../../shared"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -64,7 +65,7 @@ ModalPopup {
 
                     Repeater {
                         id: mnemonicRepeater
-                        model: profileModel.mnemonic.get.split(" ")
+                        model: StatusSettings.Mnemonic.split(" ")
                         Rectangle {
                             id: word
                             height: 40
@@ -178,7 +179,7 @@ ModalPopup {
             title: qsTr("Are you sure?")
             confirmationText: qsTr("You will not be able to see the whole seed phrase again")
             onConfirmButtonClicked: {
-                profileModel.mnemonic.remove()
+                StatusSettings.removeMnemonic()
                 popup.close();
                 removeSeedPhraseConfirm.close();
             }
@@ -226,7 +227,7 @@ ModalPopup {
                     seedWord1Idx = Math.floor(Math.random() * 12);
                 } else {
                     if(seedWord2Idx == -1){
-                        if(profileModel.mnemonic.getWord(seedWord1Idx) !== txtFieldWord.text){
+                        if(StatusSettings.Mnemonic.split(" ")[seedWord1Idx] !== txtFieldWord.text){
                             validationError = qsTr("Wrong word");
                             return;
                         }
@@ -238,7 +239,7 @@ ModalPopup {
                             seedWord2Idx = Math.floor(Math.random() * 12);
                         } while(seedWord2Idx == seedWord1Idx);
                     } else {
-                        if(profileModel.mnemonic.getWord(seedWord2Idx) !== txtFieldWord.text){
+                        if(StatusSettings.Mnemonic.split(" ")[seedWord2Idx] !== txtFieldWord.text){
                             validationError = qsTr("Wrong word");
                             return;
                         }

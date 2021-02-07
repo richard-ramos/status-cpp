@@ -11,6 +11,8 @@ class Settings : public QObject
 	Q_OBJECT
 	Q_PROPERTY(QString PublicKey READ publicKey CONSTANT)
 	Q_PROPERTY(QString KeyUID READ keyUID CONSTANT)
+	Q_PROPERTY(QString Mnemonic READ mnemonic NOTIFY mnemonicRemoved CONSTANT)
+	Q_PROPERTY(bool isMnemonicBackedUp READ isMnemonicBackedUp NOTIFY mnemonicRemoved CONSTANT)
 	Q_PROPERTY(QString Currency READ currency WRITE setCurrency NOTIFY currencyChanged)
 	Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY
 				   preferredNameChanged)
@@ -21,6 +23,7 @@ public:
 
 	Q_INVOKABLE void init();
 	Q_INVOKABLE void terminate();
+	Q_INVOKABLE void removeMnemonic();
 
 	enum SettingTypes
 	{
@@ -75,6 +78,7 @@ public:
 
 	QString publicKey();
 	QString keyUID();
+	QString mnemonic();
 
 	QString currency();
 	void setCurrency(const QString& value);
@@ -82,9 +86,12 @@ public:
 	QString preferredName();
 	void setPreferredName(const QString& value);
 
+	bool isMnemonicBackedUp();
+
 signals:
 	void currencyChanged();
 	void preferredNameChanged();
+	void mnemonicRemoved();
 
 private:
 	static Settings* theInstance;
@@ -95,6 +102,7 @@ private:
 	QString m_publicKey;
 	QString m_keyUID;
 	QString m_preferredName;
+	QString m_mnemonic;
 
 	QReadWriteLock lock;
 

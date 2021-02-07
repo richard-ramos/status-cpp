@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../shared"
 import "../../../../imports"
 import "../components"
+import im.status.desktop 1.0
 
 Item {
     id: element
