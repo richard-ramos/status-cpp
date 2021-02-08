@@ -66,7 +66,7 @@ ModalPopup {
             border.color: Style.current.border
             border.width: 1
             anchors.verticalCenter: parent.verticalCenter
-            source: contact.identicon
+            source: contact.image
         }
 
         StyledTextEdit {
@@ -83,8 +83,8 @@ ModalPopup {
         }
 
         StyledText {
-            text: contact.ensVerified ? contact.alias : contact.id
-            elide: !contact.ensVerified ? Text.ElideMiddle : Text.ElideNone
+            text: ((contact.ensVerified && contact.name !== "") || contact.localNickname) ? contact.alias : contact.id
+            elide: ((contact.ensVerified && contact.name !== "") || contact.localNickname)  ? Text.ElideNone : Text.ElideMiddle
             anchors.left: profilePic.right
             anchors.leftMargin: Style.current.smallPadding
             anchors.bottom: parent.bottom

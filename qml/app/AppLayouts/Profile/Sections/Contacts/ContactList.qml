@@ -22,10 +22,10 @@ ListView {
     model: contacts
     
     delegate: Contact {
-        name: Utils.removeStatusEns(model.name)
-        address: model.address
+        name: Utils.getUsernameLabel(contactsModel.get(model.contactId), false)
+        contactId: model.contactId
         localNickname: model.localNickname
-        identicon: model.thumbnailImage || model.identicon
+        identicon: model.image
         isContact: model.isContact
         isBlocked: model.isBlocked
         selectable: contactList.selectable

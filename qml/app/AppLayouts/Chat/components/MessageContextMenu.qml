@@ -60,7 +60,7 @@ PopupMenu {
 
         StatusImageIdenticon {
             id: profileImage
-            source: contact.identicon // TODO: image
+            source: contact.image
             anchors.top: parent.top
             anchors.topMargin: 4
             anchors.horizontalCenter: parent.horizontalCenter

@@ -11,6 +11,16 @@
 #include <QVariant>
 #include <QVector>
 
+struct ContactImage {
+	QString type;
+	QString uri;
+	int fileSize;
+	int height;
+	QString keyUid;
+	int resizeTarget;
+	int width;
+};
+
 class Contact : public QObject
 {
 	Q_OBJECT
@@ -34,19 +44,22 @@ public:
 	// TODO: DeviceInfo ???
 	QML_READONLY_PROPERTY(QString, tributeToTalk)
 	QML_READONLY_PROPERTY(QString, localNickname)
-	// TODO: ???? QML_READONLY_PROPERTY(QVector<QString>, images)
 
 	Q_PROPERTY(bool isAdded READ isAdded NOTIFY contactToggled)
 	Q_PROPERTY(bool isBlocked READ isBlocked NOTIFY blockedToggled)
+	Q_PROPERTY(QString image READ image NOTIFY imageChanged)
 
 
 signals:
-	void contactToggled(QString chatId);
-	void blockedToggled(QString chatId);
+	void contactToggled(QString contactId);
+	void blockedToggled(QString contactId);
+	void imageChanged(QString contactId);
 
 private:
 	QMutex m_mutex;
 	QVector<QString> m_systemTags;
+	QVector<ContactImage> m_images;
+
 
 public:
 	bool operator==(const Contact& m);
@@ -54,6 +67,7 @@ public:
 	void update(const QJsonValue data);
 	bool isAdded();
 	bool isBlocked();
+	QString image();
 
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void changeNickname(QString newNickname);

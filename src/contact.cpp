@@ -36,6 +36,7 @@ Contact::Contact(Message* msg, QObject* parent)
 Contact::~Contact()
 {
 	m_systemTags.clear();
+	m_images.clear();
 }
 
 bool Contact::operator==(const Contact& c)
@@ -61,6 +62,21 @@ Contact::Contact(const QJsonValue data, QObject* parent)
 	foreach(const QJsonValue& value, data["systemTags"].toArray())
 	{
 		m_systemTags << value.toString();
+	}
+
+	// TODO: determine if it's possible to have more than one image
+	if(data["images"].toObject()["thumbnail"].isNull()) return;
+	ContactImage image;
+	image.type = data["images"].toObject()["thumbnail"].toObject()["type"].toString();
+	image.uri = data["images"].toObject()["thumbnail"].toObject()["uri"].toString();
+	m_images << image;
+}
+
+QString Contact::image(){
+	if(m_images.size() > 0){
+		return m_images[0].uri;
+	} else {
+		return m_identicon;
 	}
 }
 
@@ -174,4 +190,11 @@ void Contact::update(const QJsonValue data)
 	{
 		m_systemTags << value.toString();
 	}
+
+	if(data["images"].toObject()["thumbnail"].isNull()) return;
+	ContactImage image;
+	image.type = data["images"].toObject()["thumbnail"].toObject()["type"].toString();
+	image.uri = data["images"].toObject()["thumbnail"].toObject()["uri"].toString();
+	m_images << image;
+	imageChanged(m_id);
 }

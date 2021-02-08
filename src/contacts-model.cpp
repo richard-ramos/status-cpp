@@ -30,6 +30,7 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[Identicon] = "identicon";
 	roles[IsAdded] = "isAdded";
 	roles[IsBlocked] = "isBlocked";
+	roles[Image] = "image";
 	return roles;
 }
 
@@ -59,6 +60,8 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 		return QVariant(contact->isAdded());
 	case IsBlocked:
 		return QVariant(contact->isBlocked());
+	case Image:
+		return QVariant(contact->image());
 	}
 
 	return QVariant();
@@ -72,6 +75,7 @@ void ContactsModel::insert(Contact* contact)
 	m_contactsMap[contact->get_id()] = contact;
 	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactUpdated);
 	QObject::connect(contact, &Contact::blockedToggled, this, &ContactsModel::contactUpdated);
+	QObject::connect(contact, &Contact::imageChanged, this, &ContactsModel::contactUpdated);
 }
 
 void ContactsModel::contactUpdated(QString contactId){

@@ -19,11 +19,8 @@ Loader {
                 border.width: 1
                 border.color: Style.current.border
                 source: {
-                    if (profileImageSource) {
-                        return profileImageSource
-                    }
-
-                    return !isCurrentUser ? identicon : profileModel.profile.identicon
+                    // TODO show current user profile picture or identicon
+                    return !isCurrentUser ? contact.image : profileModel.profile.identicon
                 }
                 smooth: false
                 antialiasing: true
