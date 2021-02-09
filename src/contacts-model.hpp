@@ -29,13 +29,14 @@ public:
 	Q_INVOKABLE Contact* get(int row) const;
 	Q_INVOKABLE Contact* get(QString id) const;
 	Q_INVOKABLE void contactUpdated(QString id);
+	Q_INVOKABLE void push(Contact* contact);
 
 	Contact* upsert(Message* msg);
 
 signals:
 	void updated(QString contactId);
 	void added(QString contactId);
-
+	void contactLoaded(Contact* contact);
 private:
 	void loadContacts();
 	void update(QJsonValue updates);
