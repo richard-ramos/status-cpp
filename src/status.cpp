@@ -67,11 +67,9 @@ void uint64ToStrReplacements(QString& input)
 				  QStringLiteral("\"lastUpdated\":\"\\1\""));
 }
 
-void Status::statusGoEventCallback(const char* event)
+void Status::processSignal(QString ev)
 {
-
 	// WARNING: Signals are returning bigints as numeric values instead of strings
-	QString ev = QString(event);
 	uint64ToStrReplacements(ev);
 
 	const QJsonObject signalEvent = QJsonDocument::fromJson(ev.toUtf8()).object();
@@ -103,10 +101,14 @@ void Status::statusGoEventCallback(const char* event)
 	}
 }
 
+void Status::statusGoEventCallback(const char* event)
+{
+	QtConcurrent::run(instance(), &Status::processSignal, QString(event));
+}
+
 void Status::closeSession()
 {
 	QtConcurrent::run([=] {
-		// TODO:
 		Logout();
 		emit logout();
 	});
@@ -154,7 +156,7 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 
 	QJsonObject payload{
 		{"jsonrpc", "2.0"}, {"method", method}, {"params", QJsonValue::fromVariant(params)}};
-
+	qDebug() << payload;
 	QString payloadStr = Utils::jsonToStr(payload);
 
 	// WARNING: uint64 are expected instead of strings.

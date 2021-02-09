@@ -58,4 +58,5 @@ private:
 	explicit Status(QObject* parent = nullptr);
 	static std::map<QString, SignalType> signalMap;
 	static void statusGoEventCallback(const char* event);
+	void processSignal(QString ev);
 };
