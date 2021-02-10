@@ -1,14 +1,14 @@
+#include "settings.hpp"
+#include "libstatus.h"
+#include "status.hpp"
+#include "utils.hpp"
 #include <QCoreApplication>
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QReadWriteLock>
-
-#include "libstatus.h"
-#include "settings.hpp"
-#include "status.hpp"
-#include "utils.hpp"
+#include <QTimer>
 
 Settings* Settings::theInstance;
 
@@ -23,11 +23,25 @@ Settings::Settings(QObject* parent)
 	: QObject(parent)
 {
 	m_initialized = false;
-	QObject::connect(Status::instance(),
-					 &Status::login,
-					 this,
-					 &Settings::init); // TODO: check if there is a login error?
+	// TODO: can login signal have an error?
+	QObject::connect(Status::instance(), &Status::login, this, &Settings::init);
 	QObject::connect(Status::instance(), &Status::logout, this, &Settings::terminate);
+
+	timer = new QTimer(this);
+	QObject::connect(this, &Settings::initialized, this, &Settings::startMailserverCycle);
+	QObject::connect(Status::instance(), &Status::logout, timer, &QTimer::stop);
+}
+
+void Settings::startMailserverCycle()
+{
+	// Fire immediately
+	mailserverCycle.work();
+	Settings::instance()->setCurrency("DOP");
+
+	// Execute every 1 seconds
+	QObject::connect(timer, &QTimer::timeout, &mailserverCycle, &MailserverCycle::work);
+	timer->start(1000);
+	Settings::instance()->setCurrency("USD");
 }
 
 Settings::~Settings()
@@ -51,6 +65,8 @@ void Settings::init()
 	m_mnemonic = settings[settingsMap[SettingTypes::Mnemonic]].toString();
 	m_initialized = true;
 	lock.unlock();
+
+	emit initialized();
 }
 
 void Settings::terminate()
@@ -63,8 +79,7 @@ void Settings::terminate()
 
 void Settings::saveSettings(SettingTypes setting, QString value)
 {
-	QJsonObject obj{{"method", "settings_saveSetting"},
-					{"params", QJsonArray{settingsMap[setting], value}}};
+	QJsonObject obj{{"method", "settings_saveSetting"}, {"params", QJsonArray{settingsMap[setting], value}}};
 	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
 	qDebug() << "SAVE SETTING RESULT" << result;
 }

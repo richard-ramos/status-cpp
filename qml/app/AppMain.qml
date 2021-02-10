@@ -184,6 +184,10 @@ RowLayout {
         contacts: contactsModel
     }
 
+    TextArea {
+        text: StatusSettings.Currency
+    }
+
     TabBar {
         id: tabBar
         width: 78

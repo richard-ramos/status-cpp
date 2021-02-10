@@ -3,7 +3,8 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QReadWriteLock>
-
+#include "mailserver-cycle.hpp"
+#include <QTimer>
 #include <map>
 
 class Settings : public QObject
@@ -89,6 +90,7 @@ public:
 	bool isMnemonicBackedUp();
 
 signals:
+	void initialized();
 	void currencyChanged();
 	void preferredNameChanged();
 	void mnemonicRemoved();
@@ -107,4 +109,12 @@ private:
 	QReadWriteLock lock;
 
 	void saveSettings(SettingTypes setting, QString value);
+
+
+	// TODO: move this to mailserver model
+	MailserverCycle mailserverCycle;
+	QTimer* timer;
+public:
+	Q_INVOKABLE void startMailserverCycle();
+
 };
