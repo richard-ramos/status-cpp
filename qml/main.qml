@@ -50,7 +50,6 @@ ApplicationWindow {
         close.accepted = false;
     }
 
-
     Action {
         shortcut: StandardKey.FullScreen
         onTriggered: {
@@ -82,7 +81,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         // Change the theme to the system theme (dark/light) until we get the
-        // user's saved setting from status-go (after login
+        // user's saved setting from status-go (after login)
         Style.changeTheme(Universal.theme === Universal.Dark ? "dark" : "light")
         setX(Qt.application.screens[0].width / 2 - width / 2);
         setY(Qt.application.screens[0].height / 2 - height / 2);
@@ -120,7 +119,7 @@ ApplicationWindow {
         property bool browserEnabled: false
         property bool displayChatImages: false
         property bool timelineEnabled: true
-        property bool compactMode
+        property bool useCompactMode
         property string locale: "en"
         property var recentEmojis: []
         property real volume: 0.2
@@ -168,7 +167,7 @@ ApplicationWindow {
         property bool nodeManagementEnabled: defaultAppSettings.nodeManagementEnabled
         property bool browserEnabled: defaultAppSettings.browserEnabled
         property bool displayChatImages: defaultAppSettings.displayChatImages
-        property bool compactMode: defaultAppSettings.compactMode
+        property bool useCompactMode: defaultAppSettings.useCompactMode
         property bool timelineEnabled: defaultAppSettings.timelineEnabled
         property string locale: defaultAppSettings.locale
         property var recentEmojis: defaultAppSettings.recentEmojis
@@ -205,6 +204,7 @@ ApplicationWindow {
     }
 
     /*
+    TODO
     Connections {
         target: profileModel
         onProfileSettingsFileChanged: {
@@ -256,7 +256,9 @@ ApplicationWindow {
     SystemTrayIcon {
         id: systemTray
         visible: true
-        icon.source: "shared/img/status-logo.png"
+        icon.source: applicationWindow.Universal.theme === Universal.Dark ?
+            "shared/img/status-logo.svg" :
+            "shared/img/status-logo-light-theme.svg";
         menu: Menu {
             MenuItem {
                 visible: !applicationWindow.visible

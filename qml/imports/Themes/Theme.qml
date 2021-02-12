@@ -30,6 +30,7 @@ QtObject {
     property color orange: "#FE8F59"
 
     property color background
+    property color backgroundHover
     property color border
     property color textColor
     property color secondaryText
@@ -38,6 +39,13 @@ QtObject {
     property color modalBackground
     property color codeBackground
     property color primarySelectioncolor
+    property color emojiReactionBackground
+    property color emojiReactionBackgroundHovered
+    property color emojiReactionActiveBackgroundHovered
+    property color mentionColor
+    property color mentionBgColor
+    property color mentionMessageColor
+    property color mentionMessageHoverColor
 
     property color buttonForegroundColor
     property color buttonBackgroundColor
@@ -48,6 +56,8 @@ QtObject {
     property color roundedButtonForegroundColor
     property color roundedButtonBackgroundColor
     property color roundedButtonSecondaryBackgroundColor
+    property color tooltipBackgroundColor
+    property color tooltipForegroundColor
 
     property int xlPadding: 32
     property int bigPadding: 24

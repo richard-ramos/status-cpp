@@ -11,17 +11,34 @@ PopupMenu {
     property bool isProfile: false
     property bool isSticker: false
     property bool emojiOnly: false
+    property alias emojiContainer: emojiContainer
 
     id: messageContextMenu
     width: messageContextMenu.isProfile ? profileHeader.width : emojiContainer.width
 
 
     property var contact
-   
 
+    // TODO:
     function show() {
         popup();
     }
+    /*function show(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam, emojiReactionsModel) {
+        userName = userNameParam || ""
+        nickname = nicknameParam || ""
+        fromAuthor = fromAuthorParam || ""
+        identicon = identiconParam || ""
+        text = textParam || ""
+        let newEmojiReactions = []
+        if (!!emojiReactionsModel) {
+            emojiReactionsModel.forEach(function (emojiReaction) {
+                newEmojiReactions[emojiReaction.emojiId] = emojiReaction.currentUserReacted
+            })
+        }
+        emojiReactionsReactedByUser = newEmojiReactions
+
+        popup();
+    }*/
 
     Item {
         id: emojiContainer
@@ -41,6 +58,7 @@ PopupMenu {
                 delegate: EmojiReaction {
                     source: "../../../img/" + filename
                     emojiId: model.emojiId
+                    reactedByUser: !!messageContextMenu.emojiReactionsReactedByUser[model.emojiId]
                     closeModal: function () {
                         messageContextMenu.close()
                     }
@@ -109,7 +127,7 @@ PopupMenu {
         text: qsTrId("view-profile")
         onTriggered: {
             profilePopup.contact = messageContextMenu.contact;
-                profilePopup.open();
+            profilePopup.open();
         }
         icon.source: "../../../img/profileActive.svg"
         icon.width: 16

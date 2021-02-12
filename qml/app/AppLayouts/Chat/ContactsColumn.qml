@@ -120,7 +120,6 @@ Item {
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         // contentHeight: communitiesListLoader.height + channelList.height + 2 * Style.current.padding + emptyViewAndSuggestions.height
         contentHeight: channelList.height+ 2 * Style.current.padding + emptyViewAndSuggestions.height
-        
         clip: true
 
         /* TODO: Loader {

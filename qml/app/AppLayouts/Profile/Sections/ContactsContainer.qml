@@ -70,6 +70,7 @@ Item {
             anchors.top: addNewContact.bottom
             anchors.topMargin: Style.current.bigPadding
             width: blockButton.width + blockButtonLabel.width + Style.current.padding
+            visible: true // TODO: blockedContactsListView.count > 0
             height: addButton.height
 
             StatusRoundButton {
@@ -107,6 +108,7 @@ Item {
             title: qsTrId("blocked-contacts")
 
             ContactList {
+                id: blockedCOntactsListView
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 contacts: SortFilterProxyModel {
@@ -120,7 +122,6 @@ Item {
                     ]
                     sorters: StringSorter { roleName: "name" }
                 }
-                selectable: false
             }
         }
 
@@ -200,6 +201,20 @@ Item {
                     visible: !contactsContainer.isPending && !!!profileModel.contacts.contactToAddUsername
                 }
 
+                /*
+                // TODO:
+                Connections {
+                    target: profileModel.contacts
+                    onEnsWasResolved: {
+                        if(addContactSearchInput.text !== "" && !Utils.isHex(addContactSearchInput.text) && resolvedPubKey !== ""){
+                            contactUsername.text = Qt.binding(function () {
+                                return chatsModel.formatENSUsername(addContactSearchInput.text) + " • "
+                            });
+                        }
+                    }
+                }
+                */
+
                 StyledText {
                     id: contactUsername
                     text: profileModel.contacts.contactToAddUsername + " • "
@@ -220,12 +235,12 @@ Item {
                 }
 
             }
-            footer: StyledButton {
+            footer: StatusButton {
                 anchors.right: parent.right
                 anchors.leftMargin: Style.current.padding
                 //% "Add contact"
-                label: qsTrId("add-contact")
-                disabled: !contactToAddInfo.visible
+                text: qsTrId("add-contact")
+                enabled: contactToAddInfo.visible
                 anchors.bottom: parent.bottom
                 onClicked: {
                     profileModel.addContact(profileModel.contacts.contactToAddPubKey);
@@ -258,40 +273,15 @@ Item {
             anchors.topMargin: Style.current.bigPadding
             anchors.bottom: parent.bottom
             contacts: addedContacts
-            selectable: false
             searchString: searchBox.text
         }
 
-        Item {
+        NoFriendsRectangle {
             id: element
             visible: contactListView.count === 0
-            anchors.fill: parent
-
-            StyledText {
-                id: noFriendsText
-                //% "You don’t have any contacts yet"
-                text: qsTrId("you-don-t-have-any-contacts-yet")
-                anchors.verticalCenterOffset: -Style.current.bigPadding
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                font.pixelSize: 15
-                color: Style.current.darkGrey
-            }
-
-            StyledButton {
-                anchors.horizontalCenter: noFriendsText.horizontalCenter
-                anchors.top: noFriendsText.bottom
-                anchors.topMargin: Style.current.bigPadding
-                //% "Invite friends"
-                label: qsTrId("invite-friends")
-                onClicked: function () {
-                    inviteFriendsPopup.open()
-                }
-            }
-
-            InviteFriendsPopup {
-                id: inviteFriendsPopup
-            }
+            text: qsTr("You don’t have any contacts yet")
+            width: parent.width
+            anchors.verticalCenter: parent.verticalCenter
         }
     }
 }

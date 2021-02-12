@@ -67,12 +67,13 @@ ScrollView {
             anchors.leftMargin: -Style.current.padding
             anchors.right: parent.right
             anchors.rightMargin: -Style.current.padding
-            height: 220
+            height: paceholderMessage.height + Style.current.padding*4
             radius: Style.current.radius
             border.color: Style.current.border
             color: Style.current.transparent
 
             Message {
+                id: paceholderMessage
                 anchors.top: parent.top
                 anchors.topMargin: Style.current.padding*2
                 anchors.left: parent.left
@@ -191,10 +192,10 @@ ScrollView {
                 image.source: "../../../img/appearance-normal-light.svg"
                 image.height: 186
                 control.text: qsTr("Normal")
-                control.checked: !appSettings.compactMode
-                control.onCheckedChanged: {
-                    if (control.checked) {
-                        appSettings.compactMode = false
+                control.checked: !appSettings.useCompactMode
+                onRadioCheckedChanged: {
+                    if (checked) {
+                        appSettings.useCompactMode = false
                     }
                 }
             }
@@ -204,10 +205,10 @@ ScrollView {
                 image.source: "../../../img/appearance-compact-light.svg"
                 image.height: 186
                 control.text: qsTr("Compact")
-                control.checked: appSettings.compactMode
-                control.onCheckedChanged: {
-                    if (control.checked) {
-                        appSettings.compactMode = true
+                control.checked: appSettings.useCompactMode
+                onRadioCheckedChanged: {
+                    if (checked) {
+                        appSettings.useCompactMode = true
                     }
                 }
             }
@@ -239,8 +240,8 @@ ScrollView {
                 image.height: 128
                 control.text: qsTr("Light")
                 control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.Light
-                control.onClicked: {
-                    if (control.checked) {
+                onRadioCheckedChanged: {
+                    if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.Light)
                     }
                 }
@@ -254,8 +255,8 @@ ScrollView {
                 image.height: 128
                 control.text: qsTr("Dark")
                 control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.Dark
-                control.onClicked: {
-                    if (control.checked) {
+                onRadioCheckedChanged: {
+                    if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.Dark)
                     }
                 }
@@ -269,8 +270,8 @@ ScrollView {
                 image.height: 128
                 control.text: qsTr("System")
                 control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.System
-                control.onClicked: {
-                    if (control.checked) {
+                onRadioCheckedChanged: {
+                    if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.System)
                     }
                 }

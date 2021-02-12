@@ -97,7 +97,8 @@ Rectangle {
 
             onClicked: {
                 var menu = chatContextMenu;
-                if(chat.chatType === ChatType.PrivateGroupChat){
+                var isPrivateGroupChat = chat.chatType === ChatType.PrivateGroupChat
+                if(isPrivateGroupChat){
                     menu = groupContextMenu
                 }
 
@@ -105,48 +106,19 @@ Rectangle {
                     return menu.close()
                 }
 
-                menu.popup(moreActionsBtn.x, moreActionsBtn.height)
-               
+                if (isPrivateGroupChat) {
+                    menu.popup(moreActionsBtn.x, moreActionsBtn.height)
+                } else {
+                    menu.openMenu(chatsModel.activeChannel, chatsModel.getActiveChannelIdx())
+                }
             }
             cursorShape: Qt.PointingHandCursor
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            PopupMenu {
+
+            ChannelContextMenu {
                 id: chatContextMenu
-                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-                subMenuIcons: [
-                    {
-                        source: Qt.resolvedUrl("../../../img/fetch.svg"),
-                        width: 16,
-                        height: 16
-                    }
-                ]
-                Action {
-                    icon.source: "../../../img/close.svg"
-                    icon.width: chatTopBarContent.iconSize
-                    icon.height: chatTopBarContent.iconSize
-                    //% "Clear history"
-                    text: qsTrId("clear-history")
-                    onTriggered: chatsModel.clearChatHistory(chatsModel.activeChannel.id)
-                }
-                FetchMoreMessages {}
-                Action {
-                    icon.source: "../../../img/delete.svg"
-                    icon.width: chatTopBarContent.iconSize
-                    icon.height: chatTopBarContent.iconSize
-                    icon.color: Style.current.red
-                    //% "Delete Chat"
-                    text: qsTrId("delete-chat")
-                    onTriggered: {
-                      //% "Delete Chat"
-                      deleteChatConfirmationDialog.title = qsTrId("delete-chat")
-                      //% "Delete Chat"
-                      deleteChatConfirmationDialog.confirmButtonLabel = qsTrId("delete-chat")
-                      //% "Are you sure you want to delete this chat?"
-                      deleteChatConfirmationDialog.confirmationText = qsTrId("delete-chat-confirmation")
-                      deleteChatConfirmationDialog.open()
-                    }
-                }
+                groupInfoPopup: groupInfoPopup
             }
 
             PopupMenu {
@@ -158,7 +130,7 @@ Rectangle {
                     icon.height: chatTopBarContent.iconSize
                     //% "Group Information"
                     text: qsTrId("group-information")
-                    onTriggered: groupInfoPopup.open()
+                    onTriggered: groupInfoPopup.openMenu(chatsModel.activeChannel, chatsModel.getActiveChannelIdx())
                 }
                 Action {
                     icon.source: "../../../img/close.svg"

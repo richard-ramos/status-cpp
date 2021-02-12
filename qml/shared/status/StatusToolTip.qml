@@ -5,9 +5,10 @@ import "../../shared"
 
 ToolTip {
     id: tooltip
-    implicitWidth: tooltip.width
-    leftPadding: Style.current.padding
-    rightPadding: Style.current.padding
+    property int maxWidth: 800
+    implicitWidth: Math.min(maxWidth, textContent.implicitWidth + Style.current.bigPadding)
+    leftPadding: Style.current.smallPadding
+    rightPadding: Style.current.smallPadding
     topPadding: Style.current.smallPadding
     bottomPadding: Style.current.smallPadding
     delay: 200
@@ -15,9 +16,10 @@ ToolTip {
         id: tooltipBg
         Rectangle {
             id: tooltipContentBg
-            color: Style.current.blue
+            color: Style.current.tooltipBackgroundColor
             radius: Style.current.radius
             anchors.fill: parent
+            anchors.bottomMargin: Style.current.smallPadding
         }
         Rectangle {
             color: tooltipContentBg.color
@@ -33,10 +35,12 @@ ToolTip {
     contentItem: StyledText {
         id: textContent
         text: tooltip.text
-        color: Style.current.white
+        color: Style.current.tooltipForegroundColor
         wrapMode: Text.WordWrap
         font.pixelSize: 13
+        font.weight: Font.Medium
         horizontalAlignment: Text.AlignHCenter
+        bottomPadding: Style.current.smallPadding
     }
 }
 

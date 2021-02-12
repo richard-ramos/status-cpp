@@ -126,10 +126,10 @@ Popup {
                     }
                 }
 
-                StyledButton {
+                StatusButton {
                     visible: lblNoStickersYet.visible
                     //% "Get Stickers"
-                    label: qsTrId("get-stickers")
+                    text: qsTrId("get-stickers")
                     anchors.top: noStickersContainer.bottom
                     anchors.topMargin: Style.current.padding
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -148,26 +148,21 @@ Popup {
                     root.close()
                 }
             }
-            StatusStickerList {
-                id: loadingGrid
-                visible: chatsModel.stickers.recent.rowCount() === 0
-                interactive: false
-                model: new Array(20)
-                delegate: Item {
-                    width: stickerGrid.cellWidth
-                    height: stickerGrid.cellHeight
-                    Column {
-                        anchors.fill: parent
-                        anchors.topMargin: 4
-                        anchors.leftMargin: 4
-                        Rectangle {
-                            width: 80
-                            height: 80
-                            radius: width / 2
-                            color: Style.current.backgroundHover
-                        }
-                    }
+
+
+            Component {
+                id: loadingImageComponent
+                LoadingImage {
+                    width: 50
+                    height: 50
                 }
+            }
+
+            Loader {
+                id: loadingGrid
+                active: chatsModel.stickers.recent.rowCount() === 0
+                sourceComponent: loadingImageComponent
+                anchors.centerIn: parent
             }
         }
 
@@ -266,7 +261,7 @@ Popup {
         onStickerPacksLoaded: {
             root.stickerPacksLoaded = true
             stickerPackListView.visible = true
-            loadingGrid.visible = false
+            loadingGrid.active = false
             loadingStickerPackListView.model = []
             noStickerPacks.visible = installedPacksCount === 0 || chatsModel.stickers.recent.rowCount() === 0
         }

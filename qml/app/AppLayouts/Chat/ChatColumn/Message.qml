@@ -22,6 +22,7 @@ Item {
     property string emojiReactions: ""
     property int prevMessageIndex: -1
     property bool timeout: false
+    property bool hasMention: false
     property string linkUrls: ""
     property bool placeholderMessage: false
     property string communityId: ""
@@ -29,13 +30,17 @@ Item {
     property string authorCurrentMsg: "authorCurrentMsg"
     property string authorPrevMsg: "authorPrevMsg"
 
+    property string prevMsgTimestamp: chatsModel.messageList.getMessageData(prevMessageIndex, "timestamp")
+    property bool shouldRepeatHeader: ((parseInt(timestamp, 10) - parseInt(prevMsgTimestamp, 10)) / 60 / 1000) > Constants.repeatHeaderInterval
+
     property bool isEmoji: contentType === Constants.emojiType
     property bool isImage: contentType === Constants.imageType
     property bool isAudio: contentType === Constants.audioType
     property bool isStatusMessage: contentType === Constants.systemMessagePrivateGroupType
     property bool isSticker: contentType === Constants.stickerType
     property bool isText: contentType === Constants.messageType
-    property bool isMessage: isEmoji || isImage || isSticker || isText || isAudio || contentType === Constants.communityInviteType
+    property bool isMessage: isEmoji || isImage || isSticker || isText || isAudio
+                             || contentType === Constants.communityInviteType || contentType === Constants.transactionType
 
     property bool isExpired: (outgoingStatus == "sending" && (Math.floor(timestamp) + 180000) < Date.now())
     property bool isStatusUpdate: false
@@ -58,6 +63,38 @@ Item {
 
     property string profileImageSource: !placeholderMessage && appMain.getProfileImage(userPubKey, isCurrentUser, useLargeImage) || ""
 
+    property var emojiReactionsModel: {
+        if (!emojiReactions) {
+            return []
+        }
+
+        try {
+            // group by id
+            var allReactions = Object.values(JSON.parse(emojiReactions))
+            var byEmoji = {}
+            allReactions.forEach(function (reaction) {
+                if (!byEmoji[reaction.emojiId]) {
+                    byEmoji[reaction.emojiId] = {
+                        emojiId: reaction.emojiId,
+                        fromAccounts: [],
+                        count: 0,
+                        currentUserReacted: false
+                    }
+                }
+                byEmoji[reaction.emojiId].count++;
+                byEmoji[reaction.emojiId].fromAccounts.push(chatsModel.userNameOrAlias(reaction.from));
+                if (!byEmoji[reaction.emojiId].currentUserReacted && reaction.from === profileModel.profile.pubKey) {
+                    byEmoji[reaction.emojiId].currentUserReacted = true
+                }
+
+            })
+            return Object.values(byEmoji)
+        } catch (e) {
+            console.error('Error parsing emoji reactions', e)
+            return []
+        }
+    }
+
     Connections {
         enabled: !placeholderMessage
         target: profileModel.contacts.list
@@ -76,7 +113,7 @@ Item {
             }
         }
     }
-    
+
     id: root
     width: parent.width
     anchors.right: !isCurrentUser ? undefined : parent.right
@@ -97,14 +134,12 @@ Item {
         if (!isProfileClick) {
             SelectedMessage.set(messageId, contact.id);
         }
-        // Get contact nickname
-
+        
         const messageContextMenu = messageContextMenuComponent.createObject(root, {contact: root.contact});
         messageContextMenu.isProfile = !!isProfileClick
         messageContextMenu.isSticker = isSticker
         messageContextMenu.emojiOnly = emojiOnly
         messageContextMenu.show(root.profileImageSource)
-        
         // Position the center of the menu where the mouse is
         messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2
     }
@@ -112,22 +147,22 @@ Item {
     Loader {
         active: true
         width: parent.width
-        sourceComponent: switch(contentType) {
+        sourceComponent: {
+            switch(contentType) {
                 case Constants.chatIdentifier:
                     return channelIdentifierComponent
                 case Constants.fetchMoreMessagesButton:
                     return fetchMoreMessagesButtonComponent
                 case Constants.systemMessagePrivateGroupType:
                     return privateGroupHeaderComponent
-                case Constants.transactionType:
-                    return transactionBubble
                 case Constants.communityInviteType:
                     return invitationBubble
                 default:
-                    return appSettings.compactMode  ? compactMessageComponent : 
-                      isStatusUpdate ? statusUpdateComponent : messageComponent
+                    return isStatusUpdate ? statusUpdateComponent :
+                                            (appSettings.useCompactMode ? compactMessageComponent : messageComponent)
+
             }
-        //}
+        }
     }
 
     Timer {
@@ -139,7 +174,7 @@ Item {
         Item {
             visible: chatsModel.activeChannel.chatType !== Constants.chatTypePrivateGroupChat || chatsModel.activeChannel.isMember
             id: wrapper
-            height: wrapper.visible ? fetchMoreButton.height + fetchDate.height + 3 + Style.current.smallPadding*2 : 0
+            height: wrapper.visible ? childrenRect.height + Style.current.smallPadding*2 : 0
             anchors.left: parent.left
             anchors.right: parent.right
             Separator {
@@ -160,7 +195,7 @@ Item {
                   cursorShape: Qt.PointingHandCursor
                   anchors.fill: parent
                   onClicked: {
-                    chatsModel.requestMoreMessages(Constants.fetchRangeLast24Hours)
+                    chatsModel.requestMoreMessages(Constants.fetchRangeLast24Hours);
                     timer.setTimeout(function(){ 
                         chatsModel.hideLoadingIndicator()
                     }, 3000);
@@ -251,11 +286,6 @@ Item {
             contentType: root.contentType
             container: root
         }
-    }
-
-    Component {
-        id: transactionBubble
-        TransactionBubble {}
     }
 
     Component {

@@ -7,7 +7,7 @@ import im.status.desktop 1.0
 Item {
     property bool longChatText: true
     property bool veryLongChatText: chatsModel.plainText(message).length >
-                                    (appSettings.compactMode ? Constants.limitLongChatTextCompactMode : Constants.limitLongChatText)
+                                    (appSettings.useCompactMode ? Constants.limitLongChatTextCompactMode : Constants.limitLongChatText)
     property bool readMore: false
     property alias textField: chatText
 
@@ -15,7 +15,7 @@ Item {
     visible: contentType == Constants.messageType || isEmoji
     z: 51
 
-    height: visible ? (showMoreLoader.active ? childrenRect.height - 10 : chatText.height) : 0
+    implicitHeight: visible ? (showMoreLoader.active ? childrenRect.height - 10 : chatText.height) : 0
 
     // This function is to avoid the binding loop warning
     function setWidths() {
@@ -45,7 +45,7 @@ Item {
         clip: true
         onLinkActivated: function (link) {
             if(link.startsWith("#")) {
-                chatsModel.join(ChatType.Public, link.substring(1));
+                chatsModel.joinChat(link.substring(1), Constants.chatTypePublic);
                 return;
             }
 
@@ -80,10 +80,12 @@ Item {
                                 `line-height: 22px;` +
                             `}` +
                             `a {` +
-                                `color: ${isCurrentUser && !appSettings.compactMode ? Style.current.white : Style.current.textColor};` +
+                                `color: ${isCurrentUser && !appSettings.useCompactMode ? Style.current.white : Style.current.textColor};` +
                             `}` +
                             `a.mention {` +
-                                `color: ${isCurrentUser ? Style.current.cyan : Style.current.turquoise};` +
+                                `color: ${Style.current.mentionColor};` +
+                                `background-color: ${Style.current.mentionBgColor};` +
+                                `text-decoration: none;` +
                             `}` +
                             `del {` +
                                 `text-decoration: line-through;` +
@@ -105,7 +107,6 @@ Item {
             }
         }
     }
-
 
     Loader {
         id: mask

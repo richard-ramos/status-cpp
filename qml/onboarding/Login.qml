@@ -129,6 +129,10 @@ Item {
             Keys.onReturnPressed: {
                 submitBtn.clicked()
             }
+            onTextEdited: {
+                errMsg.visible = false
+                loading = false
+            }
         }
         StatusRoundButton {
             id: submitBtn
@@ -150,42 +154,20 @@ Item {
             }
         }
 
-        MessageDialog {
-            id: loginError
-            title: qsTr("Login failed")
-            text: qsTr("Login failed. Please re-enter your password and try again.")
-            icon: StandardIcon.Critical
-            standardButtons: StandardButton.Ok
-            onAccepted: {
-                txtPassword.textField.clear()
-                txtPassword.textField.focus = true
-                loading = false
-            }
-        }
-
         Connections {
             target: Status
             ignoreUnknownSignals: true
             onLogin: {
                 if (error){
                     errorSound.play()
-                    loginError.open()
+                    errMsg.visible = true;
                 }
             }
             onNodeReady: {
                 if (error) {
                     errorSound.play()
-                    loginError.open()
+                    errMsg.visible = true;
                 }
-            }
-        }
-
-        Connections {
-            target: loginModel
-            ignoreUnknownSignals: true
-            onLoginError: {
-                errorSound.play()
-                loginError.open()
             }
         }
 
@@ -194,12 +176,24 @@ Item {
             //% "Generate new keys"
             text: qsTrId("generate-new-keys")
             anchors.top: txtPassword.bottom
-            anchors.topMargin: 26
+            anchors.topMargin: 16
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: 13
+            type: "secondary"
             onClicked: {
                 onGenKeyClicked()
             }
+        }
+
+        StyledText {
+            id: errMsg
+            anchors.top: generateKeysLinkText.bottom
+            anchors.topMargin: Style.current.smallPadding
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: false
+            text: qsTr("Login failed. Please re-enter your password and try again.")
+            font.pixelSize: 13
+            color: Style.current.danger
         }
     }
 }

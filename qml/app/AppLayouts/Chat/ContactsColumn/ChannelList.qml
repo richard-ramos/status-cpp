@@ -6,29 +6,28 @@ import "../../../../imports"
 import "../components"
 import "./"
 
-Rectangle {
+Item {
     property var channelModel
     property alias list: chatGroupsListView
+
     property alias channelListCount: chatGroupsListView.count
     property string searchStr: ""
     id: channelListContent
     width: parent.width
     height: childrenRect.height
-    color: Style.current.transparent
 
     Timer {
         id: timer
     }
 
-
     ListView {
         Component.onCompleted : currentIndex = 0
 
         id: chatGroupsListView
-        spacing: Style.current.halfPadding
+        spacing: appSettings.useCompactMode ? 4 : Style.current.halfPadding
         anchors.top: parent.top
         height: childrenRect.height
-        visible: height > 50
+        visible: height > (appSettings.useCompactMode ? 30 : 50)
         anchors.right: parent.right
         anchors.left: parent.left
         interactive: false
@@ -84,139 +83,11 @@ Rectangle {
 
     GroupInfoPopup {
         id: groupInfoPopup
-        onClosed: {
-            mouseArea.menuOpened = false
-        }
     }
 
-    PopupMenu {
-        property int channelIndex
-        property bool channelMuted
-        property int chatType
-        property string chatName
-        property string chatId
-        property string chatIdenticon
-
+    ChannelContextMenu {
         id: channelContextMenu
-        width: 175
-        subMenuIcons: [
-            /* { */
-            /*     source:  Qt.resolvedUrl("../../../img/bell.svg"), */
-            /*     width: 16, */
-            /*     height: 16 */
-            /* }, */
-            {
-                source: Qt.resolvedUrl("../../../img/fetch.svg"),
-                width: 16,
-                height: 16
-            }
-        ]
-
-        function openMenu(channelIndex, muted, chatType, chatName, chatId, chatIdenticon) {
-            channelContextMenu.channelIndex = channelIndex
-            channelContextMenu.channelMuted = muted
-            channelContextMenu.chatType = chatType
-            channelContextMenu.chatName = chatName
-            channelContextMenu.chatId = chatId
-            channelContextMenu.chatIdenticon = chatIdenticon
-            channelContextMenu.popup()
-        }
-
-        Action {
-            enabled: channelContextMenu.chatType !== Constants.chatTypePublic
-            text: {
-                if (channelContextMenu.chatType === Constants.chatTypeOneToOne) {
-                    //% "View Profile"
-                    return qsTrId("view-profile")
-                }
-                if (channelContextMenu.chatType === Constants.chatTypePrivateGroupChat) {
-                    //% "View Group"
-                    return qsTrId("view-group")
-                }
-                //% "Share Chat"
-                return qsTrId("share-chat")
-            }
-            icon.source: "../../../img/group.svg"
-            icon.width: 16
-            icon.height: 16
-            onTriggered: {
-                chatsModel.setActiveChannelByIndex(channelContextMenu.channelIndex)
-                chatGroupsListView.currentIndex = channelContextMenu.channelIndex
-                if (channelContextMenu.chatType === Constants.chatTypeOneToOne) {
-                    const userProfileImage = appMain.getProfileImage(channelContextMenu.chatId)
-                    return openProfilePopup(channelContextMenu.chatName, channelContextMenu.chatId, userProfileImage || channelContextMenu.chatIdenticon)
-                }
-                if (channelContextMenu.chatType === Constants.chatTypePrivateGroupChat) {
-                    return groupInfoPopup.open()
-                }
-            }
-        }
-
-        Separator {}
-
-        Action {
-            text: channelContextMenu.channelMuted ?
-                      //% "Unmute chat"
-                      qsTrId("unmute-chat") :
-                      //% "Mute chat"
-                      qsTrId("mute-chat")
-            icon.source: "../../../img/bell.svg"
-            icon.width: 16
-            icon.height: 16
-            onTriggered: {
-                if (chatsModel.channelIsMuted(channelContextMenu.channelIndex)) {
-                    chatsModel.unmuteChannel(channelContextMenu.channelIndex)
-                    return
-                }
-                chatsModel.muteChannel(channelContextMenu.channelIndex)
-            }
-        }
-
-        Action {
-            //% "Mark as Read"
-            text: qsTrId("mark-as-read")
-            icon.source: "../../../img/check-circle.svg"
-            icon.width: 16
-            icon.height: 16
-            onTriggered: {
-                chatsModel.markAllChannelMessagesReadByIndex(channelContextMenu.channelIndex)
-            }
-        }
-        FetchMoreMessages {}
-        Action {
-            //% "Clear History"
-            text: qsTrId("clear-history")
-            icon.source: "../../../img/close.svg"
-            icon.width: 16
-            icon.height: 16
-            onTriggered: chatsModel.clearChatHistoryByIndex(channelContextMenu.channelIndex)
-        }
-
-        Separator {}
-
-        Action {
-            text: {
-                if (channelContextMenu.chatType === Constants.chatTypeOneToOne) {
-                    //% "Delete chat"
-                    return qsTrId("delete-chat")
-                }
-                if (channelContextMenu.chatType === Constants.chatTypePrivateGroupChat) {
-                    //% "Leave group"
-                    return qsTrId("leave-group")
-                }
-                //% "Leave chat"
-                return qsTrId("leave-chat")
-            }
-            icon.source: {
-                if (channelContextMenu.chatType === Constants.chatTypeOneToOne) {
-                    return "../../../img/delete.svg"
-                }
-                return "../../../img/leave_chat.svg"
-            }
-            icon.width: 16
-            icon.height: 16
-            onTriggered: chatsModel.remove(channelContextMenu.channelIndex)
-        }
+        groupInfoPopup: groupInfoPopup
     }
 
     Connections {
@@ -243,11 +114,10 @@ Rectangle {
     Connections {
         target: chatsModel
         onAdded: {
+            // TODO: determine if added due to joining a chat, or due to 1:1
             chatGroupsListView.currentIndex = index;
         }
-
     }
-
 }
 
 

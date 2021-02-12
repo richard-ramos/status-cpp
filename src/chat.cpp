@@ -51,15 +51,12 @@ Chat::Chat(QString id,
 	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
 }
 
-Chat::~Chat()
-{
-}
+Chat::~Chat() { }
 
-bool Chat::operator==(const Chat &c)
+bool Chat::operator==(const Chat& c)
 {
 	return m_id == c.get_id();
 }
-
 
 void Chat::setFilterId(QString filterId)
 {
@@ -130,10 +127,7 @@ void Chat::sendMessage(QString message, bool isReply, bool isEmoji)
 			{"contentType", 1} // TODO: replace by enum class
 			// TODO: {"communityId", communityId}
 		};
-		const auto response =
-			Status::instance()
-				->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList())
-				.toJsonObject();
+		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
 		if(!response["error"].isUndefined())
 		{
 			throw std::domain_error(response["error"]["message"].toString().toUtf8());
@@ -148,7 +142,7 @@ void Chat::leave()
 	deleteChatHistory();
 	removeFilter();
 	save();
-	left(m_id);	
+	left(m_id);
 }
 
 void Chat::loadFilter()
@@ -156,10 +150,7 @@ void Chat::loadFilter()
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{{"ChatID", m_id}, {"OneToOne", m_chatType == ChatType::OneToOne}};
-		const auto response =
-			Status::instance()
-				->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{obj}}.toVariantList())
-				.toJsonObject();
+		const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
 
 		if(!response["error"].isUndefined())
 		{
@@ -181,10 +172,7 @@ void Chat::loadFilter()
 void Chat::removeFilter()
 {
 	QJsonObject obj{{"ChatID", m_id}, {"FilterID", m_filterId}};
-	const auto response =
-		Status::instance()
-			->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList())
-			.toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
 
 	qDebug() << response;
 	if(!response["error"].isUndefined())
@@ -195,10 +183,7 @@ void Chat::removeFilter()
 
 void Chat::deleteChatHistory()
 {
-	const auto response =
-		Status::instance()
-			->callPrivateRPC("wakuext_deleteMessagesByChatID", QJsonArray{m_id}.toVariantList())
-			.toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_deleteMessagesByChatID", QJsonArray{m_id}.toVariantList()).toJsonObject();
 
 	qDebug() << response;
 	if(!response["error"].isUndefined())
@@ -209,41 +194,37 @@ void Chat::deleteChatHistory()
 
 void Chat::save()
 {
-	QtConcurrent::run([=] {
-		QMutexLocker locker(&m_mutex);
+	//QtConcurrent::run([=] {
+	//	QMutexLocker locker(&m_mutex);
 
-		m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
+	m_timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
-		if(m_chatType == ChatType::Public)
-		{
-			m_name = m_id;
-		}
+	if(m_chatType == ChatType::Public)
+	{
+		m_name = m_id;
+	}
 
-		if(m_color == "")
-		{
-			const QString accountColors[7]{
-				"#9B832F", "#D37EF4", "#1D806F", "#FA6565", "#7CDA00", "#887af9", "#8B3131"};
-			m_color = accountColors[QRandomGenerator::global()->bounded(7)];
-		}
+	if(m_color == "")
+	{
+		const QString accountColors[7]{"#9B832F", "#D37EF4", "#1D806F", "#FA6565", "#7CDA00", "#887af9", "#8B3131"};
+		m_color = accountColors[QRandomGenerator::global()->bounded(7)];
+	}
 
-		QJsonObject chat{{"id", m_id},
-						 {"name", m_name},
-						 {"lastClockValue", m_lastClockValue},
-						 {"color", m_color},
-						 {"lastMessage", QJsonValue()},
-						 {"active", m_active},
-						 {"profile", m_profile},
-						 {"unviewedMessagesCount", m_unviewedMessagesCount},
-						 {"chatType", m_chatType},
-						 {"timestamp", m_timestamp}};
+	QJsonObject chat{{"id", m_id},
+					 {"name", m_name},
+					 {"lastClockValue", m_lastClockValue},
+					 {"color", m_color},
+					 {"lastMessage", QJsonValue()},
+					 {"active", m_active},
+					 {"profile", m_profile},
+					 {"unviewedMessagesCount", m_unviewedMessagesCount},
+					 {"chatType", m_chatType},
+					 {"timestamp", m_timestamp}};
 
-		const auto response =
-			Status::instance()
-				->callPrivateRPC("wakuext_saveChat", QJsonArray{chat}.toVariantList())
-				.toJsonObject();
-		if(!response["error"].isUndefined())
-		{
-			throw std::domain_error(response["error"]["message"].toString().toUtf8());
-		}
-	});
+	const auto response = Status::instance()->callPrivateRPC("wakuext_saveChat", QJsonArray{chat}.toVariantList()).toJsonObject();
+	if(!response["error"].isUndefined())
+	{
+		throw std::domain_error(response["error"]["message"].toString().toUtf8());
+	}
+	//});
 }

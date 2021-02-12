@@ -4,37 +4,32 @@ import QtQuick.Controls 2.13
 //import Qt.labs.platform 1.1
 import "../../../imports"
 import "../../../shared"
+import "../../../shared/status"
 import "./components"
 
-Item {
-    function open() {
-        popup.open()
-        setCurrencyModalContent.currency = walletModel.defaultCurrency
+ModalPopup {
+    id: popup
+    width: 480
+    height: 510
+    property string defaultCurrency
+
+    onDefaultCurrencyChanged: {
+        setCurrencyModalContent.currency = defaultCurrency
     }
 
-    function close() {
-        popup.close()
+    title: qsTr("Set Currency")
+
+    SetCurrencyModalContent {
+        id: setCurrencyModalContent
     }
 
-    ModalPopup {
-        id: popup
-        width: 480
-        height: 510
-
-        title: qsTr("Set Currency")
-
-        SetCurrencyModalContent {
-            id: setCurrencyModalContent
-        }
-
-        footer: StyledButton {
-            anchors.right: parent.right
-            //% "Save"
-            label: qsTrId("save")
-            onClicked: {
-                console.log("TODO: apply all accounts")
-                popup.close()
-            }
+    footer: StatusButton {
+        anchors.right: parent.right
+        //% "Save"
+        text: qsTrId("save")
+        onClicked: {
+            console.log("TODO: apply all accounts")
+            popup.close()
         }
     }
 }

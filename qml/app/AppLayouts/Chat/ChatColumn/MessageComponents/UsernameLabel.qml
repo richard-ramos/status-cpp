@@ -4,6 +4,7 @@ import "../../../../../imports"
 
 Item {
     id: root
+    property bool isHovered: false
     height: childrenRect.height
     width: chatName.width + (ensOrAlias.visible ? ensOrAlias.width + ensOrAlias.anchors.leftMargin : 0)
     property alias label: chatName
@@ -15,6 +16,7 @@ Item {
         color: text.startsWith("@") || isCurrentUser || (contact.ensVerified && contact.name !== "") || contact.localNickname !== "" ? Style.current.blue : Style.current.secondaryText
         font.weight: Font.Medium
         font.pixelSize: Style.current.secondaryTextFontSize
+        font.underline: root.isHovered
         readOnly: true
         wrapMode: Text.WordWrap
         selectByMouse: true
@@ -24,10 +26,10 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             onEntered: {
-                parent.font.underline = true
+                root.isHovered = true
             }
             onExited: {
-                parent.font.underline = false
+                root.isHovered = false
             }
             onClicked: {
                 clickMessage(true)

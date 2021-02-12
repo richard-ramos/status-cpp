@@ -42,6 +42,7 @@ Rectangle {
     property alias messageSound: sendMessageSound
 
     property alias suggestionsList: suggestions
+    property alias suggestions: suggestionsBox
 
     height: {
         if (extendedArea.visible) {
@@ -92,30 +93,44 @@ Rectangle {
         return (event.key === Qt.Key_U) && (event.modifiers & Qt.ControlModifier) && imageBtn.visible && !imageDialog.visible
     }
 
+    function checkTextInsert() {
+        if (emojiSuggestions.visible) {
+            emojiSuggestions.addEmoji();
+            return true
+        }
+        if (suggestionsBox.visible) {
+            suggestionsBox.selectCurrentItem();
+            return true
+        }
+        return false
+    }
+
     function onKeyPress(event){
         if (event.modifiers === Qt.NoModifier && (event.key === Qt.Key_Enter || event.key === Qt.Key_Return)) {
-            /*if (emojiSuggestions.visible) {
-                emojiSuggestions.addEmoji();
+            if (checkTextInsert()) {
                 event.accepted = true;
                 return
             }
-            if (suggestionsBox.visible) {
-                suggestionsBox.selectCurrentItem();
-                event.accepted = true;
-                return
-            }
+
             if (control.isStatusUpdateInput) {
                 return // Status update require the send button to be clicked
             }
-            if (messageInputField.length < messageLimit) {*/
+            if (messageInputField.length < messageLimit) {
                 control.sendMessage(event)
                 control.hideExtendedArea();
-                return;/* 
+                return;
             }
             if(event) event.accepted = true
-            messageTooLongDialog.open()*/
+            messageTooLongDialog.open()
         }
-        /*
+
+        if (event.key === Qt.Key_Tab) {
+            if (checkTextInsert()) {
+                event.accepted = true;
+                return
+            }
+        }
+
         const message = control.extrapolateCursorPosition();
 
         // handle new line in blockquote
@@ -164,7 +179,7 @@ Rectangle {
             suggestionsBox.hide()
         }
 
-        isColonPressed = (event.key === Qt.Key_Colon) && (event.modifiers & Qt.ShiftModifier);*/
+        isColonPressed = (event.key === Qt.Key_Colon) && (event.modifiers & Qt.ShiftModifier);
     }
 
     function wrapSelection(wrapWith) {
@@ -175,11 +190,16 @@ Rectangle {
     }
 
     function onRelease(event) {
-        return; // TODO:
         // the text doesn't get registered to the textarea fast enough
         // we can only get it in the `released` event
         if (paste) {
             paste = false;
+            const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
+            const deparsedEmoji = Emoji.deparse(messageInputField.text);
+            const plainText = chatsModel.plainText(deparsedEmoji);
+            messageInputField.text = Emoji.parse(plainText.replace(/\n/g, "<br />"));
+            messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
+
             interrogateMessage();
         }
 
@@ -193,6 +213,7 @@ Rectangle {
 
     function interrogateMessage() {
         const text = chatsModel.plainText(Emoji.deparse(messageInputField.text));
+        
         var words = text.split(' ');
 
         let madeChanges = false
@@ -655,6 +676,7 @@ Rectangle {
                 background: Rectangle {
                     color: "transparent"
                 }
+                selectionColor: Style.current.primarySelectionColor
             }
             Action {
                 shortcut: StandardKey.Bold
@@ -739,11 +761,14 @@ Rectangle {
             StatusButton {
                 id: sendBtn
                 icon.source: "../../app/img/send.svg"
-                color: Style.current.secondaryText
                 icon.width: 16
                 icon.height: 18
+                borderRadius: 16
                 text: qsTr("Send")
+                type: "secondary"
                 flat: true
+                showBorder: true
+                forceBgColorOnHover: true
                 anchors.right: parent.right
                 anchors.rightMargin: Style.current.halfPadding
                 anchors.bottom: parent.bottom

@@ -1,4 +1,5 @@
 import QtQuick 2.13
+import QtGraphicalEffects 1.13
 import "../../../../../imports"
 import "../../../../../shared"
 import "../constants.js" as ProfileConstants
@@ -13,7 +14,15 @@ Rectangle {
     property var onClicked: function () {}
 
     id: menuButton
-    color: hovered || active ? Style.current.secondaryBackground : Style.current.transparent
+    color: {
+         if (active) {
+            return Style.current.secondaryBackground
+         }
+         if (hovered) {
+            return Style.current.backgroundHover
+         }
+         return Style.current.transparent
+    }
     border.width: 0
     height: 48
     width: parent.width
@@ -21,15 +30,21 @@ Rectangle {
 
     Image {
         id: iconImage
-        source: menuButton.source
         height: 24
         width: 24
-        sourceSize.width: width
-        sourceSize.height: height
         anchors.left: parent.left
         anchors.leftMargin: Style.current.padding
         anchors.verticalCenter: parent.verticalCenter
+        source: menuButton.source
+        sourceSize: Qt.size(width, height)
         fillMode: Image.PreserveAspectFit
+        smooth: true
+
+        ColorOverlay {
+            anchors.fill: parent
+            source: parent
+            color: Style.current.blue
+        }
     }
 
     StyledText {

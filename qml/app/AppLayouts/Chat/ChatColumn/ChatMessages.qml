@@ -35,11 +35,12 @@ ScrollView {
         id: chatLogView
         anchors.fill: parent
         anchors.bottomMargin: Style.current.bigPadding
-        spacing: 4
+        spacing: appSettings.useCompactMode ? 0 : 4
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 10000
         Layout.fillWidth: true
         Layout.fillHeight: true
+        verticalLayoutDirection: ListView.TopToBottom
 
         Timer {
             id: timer
@@ -301,6 +302,7 @@ ScrollView {
             emojiReactions: model.emojiReactions
             linkUrls: model.linkUrls
             communityId: model.communityId
+            hasMention: model.hasMention
             prevMessageIndex: {
                 // This is used in order to have access to the previous message and determine the timestamp
                 // we can't rely on the index because the sequence of messages is not ordered on the nim side

@@ -51,6 +51,13 @@ Theme {
     property color topBarChatInfoColor: evenDarkerGrey
     property color codeBackground: "#2E386B"
     property color primarySelectionColor: "#b4c8ff"
+    property color emojiReactionBackground: "#2d2823"
+    property color emojiReactionBackgroundHovered: "#3a3632"
+    property color emojiReactionActiveBackgroundHovered: "#cbd5f1"
+    property color mentionColor: "#47B6D1"
+    property color mentionBgColor: Qt.rgba(71, 182, 209, 0.1)
+    property color mentionMessageColor: "#E5F8FD"
+    property color mentionMessageHoverColor: mentionBgColor
 
     property color buttonForegroundColor: blue
     property color buttonBackgroundColor: secondaryBackground
@@ -58,6 +65,8 @@ Theme {
     property color buttonDisabledForegroundColor: buttonSecondaryColor
     property color buttonDisabledBackgroundColor: evenDarkerGrey
     property color buttonWarnBackgroundColor: "#FFEAEE"
+    property color buttonHoveredWarnBackgroundColor: red
+    property color buttonHoveredBackgroundColor: blue
 
     property color roundedButtonForegroundColor: white
     property color roundedButtonBackgroundColor: secondaryBackground
@@ -68,4 +77,6 @@ Theme {
     property color roundedButtonDisabledBackgroundColor: buttonDisabledBackgroundColor
     property color roundedButtonSecondaryDisabledForegroundColor: roundedButtonForegroundColor
     property color roundedButtonSecondaryDisabledBackgroundColor: buttonDisabledForegroundColor
+    property color tooltipBackgroundColor: white
+    property color tooltipForegroundColor: black
 }

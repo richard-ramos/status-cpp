@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import "../../../imports"
 import "../../../shared"
+import "../../../shared/status"
 import "./components"
 
 Item {
@@ -52,38 +53,55 @@ Item {
         font.pixelSize: 22
     }
 
-    Address {
+    StatusExpandableAddress {
         id: walletAddress
-        text: currentAccount.address
-        font.pixelSize: 13
-        anchors.right: title.right
-        anchors.rightMargin: 0
+        address: currentAccount.address
         anchors.top: title.bottom
-        anchors.topMargin: 0
         anchors.left: title.left
+        addressWidth: 180
         anchors.leftMargin: 0
-        color: Style.current.secondaryText
+        anchors.topMargin: 0
     }
 
-    ReceiveModal{
-        id: receiveModal
-        selectedAccount: currentAccount
+    Component {
+        id: receiveModalComponent
+        ReceiveModal{
+            onClosed: {
+                destroy();
+            }
+            selectedAccount: currentAccount
+        }
     }
 
-    SetCurrencyModal{
-        id: setCurrencyModal
+    Component {
+        id: setCurrencyModalComponent
+        SetCurrencyModal{
+            onClosed: {
+                destroy();
+            }
+        }
     }
 
-    TokenSettingsModal{
-        id: tokenSettingsModal
+    Component {
+        id: tokenSettingsModalComponent
+        TokenSettingsModal{
+            onClosed: {
+                destroy();
+            }
+        }
     }
 
-    AccountSettingsModal {
-        id: accountSettingsModal
-        changeSelectedAccount: walletHeader.changeSelectedAccount
+    Component {
+        id: accountSettingsModalComponent
+        AccountSettingsModal{
+            onClosed: {
+                destroy();
+            }
+            changeSelectedAccount: walletHeader.changeSelectedAccount
+        }
     }
 
-    AddCustomTokenModal {
+    AddCustomTokenModal{
         id: addCustomTokenModal
     }
 
@@ -103,7 +121,7 @@ Item {
             imageSource: "../../img/send.svg"
             //% "Send"
             text: qsTrId("command-button-send")
-            onClicked: function () {
+            onClicked: function() {
                 sendModal.open()
             }
         }
@@ -115,7 +133,7 @@ Item {
             //% "Receive"
             text: qsTrId("receive")
             onClicked: function () {
-                receiveModal.open()
+                openPopup(receiveModalComponent);
             }
             anchors.left: sendBtn.right
             anchors.leftMargin: walletMenu.btnOuterMargin
@@ -143,9 +161,7 @@ Item {
                     icon.source: "../../img/manage-wallet.svg"
                     icon.width: 16
                     icon.height: 16
-                    onTriggered: {
-                        accountSettingsModal.open()
-                    }
+                    onTriggered: openPopup(accountSettingsModalComponent)
                 }
                 Action {
                     text: qsTr("Manage Assets")
@@ -153,7 +169,7 @@ Item {
                     icon.width: 16
                     icon.height: 16
                     onTriggered: {
-                        tokenSettingsModal.open()
+                        openPopup(tokenSettingsModalComponent)
                         walletModel.loadCustomTokens()
                     }
                 }
@@ -164,7 +180,9 @@ Item {
                     icon.width: 16
                     icon.height: 16
                     onTriggered: {
-                        setCurrencyModal.open()
+                        openPopup(setCurrencyModalComponent, { 
+                            defaultCurrency: walletModel.defaultCurrency
+                        })
                     }
                 }
             }

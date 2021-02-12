@@ -8,6 +8,7 @@ Item {
     property bool isCurrentUser: false
     property int contentType: 2
     property var container
+    property bool headerRepeatCondition: (authorCurrentMsg != authorPrevMsg || shouldRepeatHeader || dateGroupLbl.visible)
 
     id: root
     anchors.top: parent.top
@@ -21,7 +22,7 @@ Item {
 
     UserImage {
         id: chatImage
-        visible: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && authorCurrentMsg != authorPrevMsg && !root.isCurrentUser
+        visible: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
         anchors.left: parent.left
         anchors.leftMargin: Style.current.padding
         anchors.top:  dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
@@ -30,7 +31,7 @@ Item {
 
     UsernameLabel {
         id: chatName
-        visible: true// chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && authorCurrentMsg != authorPrevMsg && !root.isCurrentUser
+        visible: true // chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
         anchors.leftMargin: 20
         anchors.top: dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
         anchors.topMargin: 0
@@ -44,7 +45,7 @@ Item {
         readonly property int maxMessageChars: (defaultMaxMessageChars * messageWidth) / defaultMessageWidth
         property int chatVerticalPadding: isImage ? 4 : 6
         property int chatHorizontalPadding: isImage ? 0 : 12
-        property bool longReply: chatReply.visible && repliedMessageContent.length > maxMessageChars
+        property bool longReply: chatReply.active && repliedMessageContent.length > maxMessageChars
         property bool longChatText: chatsModel.plainText(message).split('\n').some(function (messagePart) {
             return messagePart.length > maxMessageChars
         })
@@ -111,9 +112,9 @@ Item {
         anchors.leftMargin: !root.isCurrentUser ? 8 : 0
         anchors.right: !root.isCurrentUser ? undefined : parent.right
         anchors.rightMargin: !root.isCurrentUser ? 0 : Style.current.padding
-        anchors.top: authorCurrentMsg != authorPrevMsg && !root.isCurrentUser ? chatImage.top : (dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top)
+        anchors.top: headerRepeatCondition && !root.isCurrentUser ? chatImage.top : (dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top)
         anchors.topMargin: 0
-        visible: isMessage
+        visible: isMessage && contentType !== Constants.transactionType
 
         ChatReply {
             id: chatReply
@@ -125,7 +126,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: chatBox.chatHorizontalPadding
             container: root.container
-	        chatHorizontalPadding: chatBox.chatHorizontalPadding
+            chatHorizontalPadding: chatBox.chatHorizontalPadding
         }
 
         ChatText {
@@ -139,7 +140,7 @@ Item {
             anchors.rightMargin: chatBox.longChatText ? chatBox.chatHorizontalPadding : 0
             textField.color: !root.isCurrentUser ? Style.current.textColor : Style.current.currentUserTextColor
             Connections {
-                target: appSettings.compactMode ? null : chatBox
+                target: appSettings.useCompactMode ? null : chatBox
                 onLongChatTextChanged: {
                     chatText.setWidths()
                 }
@@ -207,6 +208,18 @@ Item {
         }
     }
 
+    Loader {
+        id: transactionBubbleLoader
+        active: contentType === Constants.transactionType
+        anchors.left: !isCurrentUser ? chatImage.right : undefined
+        anchors.leftMargin: isCurrentUser ? 0 : Style.current.halfPadding
+        anchors.right: isCurrentUser ? parent.right : undefined
+        anchors.rightMargin: Style.current.padding
+        sourceComponent: Component {
+            TransactionBubble {}
+        }
+    }
+
     Rectangle {
         id: dateTimeBackground
         visible: isImage
@@ -223,6 +236,7 @@ Item {
 
     ChatTime {
         id: chatTime
+        visible: isMessage && !emojiReactionLoader.active
         anchors.top: isImage ? undefined : (linksLoader.active ? linksLoader.bottom : chatBox.bottom)
         anchors.topMargin: isImage ? 0 : 4
         anchors.verticalCenter: isImage ? dateTimeBackground.verticalCenter : undefined
@@ -269,8 +283,9 @@ Item {
         id: emojiReactionLoader
         active: emojiReactions !== ""
         sourceComponent: emojiReactionsComponent
-        anchors.left: !root.isCurrentUser ? chatBox.left : undefined
-        anchors.right: !root.isCurrentUser ? undefined : chatBox.right
+        anchors.left: root.isCurrentUser ? undefined : chatBox.left
+        anchors.right: root.isCurrentUser ? chatBox.right : undefined
+        anchors.leftMargin: root.isCurrentUser ? Style.current.halfPadding : 1
         anchors.top: chatBox.bottom
         anchors.topMargin: 2
     }

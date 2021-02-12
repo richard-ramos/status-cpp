@@ -17,7 +17,7 @@ Rectangle {
     property bool hasMentions: false
     property int chatType: ChatType.Public
     property string searchStr: ""
-    property bool isCompact: appSettings.compactMode
+    property bool isCompact: appSettings.useCompactMode
     property int contentType: 1
     property bool muted: false
     property bool hovered: false
@@ -35,12 +35,16 @@ Rectangle {
                 wrapper.profileImage = appMain.getProfileImage(wrapper.chatId)
             }
         }
-    }*/
+    }
+    */
 
     id: wrapper
     color: {
-      if (ListView.isCurrentItem || wrapper.hovered) {
+      if (ListView.isCurrentItem) {
         return Style.current.secondaryBackground
+      }
+      if (wrapper.hovered) {
+        return Style.current.backgroundHover
       }
       return Style.current.transparent
     }
@@ -51,12 +55,12 @@ Rectangle {
     // Hide the box if it is filtered out
     property bool isVisible: searchStr === "" || name.includes(searchStr)
     visible: isVisible ? true : false
-    height: isVisible ? (!isCompact ? 64 : contactImage.height + Style.current.smallPadding * 2) : 0
+    height: isVisible ? (!isCompact ? 64 : 40) : 0
 
     StatusIdenticon {
         id: contactImage
-        height: !isCompact ? 40 : 20
-        width: !isCompact ? 40 : 20
+        height: !isCompact ? 40 : 28
+        width: !isCompact ? 40 : 28
         chatColor: wrapper.chatColor
         chatName: wrapper.name
         chatType: wrapper.chatType
@@ -73,7 +77,7 @@ Rectangle {
         fillMode: Image.PreserveAspectFit
         source: "../../../img/channel-icon-" + (wrapper.chatType === Constants.chatTypePublic ? "public-chat.svg" : "group.svg")
         anchors.left: contactImage.right
-        anchors.leftMargin: Style.current.padding
+        anchors.leftMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.top: !isCompact ? parent.top : undefined
         anchors.topMargin: !isCompact ? Style.current.smallPadding : 0
         anchors.verticalCenter: !isCompact ? undefined : parent.verticalCenter
@@ -92,7 +96,8 @@ Rectangle {
         font.weight: Font.Medium
         font.pixelSize: 15
         anchors.left: channelIcon.visible ? channelIcon.right : contactImage.right
-        anchors.leftMargin: channelIcon.visible ? 2 : Style.current.padding
+        anchors.leftMargin: channelIcon.visible ? 2 :
+                                                  (!isCompact ? Style.current.padding : Style.current.halfPadding)
         anchors.top: !isCompact ? parent.top : undefined
         anchors.topMargin: !isCompact ? Style.current.smallPadding : 0
         anchors.verticalCenter: !isCompact ? undefined : parent.verticalCenter
@@ -128,12 +133,12 @@ Rectangle {
 
     StyledText {
         id: contactTime
+        visible: !isCompact
         text: Utils.formatDateTime(wrapper.timestamp, appSettings.locale)
         anchors.right: parent.right
-        anchors.rightMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
-        anchors.top: !isCompact ? parent.top : undefined
-        anchors.topMargin: !isCompact ? Style.current.smallPadding : 0
-        anchors.verticalCenter: !isCompact ? undefined : parent.verticalCenter
+        anchors.rightMargin: Style.current.padding
+        anchors.top: parent.top
+        anchors.topMargin: Style.current.smallPadding
         font.pixelSize: 11
         color: Style.current.darkGrey
     }
@@ -142,7 +147,7 @@ Rectangle {
         width: 22
         height: 22
         radius: 50
-        anchors.right: !isCompact ? parent.right : contactTime.left
+        anchors.right: parent.right
         anchors.rightMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.bottom: !isCompact ? parent.bottom : undefined
         anchors.bottomMargin: !isCompact ? Style.current.smallPadding : 0
@@ -173,6 +178,7 @@ Rectangle {
         }
         onClicked: {
             if (mouse.button & Qt.RightButton) {
+                console.log("THE INDEX IS: ", index)
                 channelContextMenu.openMenu(index, muted, chatType, name, chatId, identicon)
                 return;
             }

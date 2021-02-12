@@ -3,7 +3,7 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import "../../../../imports"
 import "../../../../shared"
-import im.status.desktop 1.0
+import "../../../../shared/status"
 
 ModalPopup {
     id: popup
@@ -65,7 +65,7 @@ ModalPopup {
 
                     Repeater {
                         id: mnemonicRepeater
-                        model: StatusSettings.Mnemonic.split(" ")
+                        model: profileModel.mnemonic.get.split(" ")
                         Rectangle {
                             id: word
                             height: 40
@@ -179,7 +179,7 @@ ModalPopup {
             title: qsTr("Are you sure?")
             confirmationText: qsTr("You will not be able to see the whole seed phrase again")
             onConfirmButtonClicked: {
-                StatusSettings.removeMnemonic()
+                profileModel.mnemonic.remove()
                 popup.close();
                 removeSeedPhraseConfirm.close();
             }
@@ -212,8 +212,8 @@ ModalPopup {
 
     
 
-    footer: StyledButton {
-        label: showWarning ? 
+    footer: StatusButton {
+        text: showWarning ? 
                 qsTr("Okay, continue") : 
                 qsTrId("Next")
         anchors.right: parent.right
@@ -227,7 +227,7 @@ ModalPopup {
                     seedWord1Idx = Math.floor(Math.random() * 12);
                 } else {
                     if(seedWord2Idx == -1){
-                        if(StatusSettings.Mnemonic.split(" ")[seedWord1Idx] !== txtFieldWord.text){
+                        if(profileModel.mnemonic.getWord(seedWord1Idx) !== txtFieldWord.text){
                             validationError = qsTr("Wrong word");
                             return;
                         }
@@ -239,7 +239,7 @@ ModalPopup {
                             seedWord2Idx = Math.floor(Math.random() * 12);
                         } while(seedWord2Idx == seedWord1Idx);
                     } else {
-                        if(StatusSettings.Mnemonic.split(" ")[seedWord2Idx] !== txtFieldWord.text){
+                        if(profileModel.mnemonic.getWord(seedWord2Idx) !== txtFieldWord.text){
                             validationError = qsTr("Wrong word");
                             return;
                         }

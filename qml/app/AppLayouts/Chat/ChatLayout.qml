@@ -1,6 +1,4 @@
 import QtQuick.Layouts 1.14
-
-
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import Qt.labs.settings 1.0
@@ -15,7 +13,7 @@ SplitView {
     id: chatView
     handle: SplitViewHandle {}
 
-    // property alias chatColumn: chatColumn
+    //property alias chatColumn: chatColumn
 
     property var onActivated: function () {
         chatsModel.restorePreviousActiveChannel()

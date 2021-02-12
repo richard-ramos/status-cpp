@@ -29,6 +29,7 @@ ScrollView {
                 source: "../../../img/profile/" + modelData.filename
                 active: profileMenu.profileCurrentIndex === modelData.id
                 Layout.fillWidth: true
+                width: profileMenu.width
                 onClicked: function () {
                     profileMenu.profileCurrentIndex = modelData.id
                 }

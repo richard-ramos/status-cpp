@@ -44,6 +44,48 @@ StackLayout {
 
     currentIndex: 0 // TODO:  chatsModel.activeChannelIndex > -1 && chatGroupsListViewCount > 0 ? 0 : 1
 
+    property var idMap: {}
+
+    function addSuggestionFromMessageList(i){
+        /* TODO:
+        const contactAddr = chatsModel.messageList.getMessageData(i, "publicKey");
+        if(idMap[contactAddr]) return;
+        chatInput.suggestionsList.append({
+            alias: chatsModel.messageList.getMessageData(i, "alias"),
+            ensName: chatsModel.messageList.getMessageData(i, "ensName"),
+            address: contactAddr,
+            identicon: chatsModel.messageList.getMessageData(i, "identicon"),
+            localNickname: chatsModel.messageList.getMessageData(i, "localName")
+        });
+        idMap[contactAddr] = true;
+        */
+    }
+
+    function populateSuggestions(){
+        /*chatInput.suggestionsList.clear()
+        const len = chatsModel.suggestionList.rowCount()
+
+        idMap = {}
+
+        for (let i = 0; i < len; i++) {
+            const contactAddr = chatsModel.suggestionList.rowData(i, "address");
+            if(idMap[contactAddr]) continue;
+            chatInput.suggestionsList.append({
+                alias: chatsModel.suggestionList.rowData(i, "alias"),
+                ensName: chatsModel.suggestionList.rowData(i, "ensName"),
+                address: contactAddr,
+                identicon: chatsModel.suggestionList.rowData(i, "identicon"),
+                localNickname: chatsModel.suggestionList.rowData(i, "localNickname")
+            });
+            idMap[contactAddr] = true;
+        }
+        const len2 = chatsModel.messageList.rowCount();
+        for (let i = 0; i < len2; i++) {
+            addSuggestionFromMessageList(i);
+        }*/
+    }
+
+
     function showReplyArea() {
         isReply = true;
         isImage = false;
@@ -173,19 +215,12 @@ StackLayout {
         Connections {
             target: chatsModel
             onActiveChannelChanged: {
+                chatInput.suggestions.hide();
                 chatInput.textInput.forceActiveFocus(Qt.MouseFocusReason)
-                chatInput.suggestionsList.clear()
-                const len = chatsModel.suggestionList.rowCount()
-                for (let i = 0; i < len; i++) {
-                    chatInput.suggestionsList.append({
-                                           alias: chatsModel.suggestionList.rowData(i, "alias"),
-                                           ensName: chatsModel.suggestionList.rowData(i, "ensName"),
-                                           address: chatsModel.suggestionList.rowData(i, "address"),
-                                           identicon: chatsModel.suggestionList.rowData(i, "identicon"),
-                                           ensVerified: chatsModel.suggestionList.rowData(i, "ensVerified"),
-                                           localNickname: chatsModel.suggestionList.rowData(i, "localNickname")
-                                       });
-                }
+                populateSuggestions();
+            }
+            onMessagePushed: {
+                addSuggestionFromMessageList(messageIndex);
             }
         }
 
@@ -222,21 +257,7 @@ StackLayout {
 
             Component {
                 id: loadingIndicator
-                SVGImage {
-                    id: loadingImg
-                    source: "../../../app/img/loading.svg"
-                    width: 25
-                    height: 25
-                    fillMode: Image.Stretch
-                    RotationAnimator {
-                        target: loadingImg;
-                        from: 0;
-                        to: 360;
-                        duration: 1200
-                        running: true
-                        loops: Animation.Infinite
-                    }
-                }
+                LoadingAnimation {}
             }
 
             StatusChatInput {
@@ -278,18 +299,20 @@ StackLayout {
                     if (chatInput.fileUrls.length > 0){
                         chatsModel.sendImage(chatInput.fileUrls[0], false);
                     }
-                    
-                    // var msg = chatsModel.plainText(Emoji.deparse(chatInput.textInput.text))
-                    // TODO:
-                    var msg = chatInput.textInput.text;
-                    
+                    var msg = chatsModel.plainText(Emoji.deparse(chatInput.textInput.text))
                     if (msg.length > 0){
                         msg = chatInput.interpretMessage(msg)
-                        chat.sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType); // TODO:, false);
-                        chatInput.textInput.text = "";
+                        chatsModel.sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType, false);
+                        chatInput.textInput.textFormat = TextEdit.PlainText;
                         if(event) event.accepted = true
                         chatInput.messageSound.stop()
                         Qt.callLater(chatInput.messageSound.play);
+
+                        Qt.callLater(function(){
+                            chatInput.textInput.clear();
+                            chatInput.textInput.textFormat = TextEdit.RichText;
+                        });
+
                     }
 
                 }

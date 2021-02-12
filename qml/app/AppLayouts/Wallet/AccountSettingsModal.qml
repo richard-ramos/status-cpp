@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import QtQuick.Dialogs 1.3
 import "../../../imports"
 import "../../../shared"
+import "../../../shared/status"
 
 ModalPopup {
     property var currentAccount: walletModel.currentAccount
@@ -42,9 +43,9 @@ ModalPopup {
         validationError: popup.accountNameValidationError
     }
 
-    ColorSelector {
+    StatusWalletColorSelect {
         id: accountColorInput
-        selectedColor: currentAccount.iconColor
+        selectedColor: currentAccount.iconColor.toUpperCase()
         model: Constants.accountColors
         anchors.top: accountNameInput.bottom
         anchors.topMargin: marginBetweenInputs
@@ -108,15 +109,18 @@ ModalPopup {
         width: parent.width
         height: saveBtn.height
 
-        StyledButton {
+        StatusButton {
             visible:  currentAccount.walletType === Constants.watchWalletType
             anchors.top: parent.top
             anchors.right: saveBtn.left
             anchors.rightMargin: Style.current.padding
             //% "Delete account"
-            label: qsTrId("delete-account")
-            btnColor: Style.current.white
-            textColor: Style.current.red
+            text: qsTrId("delete-account")
+            bgColor: "transparent"
+            showBorder: true
+            borderColor: Style.current.border
+            hoveredBorderColor: Style.current.transparent
+            type: "warn"
 
             MessageDialog {
                 id: deleteError
@@ -153,15 +157,15 @@ ModalPopup {
                 confirmationDialog.open()
             }
         }
-        StyledButton {
+        StatusButton {
             id: saveBtn
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.rightMargin: Style.current.padding
             //% "Save changes"
-            label: qsTrId("save-changes")
+            text: qsTrId("save-changes")
 
-            disabled: accountNameInput.text === ""
+            enabled: accountNameInput.text !== ""
 
             MessageDialog {
                 id: changeError

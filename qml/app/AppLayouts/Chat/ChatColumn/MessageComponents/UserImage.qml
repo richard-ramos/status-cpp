@@ -18,6 +18,7 @@ Loader {
                 height: 36
                 border.width: 1
                 border.color: Style.current.border
+                showLoadingIndicator: false
                 source: {
                     // TODO show current user profile picture or identicon
                     return !isCurrentUser ? contact.image : profileModel.profile.identicon

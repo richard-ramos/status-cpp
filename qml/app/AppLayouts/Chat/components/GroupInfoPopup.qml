@@ -13,18 +13,19 @@ ModalPopup {
     property int memberCount: 1
     readonly property int maxMembers: 10
     property var pubKeys: []
+    property var channel
     property bool isAdmin: false
 
     function resetSelectedMembers(){
         pubKeys = [];
-        memberCount = chatsModel.activeChannel.members.rowCount();
+        memberCount = channel.members.rowCount();
         currMemberCount = memberCount;
         contactList.membersData.clear();
 
         const contacts = chatView.getContactListObject()
 
         contacts.forEach(function (contact) {
-            if(chatsModel.activeChannel.contains(contact.pubKey) ||
+            if(popup.channel.contains(contact.pubKey) ||
                     !contact.isContact) {
                 return;
             }
@@ -32,16 +33,21 @@ ModalPopup {
         })
     }
 
+    function openMenu(channel) {
+        popup.channel = channel
+        popup.open()
+    }
+
     onOpened: {
         addMembers = false;
-        popup.isAdmin = chatsModel.activeChannel.isAdmin(profileModel.profile.pubKey)
+        popup.isAdmin = popup.channel.isAdmin(profileModel.profile.pubKey)
         btnSelectMembers.enabled = false;
         resetSelectedMembers();
     }
 
     function doAddMembers(){
         if(pubKeys.length === 0) return;
-        chatsModel.groups.addMembers(chatsModel.activeChannel.id, JSON.stringify(pubKeys));
+        chatsModel.groups.addMembers(popup.channel.id, JSON.stringify(pubKeys));
         popup.close();
     }
 
@@ -55,14 +61,14 @@ ModalPopup {
           width: 36
           height: 36
           anchors.top: parent.top
-          color: chatsModel.activeChannel.color
-          chatName: chatsModel.activeChannel.name
+          color: popup.channel.color
+          chatName: popup.channel.name
       }
     
       StyledTextEdit {
           id: groupName
           //% "Add members"
-          text: addMembers ? qsTrId("add-members") : chatsModel.activeChannel.name
+          text: addMembers ? qsTrId("add-members") : popup.channel.name
           anchors.top: parent.top
           anchors.topMargin: 2
           anchors.left: letterIdenticon.right
@@ -174,7 +180,7 @@ ModalPopup {
                         pubKeys.splice(idx, 1);
                     }
                 }
-                memberCount = chatsModel.activeChannel.members.rowCount() + pubKeys.length;
+                memberCount = popup.channel.members.rowCount() + pubKeys.length;
                 btnSelectMembers.enabled = pubKeys.length > 0
             }
         }
@@ -184,14 +190,9 @@ ModalPopup {
         id: groupInfoItem
         anchors.fill: parent
 
-        StyledText {
-            id: memberLabel
-            //% "Members"
-            text: qsTrId("members-title")
-            anchors.left: parent.left
-            anchors.leftMargin: Style.current.padding
-            font.pixelSize: 15
-            color: Style.current.darkGrey
+        Separator {
+            id: separator
+            visible: !addMembers
         }
 
         ListView {
@@ -199,12 +200,14 @@ ModalPopup {
             anchors.fill: parent
             anchors.top: memberLabel.bottom
             anchors.bottom: popup.bottom
-            anchors.topMargin: 30
+            anchors.topMargin: addMembers ? 30 : 15
             anchors.bottomMargin: Style.current.padding
-            spacing: 4
+            anchors.leftMargin: 15
+            anchors.rightMargin: 15
+            spacing: 15
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: chatsModel.activeChannel.members
+            model: popup.channel.members
             delegate: Item {
                 id: contactRow
                 width: parent.width
@@ -223,10 +226,16 @@ ModalPopup {
                               contactRow.nickname : Utils.removeStatusEns(model.userName)
                     anchors.left: identicon.right
                     anchors.leftMargin: Style.current.smallPadding
-                    anchors.right: adminLabel.left
-                    anchors.rightMargin: Style.current.smallPadding
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 13
+                    StyledText {
+                        visible: model.pubKey === profileModel.profile.pubKey
+                        anchors.left: parent.right
+                        anchors.leftMargin: 5
+                        text: qsTr("(You)")
+                        color: Style.current.secondaryText
+                        font.pixelSize: parent.font.pixelSize
+                    }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -245,6 +254,7 @@ ModalPopup {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 13
+                    color: Style.current.secondaryText
                 }
 
                 StyledText {
@@ -254,6 +264,9 @@ ModalPopup {
                     anchors.right: parent.right
                     anchors.rightMargin: Style.current.smallPadding
                     anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: 20
+                    font.bold: true
+                    color: Style.current.secondaryText
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
@@ -266,14 +279,14 @@ ModalPopup {
                                 icon.source: "../../../img/make-admin.svg"
                                 //% "Make Admin"
                                 text: qsTrId("make-admin")
-                                onTriggered: chatsModel.groups.makeAdmin(chatsModel.activeChannel.id,  model.pubKey)
+                                onTriggered: chatsModel.groups.makeAdmin(popup.channel.id,  model.pubKey)
                             }
                             Action {
                                 icon.source: "../../../img/remove-from-group.svg"
                                 icon.color: Style.current.red
                                 //% "Remove From Group"
                                 text: qsTrId("remove-from-group")
-                                onTriggered: chatsModel.groups.kickMember(chatsModel.activeChannel.id,  model.pubKey)
+                                onTriggered: chatsModel.groups.kickMember(popup.channel.id,  model.pubKey)
                             }
                         }
                     }
@@ -286,49 +299,39 @@ ModalPopup {
         visible: popup.isAdmin
         width: parent.width
         height: children[0].height
-        StyledButton {
+        StatusButton {
           visible: !addMembers
           anchors.right: parent.right
           //% "Add members"
-          label: qsTrId("add-members")
+          text: qsTrId("add-members")
           anchors.bottom: parent.bottom
           onClicked: {
             addMembers = true;
           }
         }
 
-        Button {
+        StatusRoundButton {
             id: btnBack
             visible: addMembers
-            width: 44
-            height: 44
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            SVGImage {
-                source: "../../../img/arrow-left-btn-active.svg"
-                width: 50
-                height: 50
-            }
-            background: Rectangle {
-                color: "transparent"
-            }
-            MouseArea {
-                cursorShape: Qt.PointingHandCursor
-                anchors.fill: parent
-                onClicked : {
-                    addMembers = false;
-                    resetSelectedMembers();
-                }
+            icon.name: "arrow-right"
+            icon.width: 20
+            icon.height: 16
+            rotation: 180
+            onClicked : {
+                addMembers = false;
+                resetSelectedMembers();
             }
         }
 
-        StyledButton {
+        StatusButton {
           id: btnSelectMembers
           visible: addMembers
-          disabled: memberCount <= currMemberCount
+          enabled: memberCount >= currMemberCount
           anchors.right: parent.right
           //% "Add selected"
-          label: qsTrId("add-selected")
+          text: qsTrId("add-selected")
           anchors.bottom: parent.bottom
           onClicked: doAddMembers()
         }
