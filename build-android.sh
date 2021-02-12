@@ -7,7 +7,7 @@ export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-l
 export CMAKE_PREFIX_PATH=/home/richard/Qt/5.14.2/android
 
 
-#rm -Rf build/*
+rm -Rf build/*
 cd build
 
 cmake \
