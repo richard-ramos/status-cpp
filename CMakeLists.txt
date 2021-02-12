@@ -27,13 +27,30 @@ include(CheckIncludeFileCXX)
 include(CheckIncludeFiles)
 include(ExternalProject)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/SortFilterProxyModel)
-target_compile_options(SortFilterProxyModel PRIVATE -fPIC)
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/SortFilterProxyModel)
+#target_compile_options(SortFilterProxyModel PRIVATE -fPIC)
 
 # Add the current CMake modules folder to the CMake search path.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(Filesystem REQUIRED)
-find_package(OpenSSL REQUIRED)
+#find_package(Filesystem REQUIRED)
+#find_package(OpenSSL REQUIRED)
+
+
+
+
+# QtCreator supports the following variables for Android, which are identical to qmake Android variables.
+# Check https://doc.qt.io/qt/deployment-android.html for more information.
+# They need to be set before the find_package(...) calls below.
+
+#if(ANDROID)
+#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+#    if (ANDROID_ABI STREQUAL "armeabi-v7a")
+#        set(ANDROID_EXTRA_LIBS
+#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libcrypto.so
+#            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libssl.so)
+#    endif()
+#endif()
+
 
 
 
@@ -51,7 +68,7 @@ ExternalProject_Add(status-go
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
   BUILD_IN_SOURCE 1
-  BUILD_COMMAND make statusgo-shared-library V=1
+  BUILD_COMMAND make statusgo-android V=1
   BUILD_BYPRODUCTS ${STATUSGO_LIB_DIR}/libstatus.so
 )
 
@@ -91,7 +108,7 @@ include_directories(${QRCODE_LIB_DIR})
 
 ################################################################################
 # Begin: Qt
-find_package(Qt5 COMPONENTS Core Gui Widgets Quick Qml Concurrent Network DBus PrintSupport REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets Quick Qml Concurrent Network  REQUIRED) #DBus PrintSupport
 find_package(Qt5QuickCompiler)
 
 set(CMAKE_AUTOMOC ON)
@@ -131,10 +148,20 @@ include_directories(
 )
 
 
-add_executable(status-cpp 
-    ${SOURCES}
-    $<TARGET_OBJECTS:SortFilterProxyModel> 
-)
+
+
+if(ANDROID)
+    add_library(status-cpp SHARED
+        ${SOURCES}
+       # $<TARGET_OBJECTS:SortFilterProxyModel>
+    )
+else()
+    add_executable(status-cpp
+        ${SOURCES}
+      #  $<TARGET_OBJECTS:SortFilterProxyModel>
+    )
+endif()
+
 
 target_compile_features(status-cpp
     PRIVATE
@@ -145,8 +172,8 @@ target_include_directories(status-cpp PUBLIC include)
 
 target_link_libraries(status-cpp
     PRIVATE
-        OpenSSL::OpenSSL
-        std::filesystem
+        #OpenSSL::OpenSSL
+        #std::filesystem
         status
         qrcodegen
         Qt5::Core
