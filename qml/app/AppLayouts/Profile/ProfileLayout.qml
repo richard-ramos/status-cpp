@@ -53,7 +53,7 @@ SplitView {
             }
         }
 
-        ContactsContainer {}
+       /* ContactsContainer {} Commented just to make it work on android */ 
 
         EnsContainer {
             id: ensContainer

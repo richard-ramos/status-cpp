@@ -19,6 +19,8 @@ class LoginModel : public QAbstractListModel
 	Q_PROPERTY(QVariantMap currentAccount READ currentAccount NOTIFY selectedAccountChanged)
 
 public:
+
+    static QString path;
 	enum LoginRoles
 	{
 		Id = Qt::UserRole + 1,

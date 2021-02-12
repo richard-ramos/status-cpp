@@ -4,8 +4,8 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
-#include <openssl/ssl.h>
 #include <string>
+#include <QStandardPaths>
 
 #include <QApplication>
 #include <QDebug>
@@ -58,10 +58,21 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+
+	auto path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	if (path.isEmpty()) qFatal("Cannot determine storage location");
+	QDir d{path};
+	if (d.mkpath(d.absolutePath()) && QDir::setCurrent(d.absolutePath())) {
+		qDebug() << "Created directory in" << QDir::currentPath();  
+	}
+	
+
+
+
 	// Init keystore
 	// TODO: extract to separate file
-	QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
-	const char* initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
+	QString fullDirPath = path; // TODO: set correct path
+	const char* initKeystoreResult = InitKeystore(path.toUtf8().data());
 	QJsonObject initKeystoreJson = QJsonDocument::fromJson(initKeystoreResult).object();
 	if(initKeystoreJson["error"].toString() != "")
 	{
@@ -71,6 +82,7 @@ int main(int argc, char* argv[])
 		msgBox.exec();
 		return 1;
 	}
+	LoginModel::path = fullDirPath;
 
 	QScopedPointer<Status> status(Status::instance());
 	QScopedPointer<Settings> settings(Settings::instance());
@@ -93,8 +105,8 @@ int main(int argc, char* argv[])
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
 
-	engine.load(QUrl(QStringLiteral("../qml/main.qml")));
-	// engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+	//engine.load(QUrl(QStringLiteral("../qml/main.qml")));
+	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
 	return app.exec();
 }

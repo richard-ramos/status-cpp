@@ -42,41 +42,42 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Check https://doc.qt.io/qt/deployment-android.html for more information.
 # They need to be set before the find_package(...) calls below.
 
-#if(ANDROID)
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+if(ANDROID)
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
 #    if (ANDROID_ABI STREQUAL "armeabi-v7a")
 #        set(ANDROID_EXTRA_LIBS
 #            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libcrypto.so
 #            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libssl.so)
 #    endif()
-#endif()
+endif()
 
 
 
 
 ################################################################################
 # Begin: status-go
-set(STATUSGO_ROOT ${CMAKE_BINARY_DIR}/status-go)
-set(STATUSGO_LIB_DIR ${STATUSGO_ROOT}/src/status-go/build/bin)
+set(STATUSGO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/vendor/status-go)
 
 ExternalProject_Add(status-go
   PREFIX ${STATUSGO_ROOT}
-  GIT_REPOSITORY "git://github.com/status-im/status-go"
-  GIT_TAG "develop"
+  SOURCE_DIR ${STATUSGO_ROOT}
   UPDATE_COMMAND ""
   PATCH_COMMAND ""
   CONFIGURE_COMMAND ""
   INSTALL_COMMAND ""
+  TMP_DIR ""
+  INSTALL_DIR ""
   BUILD_IN_SOURCE 1
-  BUILD_COMMAND make statusgo-android V=1
-  BUILD_BYPRODUCTS ${STATUSGO_LIB_DIR}/libstatus.so
+  BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build-statusgo-android.sh
+  BUILD_BYPRODUCTS ${STATUSGO_ROOT}/libstatus.so
 )
 
+
 ExternalProject_Get_Property(status-go SOURCE_DIR)
-add_library(status STATIC IMPORTED)
-set_property(TARGET status PROPERTY IMPORTED_LOCATION ${STATUSGO_LIB_DIR}/libstatus.so)
+add_library(status SHARED IMPORTED)
+set_property(TARGET status PROPERTY IMPORTED_LOCATION ${STATUSGO_ROOT}/libstatus.so)
 add_dependencies(status status-go)
-include_directories(${STATUSGO_LIB_DIR})
+include_directories(${STATUSGO_ROOT})
 # End: status-go
 
 
@@ -85,24 +86,24 @@ include_directories(${STATUSGO_LIB_DIR})
 set(QRCODE_ROOT ${CMAKE_BINARY_DIR}/QR-Code-generator)
 set(QRCODE_LIB_DIR ${QRCODE_ROOT}/src/QR-Code-generator/cpp)
 
-ExternalProject_Add(QR-Code-generator
-  PREFIX ${QRCODE_ROOT}
-  GIT_REPOSITORY "git://github.com/status-im/QR-Code-generator"
-  GIT_TAG "master"
-  UPDATE_COMMAND ""
-  PATCH_COMMAND ""
-  CONFIGURE_COMMAND ""
-  INSTALL_COMMAND ""
-  BUILD_IN_SOURCE 1
-  BUILD_COMMAND make -C cpp V=1
-  BUILD_BYPRODUCTS ${QRCODE_LIB_DIR}/libqrcodegen.a
-)
+#ExternalProject_Add(QR-Code-generator
+#  PREFIX ${QRCODE_ROOT}
+#  GIT_REPOSITORY "git://github.com/status-im/QR-Code-generator"
+#  GIT_TAG "master"
+#  UPDATE_COMMAND ""
+#  PATCH_COMMAND ""
+#  CONFIGURE_COMMAND ""
+#  INSTALL_COMMAND ""
+#  BUILD_IN_SOURCE 1
+#  BUILD_COMMAND make -C cpp V=1
+#  BUILD_BYPRODUCTS ${QRCODE_LIB_DIR}/libqrcodegen.a
+#)
 
-ExternalProject_Get_Property(QR-Code-generator SOURCE_DIR)
-add_library(qrcodegen STATIC IMPORTED)
-set_property(TARGET qrcodegen PROPERTY IMPORTED_LOCATION ${QRCODE_LIB_DIR}/libqrcodegen.a)
-add_dependencies(qrcodegen QR-Code-generator)
-include_directories(${QRCODE_LIB_DIR})
+#ExternalProject_Get_Property(QR-Code-generator SOURCE_DIR)
+#add_library(qrcodegen SHARED IMPORTED)
+#set_property(TARGET qrcodegen PROPERTY IMPORTED_LOCATION ${QRCODE_LIB_DIR}/libqrcodegen.a)
+#add_dependencies(qrcodegen QR-Code-generator)
+#include_directories(${QRCODE_LIB_DIR})
 # End: QR-Code-generator
 
 
@@ -138,8 +139,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/contact.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/contacts-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/mailserver-cycle.cpp"
-
-#    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
 )
 
 include_directories(
@@ -175,7 +175,7 @@ target_link_libraries(status-cpp
         #OpenSSL::OpenSSL
         #std::filesystem
         status
-        qrcodegen
+      #  qrcodegen
         Qt5::Core
         Qt5::Widgets
         Qt5::Gui

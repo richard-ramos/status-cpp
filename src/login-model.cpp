@@ -18,11 +18,12 @@
 #include "status.hpp"
 #include "utils.hpp"
 
+QString LoginModel::path{""};
+
 QVector<NodeAccount> openAccounts()
 {
-	QString fullDirPath =
-		QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
-	const char* result{OpenAccounts(fullDirPath.toUtf8().data())};
+	
+	const char* result{OpenAccounts(LoginModel::path.toUtf8().data())};  // TODO: set correct path
 	QJsonArray multiAccounts = QJsonDocument::fromJson(result).array();
 
 	QVector<NodeAccount> vector;

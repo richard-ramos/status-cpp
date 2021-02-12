@@ -1,6 +1,5 @@
 
 #include "status.hpp"
-#include "QrCode.hpp"
 #include "constants.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
@@ -77,6 +76,7 @@ void Status::processSignal(QString ev)
 	if(!signalMap.count(signalEvent["type"].toString()))
 	{
 		qWarning() << "Unknown signal: " << signalEvent["type"].toString();
+		qDebug() << ev;
 		return;
 	}
 
@@ -126,7 +126,7 @@ QString Status::generateIdenticon(QString publicKey)
 
 QString Status::generateQRCode(QString publicKey)
 {
-	using namespace qrcodegen;
+	/*using namespace qrcodegen;
 	// Create the QR Code object
 	QStringList svg;
 	QrCode qr = QrCode::encodeText(publicKey.toUtf8().data(), QrCode::Ecc::MEDIUM);
@@ -147,7 +147,8 @@ QString Status::generateQRCode(QString publicKey)
 
 	svg << QString("\" fill=\"#000000\"/></svg>");
 
-	return svg.join("");
+	return svg.join("");*/
+	return QString("ABC");
 }
 
 QVariant Status::callPrivateRPC(QString method, QVariantList params)
@@ -176,6 +177,8 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 					   QStringLiteral("\"lastENSClockValue\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":\\s\"(\\d+?)\"")),
 					   QStringLiteral("\"lastUpdated\":\\1"));
+
+					
 
 	const char* result = CallPrivateRPC(payloadStr.toUtf8().data());
 

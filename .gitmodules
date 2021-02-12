@@ -4,3 +4,6 @@
 [submodule "vendor/SortFilterProxyModel"]
 	path = vendor/SortFilterProxyModel
 	url = https://github.com/oKcerG/SortFilterProxyModel
+[submodule "vendor/status-go"]
+	path = vendor/status-go
+	url = https://github.com/status-im/status-go.git

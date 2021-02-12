@@ -1,7 +1,6 @@
-export PATH=$PATH:/home/richard/go/bin # TODO
-export ANDROID_NDK=/home/richard/android-ndk-r21d
+export ANDROID_NDK=/home/richard/Android/Sdk/ndk/21.0.6113669
 export ANDROID_NDK_HOME=$ANDROID_NDK
-export ANDROID_API=30
+export ANDROID_API=23
 export ANDROID_HOME=/home/richard/Android/Sdk/
 export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi
 
@@ -12,10 +11,9 @@ export CMAKE_PREFIX_PATH=/home/richard/Qt/5.14.2/android
 cd build
 
 cmake \
-    -DANDROID_ABI=x86_64 \
-    -DANDROID_BUILD_ABI_x86_64=ON \
     -DANDROID_ABI=armeabi-v7a \
-    -DANDROID_BUILD_ABI_armeabi-v7a=ON \
+    -DANDROID_BUILD_ABI_x86=ON \
+    -DANDROID_BUILD_ABI_armeabi-v7a=OFF \
     -DANDROID_NATIVE_API_LEVEL=$ANDROID_API \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=$CMAKE_PREFIX_PATH \
