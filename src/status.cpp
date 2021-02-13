@@ -199,3 +199,8 @@ void Status::callPrivateRPC(QString method, QVariantList params, const QJSValue&
 		});
 	watcher->setFuture(QtConcurrent::run(this, &Status::callPrivateRPC, method, params));
 }
+
+void Status::copyToClipboard(const QString& value)
+{
+	return Utils::copyToClipboard(value);
+}

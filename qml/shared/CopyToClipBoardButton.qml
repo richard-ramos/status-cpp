@@ -2,6 +2,7 @@ import QtQuick 2.13
 import QtQuick.Controls 2.13
 import "../imports"
 import "../shared/status"
+import im.status.desktop 1.0
 
 Rectangle {
     id: copyToClipboardButton
@@ -43,7 +44,7 @@ Rectangle {
         }
         onClicked: {
             if (textToCopy) {
-                chatsModel.copyToClipboard(textToCopy)
+                Status.copyToClipboard(textToCopy)
             }
             onClick()
         }

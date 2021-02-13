@@ -4,6 +4,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QString>
+#include <QClipboard>
+#include <QGuiApplication>
 
 QString Utils::generateAlias(QString publicKey)
 {
@@ -26,3 +28,19 @@ QString Utils::jsonToStr(QJsonArray& arr)
 	QJsonDocument doc(arr);
 	return QString::fromUtf8(doc.toJson());
 }
+
+
+/*
+QString Utils::resolveENS(QString ensName)
+{
+
+}*/
+
+void Utils::copyToClipboard(const QString& value)
+{
+	QClipboard *clipboard = QGuiApplication::clipboard();
+	clipboard->setText(value);
+
+}
+
+

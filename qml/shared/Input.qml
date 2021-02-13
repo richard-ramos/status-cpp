@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import "../imports"
 import "../shared/status"
 import "."
+import im.status.desktop 1.0
 
 Item {
     property alias textField: inputValue
@@ -148,7 +149,7 @@ Item {
                         showBorder: true
                         onClicked: {
                             if (inputBox.copyToClipboard) {
-                                chatsModel.copyToClipboard(inputValue.text)
+                                Status.copyToClipboard(inputValue.text)
                             } else {
                                 if (inputValue.canPaste) {
                                     inputValue.paste()
