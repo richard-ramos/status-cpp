@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -14,7 +15,7 @@ ModalPopup {
     }
 
     function populatePreviewableSites() {
-        let whitelist = JSON.parse(profileModel.getLinkPreviewWhitelist())
+        let whitelist = JSON.parse(StatusSettings.getLinkPreviewWhitelist())
         whitelist.forEach(entry => {
             entry.isWhitelisted = appSettings.whitelistedUnfurlingSites[entry.address] || false
             previewableSites.append(entry)

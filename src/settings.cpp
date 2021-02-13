@@ -208,3 +208,11 @@ bool Settings::isMnemonicBackedUp()
 	lock.unlock();
 	return result;
 }
+
+QString Settings::getLinkPreviewWhitelist()
+{
+	QJsonObject obj{{"method", "wakuext_getLinkPreviewWhitelist"}, {"params", QJsonArray{}}};
+	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
+	QJsonArray whiteList = QJsonDocument::fromJson(result).object()["result"].toArray();
+	return Utils::jsonToStr(whiteList);
+}
