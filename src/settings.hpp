@@ -1,9 +1,9 @@
 #pragma once
 
+#include "mailserver-cycle.hpp"
 #include <QJsonObject>
 #include <QObject>
 #include <QReadWriteLock>
-#include "mailserver-cycle.hpp"
 #include <QTimer>
 #include <map>
 
@@ -12,11 +12,12 @@ class Settings : public QObject
 	Q_OBJECT
 	Q_PROPERTY(QString PublicKey READ publicKey CONSTANT)
 	Q_PROPERTY(QString KeyUID READ keyUID CONSTANT)
-	Q_PROPERTY(QString Mnemonic READ mnemonic NOTIFY mnemonicRemoved CONSTANT)
-	Q_PROPERTY(bool isMnemonicBackedUp READ isMnemonicBackedUp NOTIFY mnemonicRemoved CONSTANT)
+	Q_PROPERTY(QString Mnemonic READ mnemonic NOTIFY mnemonicRemoved)
+	Q_PROPERTY(bool isMnemonicBackedUp READ isMnemonicBackedUp NOTIFY mnemonicRemoved)
 	Q_PROPERTY(QString Currency READ currency WRITE setCurrency NOTIFY currencyChanged)
-	Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY
-				   preferredNameChanged)
+	Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY preferredNameChanged)
+	Q_PROPERTY(int Appearance READ appearance WRITE setAppearance NOTIFY appearanceChanged)
+
 
 public:
 	static Settings* instance();
@@ -53,7 +54,7 @@ public:
 	};
 
 	std::map<SettingTypes, QString> settingsMap = {
-		{Appearance, "appareance"},
+		{Appearance, "appearance"},
 		{Bookmarks, "bookmarks"},
 		{KeyUID, "key-uid"},
 		{Currency, "currency"},
@@ -87,12 +88,16 @@ public:
 	QString preferredName();
 	void setPreferredName(const QString& value);
 
+	int appearance();
+	void setAppearance(int value);
+
 	bool isMnemonicBackedUp();
 
 signals:
 	void initialized();
 	void currencyChanged();
 	void preferredNameChanged();
+	void appearanceChanged();
 	void mnemonicRemoved();
 
 private:
@@ -105,16 +110,18 @@ private:
 	QString m_keyUID;
 	QString m_preferredName;
 	QString m_mnemonic;
+	int m_appearance;
 
 	QReadWriteLock lock;
 
 	void saveSettings(SettingTypes setting, QString value);
+		void saveSettings(SettingTypes setting, int value);
 
 
 	// TODO: move this to mailserver model
 	MailserverCycle mailserverCycle;
 	QTimer* timer;
+
 public:
 	Q_INVOKABLE void startMailserverCycle();
-
 };

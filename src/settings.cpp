@@ -63,6 +63,8 @@ void Settings::init()
 	m_currency = settings[settingsMap[SettingTypes::Currency]].toString();
 	m_preferredName = settings[settingsMap[SettingTypes::PreferredUsername]].toString();
 	m_mnemonic = settings[settingsMap[SettingTypes::Mnemonic]].toString();
+	m_appearance = settings[settingsMap[SettingTypes::Appearance]].toInt();
+
 	m_initialized = true;
 	lock.unlock();
 
@@ -75,6 +77,13 @@ void Settings::terminate()
 	lock.lockForWrite();
 	m_initialized = false;
 	lock.unlock();
+}
+
+void Settings::saveSettings(SettingTypes setting, int value)
+{
+	QJsonObject obj{{"method", "settings_saveSetting"}, {"params", QJsonArray{settingsMap[setting], value}}};
+	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
+	qDebug() << "SAVE SETTING RESULT" << result;
 }
 
 void Settings::saveSettings(SettingTypes setting, QString value)
@@ -154,6 +163,28 @@ QString Settings::preferredName()
 	if(!m_initialized)
 		return QString();
 	QString result(m_preferredName);
+	lock.unlock();
+	return result;
+}
+
+void Settings::setAppearance(int value)
+{
+	lock.lockForWrite();
+	if(value != m_appearance)
+	{
+		m_appearance = value;
+		saveSettings(SettingTypes::Appearance, value);
+	}
+	lock.unlock();
+	emit appearanceChanged();
+}
+
+int Settings::appearance()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+		return 0;
+	int result(m_appearance);
 	lock.unlock();
 	return result;
 }

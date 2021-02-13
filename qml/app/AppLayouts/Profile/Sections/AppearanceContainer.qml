@@ -6,6 +6,7 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "../../Chat/ChatColumn"
+import im.status.desktop 1.0
 
 ScrollView {
     height: parent.height
@@ -13,6 +14,10 @@ ScrollView {
     id: root
     contentHeight: appearanceContainer.height
     clip: true
+
+    Component.onCompleted: {
+        root.updateTheme(StatusSettings.Appearance)
+    }
 
     enum Theme {
         Light,
@@ -27,7 +32,7 @@ ScrollView {
         } else if (theme === AppearanceContainer.Theme.Dark) {
             themeStr = "dark"
         }
-        profileModel.changeTheme(theme)
+        StatusSettings.Appearance = theme;
         Style.changeTheme(themeStr)
     }
 
@@ -239,7 +244,7 @@ ScrollView {
                 image.source: "../../../img/appearance-normal-light.svg"
                 image.height: 128
                 control.text: qsTr("Light")
-                control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.Light
+                control.checked: StatusSettings.Appearance === AppearanceContainer.Theme.Light
                 onRadioCheckedChanged: {
                     if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.Light)
@@ -254,7 +259,7 @@ ScrollView {
                 image.source: "../../../img/appearance-normal-dark.svg"
                 image.height: 128
                 control.text: qsTr("Dark")
-                control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.Dark
+                control.checked: StatusSettings.Appearance === AppearanceContainer.Theme.Dark
                 onRadioCheckedChanged: {
                     if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.Dark)
@@ -269,20 +274,11 @@ ScrollView {
                 image.source: "../../../img/appearance-normal-system.png"
                 image.height: 128
                 control.text: qsTr("System")
-                control.checked: profileModel.profile.appearance === AppearanceContainer.Theme.System
+                control.checked: StatusSettings.Appearance === AppearanceContainer.Theme.System
                 onRadioCheckedChanged: {
                     if (checked) {
                         root.updateTheme(AppearanceContainer.Theme.System)
                     }
-                }
-            }
-
-            // For the case where the theme was finally loaded by status-go in init(),
-            // update the theme in qml
-            Connections {
-                target: profileModel
-                onProfileChanged: {
-                    root.updateTheme(profileModel.profile.appearance)
                 }
             }
         }
