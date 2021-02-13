@@ -27,6 +27,8 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	QHash<int, QByteArray> roles;
 	roles[Id] = "contactId";
 	roles[Name] = "name";
+	roles[Alias] = "alias";
+	roles[LocalNickname] = "localNickname";
 	roles[Identicon] = "identicon";
 	roles[IsAdded] = "isAdded";
 	roles[IsBlocked] = "isBlocked";
@@ -52,6 +54,8 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 	{
 	case Id: return QVariant(contact->get_id());
 	case Name: return QVariant(contact->get_name());
+	case Alias: return QVariant(contact->get_alias());
+	case LocalNickname: return QVariant(contact->get_localNickname());
 	case Identicon: return QVariant(contact->get_identicon());
 	case IsAdded: return QVariant(contact->isAdded());
 	case IsBlocked: return QVariant(contact->isBlocked());
@@ -132,6 +136,12 @@ Contact* ContactsModel::upsert(Message* msg)
 		return newContact;
 	}
 }
+
+/*
+void ContactsModel::add(QString contactId, QString ensName)
+{
+
+}*/
 
 void ContactsModel::update(QJsonValue updates)
 {

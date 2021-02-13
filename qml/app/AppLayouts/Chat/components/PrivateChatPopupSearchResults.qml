@@ -5,7 +5,7 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
-
+import im.status.desktop 1.0
 
 Item {
     id: root
@@ -16,6 +16,9 @@ Item {
     property string username: ""
     property string userAlias: ""
     property string pubKey: ""
+
+
+    property var contact: contactsModel.get(root.pubKey)
 
     signal resultClicked(string pubKey)
     signal addToContactsButtonClicked(string pubKey)
@@ -57,7 +60,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.leftMargin: Style.current.padding
-            source: utilsModel.generateIdenticon(root.pubKey)
+            source: Status.generateIdenticon(root.pubKey)
         }
 
         StyledText {
@@ -101,7 +104,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: parent.verticalCenter
-            visible: !chatsModel.isAddedContact(root.pubKey) && !checkIcon.visible
+            visible: (!contact || !contact.isAdded) && !checkIcon.visible
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
@@ -127,7 +130,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: Style.current.smallPadding * 2
             anchors.verticalCenter: parent.verticalCenter
-            visible: foundContact.hovered && chatsModel.isAddedContact(root.pubKey)
+            visible: foundContact.hovered && (!contact || !contact.isAdded)
         }
     }
 

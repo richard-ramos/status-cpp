@@ -24,11 +24,13 @@ ListView {
         contactId: model.contactId
         localNickname: model.localNickname
         identicon: model.image
-        isContact: model.isContact
+        isContact: model.isAdded
         isBlocked: model.isBlocked
         visible: searchString === "" ||
+                 model.alias.toLowerCase().includes(lowerCaseSearchString) ||
+                 model.localNickname.toLowerCase().includes(lowerCaseSearchString) ||
                  model.name.toLowerCase().includes(lowerCaseSearchString) ||
-                 model.address.toLowerCase().includes(lowerCaseSearchString)
+                 model.contactId.toLowerCase().includes(lowerCaseSearchString)
         onBlockContactActionTriggered: {
             blockContactConfirmationDialog.contactName = name
             blockContactConfirmationDialog.contactAddress = address

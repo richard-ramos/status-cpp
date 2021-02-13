@@ -121,6 +121,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/contact.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/contacts-model.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/mailserver-cycle.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ens-utils.cpp"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
 #    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"

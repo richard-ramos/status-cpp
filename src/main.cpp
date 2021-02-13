@@ -33,6 +33,7 @@
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
+#include "ens-utils.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -74,6 +75,8 @@ int main(int argc, char* argv[])
 
 	QScopedPointer<Status> status(Status::instance());
 	QScopedPointer<Settings> settings(Settings::instance());
+	QScopedPointer<Ens::Utils> ensUtils(new Ens::Utils());
+
 
 	qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
 	qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
@@ -92,6 +95,8 @@ int main(int argc, char* argv[])
 
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
+	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "EnsUtils", ensUtils.get());
+
 
 	engine.load(QUrl(QStringLiteral("../qml/main.qml")));
 	// engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

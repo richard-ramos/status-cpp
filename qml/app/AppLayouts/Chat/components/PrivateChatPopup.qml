@@ -5,6 +5,8 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
+import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 ModalPopup {
     property string validationError: ""
@@ -17,7 +19,7 @@ ModalPopup {
             validationError = qsTr("Enter a valid chat key or ENS username");
             pubKey = ""
             ensUsername.text = "";
-        } else if (profileModel.profile.pubKey === chatKey.text) {
+        } else if (StatusSettings.PublicKey === chatKey.text) {
             validationError = qsTr("Can't chat with yourself");
         } else {
             validationError = ""
@@ -29,7 +31,29 @@ ModalPopup {
         noContactsRect.visible = false
         searchResults.loading = true
         searchResults.showProfileNotFoundMessage = false
-        chatsModel.resolveENS(ensName)
+        EnsUtils.pubKey(ensName, resolvedPubKey => {
+            if(chatKey.text == ""){
+                ensUsername.text = "";
+                pubKey = "";
+            } else if(resolvedPubKey == ""){
+                ensUsername.text = "";
+                searchResults.pubKey = pubKey = "";
+                searchResults.showProfileNotFoundMessage = true
+            } else {
+                if (StatusSettings.PublicKey === resolvedPubKey) {
+                    popup.validationError = qsTr("Can't chat with yourself");
+                } else {
+                    searchResults.username = EnsUtils.formatUsername(chatKey.text);
+                    let userAlias = Status.generateAlias(resolvedPubKey)
+                    userAlias = userAlias.length > 20 ? userAlias.substring(0, 19) + "..." : userAlias
+                    searchResults.userAlias =  userAlias + " • " + Utils.compactAddress(resolvedPubKey, 4)
+                    searchResults.pubKey = pubKey = resolvedPubKey;
+                }
+                searchResults.showProfileNotFoundMessage = false
+            }
+            searchResults.loading = false;
+            noContactsRect.visible = pubKey === ""  && ensUsername.text === "" && addedContacts.count  == 0 && !profileNotFoundMessage.visible
+        })
     });
 
     function onKeyReleased(){
@@ -44,8 +68,9 @@ ModalPopup {
         
         if (Utils.isChatKey(chatKey.text)){
             pubKey = chatKey.text;
-            if (!profileModel.contacts.isAdded(pubKey)) {
-                searchResults.username = utilsModel.generateAlias(pubKey)
+            const contact = contactsModel.get(pubKey);
+            if (!contact || !contact.isAdded) {
+                searchResults.username = Status.generateAlias(pubKey)
                 searchResults.userAlias = Utils.compactAddress(pubKey, 4)
                 searchResults.pubKey = pubKey
             }
@@ -61,6 +86,7 @@ ModalPopup {
         doJoin(pk, ensName)
     }
     function doJoin(pk, ensName) {
+        // TODO: 
         if(Utils.isChatKey(pk)){
             chatsModel.joinChat(pk, Constants.chatTypeOneToOne);
         } else {
@@ -79,7 +105,7 @@ ModalPopup {
         pubKey = "";
         ensUsername.text = "";
         chatKey.forceActiveFocus(Qt.MouseFocusReason)
-        existingContacts.visible = profileModel.contacts.list.hasAddedContacts()
+        existingContacts.visible = addedContacts.count > 0
         noContactsRect.visible = !existingContacts.visible
     }
 
@@ -93,33 +119,6 @@ ModalPopup {
             onKeyReleased();
         }
         textField.anchors.rightMargin: clearBtn.width + Style.current.padding + 2
-
-        Connections {
-            target: chatsModel
-            onEnsWasResolved: {
-                if(chatKey.text == ""){
-                    ensUsername.text = "";
-                    pubKey = "";
-                } else if(resolvedPubKey == ""){
-                    ensUsername.text = "";
-                    searchResults.pubKey = pubKey = "";
-                    searchResults.showProfileNotFoundMessage = true
-                } else {
-                    if (profileModel.profile.pubKey === resolvedPubKey) {
-                        popup.validationError = qsTr("Can't chat with yourself");
-                    } else {
-                        searchResults.username = chatsModel.formatENSUsername(chatKey.text)
-                        let userAlias = utilsModel.generateAlias(resolvedPubKey)
-                        userAlias = userAlias.length > 20 ? userAlias.substring(0, 19) + "..." : userAlias
-                        searchResults.userAlias =  userAlias + " • " + Utils.compactAddress(resolvedPubKey, 4)
-                        searchResults.pubKey = pubKey = resolvedPubKey;
-                    }
-                    searchResults.showProfileNotFoundMessage = false
-                }
-                searchResults.loading = false;
-                noContactsRect.visible = pubKey === ""  && ensUsername.text === "" && !profileModel.contacts.list.hasAddedContacts() && !profileNotFoundMessage.visible
-            }
-        }
 
         StatusIconButton {
             id: clearBtn
@@ -154,12 +153,34 @@ ModalPopup {
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
+    Item {
+        SortFilterProxyModel {
+            id: addedContacts
+            sourceModel: contactsModel
+            filters: [
+                ValueFilter {
+                    enabled: true
+                    roleName: "isAdded"
+                    value: true
+                },
+                ValueFilter {
+                    enabled: true
+                    roleName: "isBlocked"
+                    value: false
+                }
+            ]
+            sorters: StringSorter { roleName: "name" }
+        }
+    }
+
     PrivateChatPopupExistingContacts {
         id: existingContacts
+        model: addedContacts
         anchors.topMargin: this.height > 0 ? Style.current.xlPadding : 0
         anchors.top: chatKey.bottom
         filterText: chatKey.text
         onContactClicked: function (contact) {
+            // TODO
             doJoin(contact.pubKey, profileModel.contacts.addedContacts.userName(contact.pubKey, contact.name))
         }
         expanded: !searchResults.loading && popup.pubKey === "" && !searchResults.showProfileNotFoundMessage
@@ -171,9 +192,9 @@ ModalPopup {
         anchors.topMargin: Style.current.padding
         hasExistingContacts: existingContacts.visible
         loading: false
-
         onResultClicked: validateAndJoin(popup.pubKey, chatKey.text)
-        onAddToContactsButtonClicked: profileModel.contacts.addContact(popup.pubKey)
+        // TODO:
+        onAddToContactsButtonClicked: contactsModel.add(popup.pubKey)
     }
 
     NoFriendsRectangle {

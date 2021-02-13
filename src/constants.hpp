@@ -12,5 +12,6 @@ const QString PathDefaultWallet(PathWalletRoot + "/0");
 const QString PathWhisper(PathEip1581 + "/0'/0");
 
 const QString DefaultNetworkName("mainnet_rpc");
+const QString ZeroAddress("0x0000000000000000000000000000000000000000");
 
-}
+} // namespace Constants

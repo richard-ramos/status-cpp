@@ -45,7 +45,7 @@ Item {
             contentType: model.contentType
             searchStr: channelListContent.searchStr
             chatColor: model.color
-            chatId: model.id
+            chatId: model.chatId
         }
         onCountChanged: {
             if (count > 0 && chatsModel.activeChannelIndex > -1) {

@@ -17,7 +17,9 @@ public:
 		Identicon = Qt::UserRole + 3,
 		IsAdded = Qt::UserRole + 4,
 		IsBlocked = Qt::UserRole + 5,
-		Image = Qt::UserRole + 6
+		Image = Qt::UserRole + 6,
+		LocalNickname = Qt::UserRole + 7,
+		Alias = Qt::UserRole + 8
 	};
 
 	explicit ContactsModel(QObject* parent = nullptr);

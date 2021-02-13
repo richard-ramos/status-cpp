@@ -8,16 +8,12 @@ import "./"
 
 Item {
     id: root
+    property var model
     anchors.left: parent.left
     anchors.right: parent.right
     property string filterText: ""
     property bool expanded: true
     signal contactClicked(var contact)
-
-    function matchesAlias(name, filter) {
-        let parts = name.split(" ")
-        return parts.some(p => p.startsWith(filter))
-    }
 
     height: Math.min(contactListView.contentHeight, (expanded ? 320 : 192))
     ScrollView {
@@ -31,19 +27,19 @@ Item {
             spacing: 0
             clip: true
             id: contactListView
-            model: profileModel.contacts.list
+            model: root.model
             delegate: Contact {
                 showCheckbox: false
-                pubKey: model.pubKey
-                isContact: model.isContact
+                contactId: model.contactId
+                isContact: model.isAdded
                 isUser: false
-                name: model.name
-                address: model.address
-                identicon: model.thumbnailImage || model.identicon
-                visible: model.isContact && (root.filterText === "" ||
-                    root.matchesAlias(model.name.toLowerCase(), root.filterText.toLowerCase()) ||
+                name: Utils.getUsernameLabel(contactsModel.get(model.contactId), false)
+                identicon: model.image
+                visible: model.isAdded && (root.filterText === "" ||  // TODO: use SortFilterProxyModel instead
+                    model.localNickname.toLowerCase().includes(root.filterText.toLowerCase()) || 
+                    model.alias.toLowerCase().includes(root.filterText.toLowerCase()) || 
                     model.name.toLowerCase().includes(root.filterText.toLowerCase()) ||
-                    model.address.toLowerCase().includes(root.filterText.toLowerCase()))
+                    model.contactId.toLowerCase().includes(root.filterText.toLowerCase()))
                 onContactClicked: function () {
                     root.contactClicked(model)
                 }
