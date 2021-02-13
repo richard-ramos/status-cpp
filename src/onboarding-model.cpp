@@ -185,7 +185,7 @@ QString generateSigningPhrase(int count)
 
 QJsonObject getAccountSettings(GeneratedAccount* account, QString installationId)
 {
-	QFile defaultNetworks("../resources/default-networks.json");
+	QFile defaultNetworks(":/resources/default-networks.json");
 	defaultNetworks.open(QIODevice::ReadOnly);
 
 	QString defaultNetworksContent = defaultNetworks.readAll();
@@ -222,7 +222,7 @@ QJsonObject getAccountSettings(GeneratedAccount* account, QString installationId
 
 QJsonObject getNodeConfig(QString installationId)
 {
-	QFile nodeConfig("../resources/node-config.json");
+	QFile nodeConfig(":/resources/node-config.json");
 	nodeConfig.open(QIODevice::ReadOnly);
 
 	QString nodeConfigContent = nodeConfig.readAll();
@@ -232,7 +232,7 @@ QJsonObject getNodeConfig(QString installationId)
 
 	QJsonObject nodeConfigJson = QJsonDocument::fromJson(nodeConfigContent.toUtf8()).object();
 
-	QFile fleets("../resources/fleets.json");
+	QFile fleets(":/resources/fleets.json");
 	fleets.open(QIODevice::ReadOnly);
 	QJsonObject fleetJson = QJsonDocument::fromJson(fleets.readAll())
 								.object()["fleets"]
