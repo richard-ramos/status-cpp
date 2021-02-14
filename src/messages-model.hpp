@@ -6,6 +6,9 @@
 #include <QVector>
 #include "contacts-model.hpp"
 
+using namespace Messages;
+
+
 class MessagesModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -18,10 +21,11 @@ public:
 		Contact = Qt::UserRole + 3,
 		Timestamp = Qt::UserRole + 4,
 		ContentType = Qt::UserRole + 5,
-		// Sticker
 		Clock = Qt::UserRole + 6,
 		ChatId = Qt::UserRole + 7,
 		SectionIdentifier = Qt::UserRole + 8,
+		ParsedText = Qt::UserRole + 9,
+		Sticker = Qt::UserRole + 10
 		// OutgoingStatus
 		// ResponseTo
 		// Index?
@@ -43,6 +47,8 @@ public:
 	
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
+	QString renderBlock(Message* message) const;
+	
 
 private:
 	QVector<Message*> m_messages;

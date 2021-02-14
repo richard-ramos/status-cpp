@@ -18,6 +18,8 @@
 #include <QtConcurrent>
 #include <stdexcept>
 
+using namespace Messages;
+
 Contact::Contact(QString id, QObject* parent)
 	: QObject(parent)
 	, m_id(id)

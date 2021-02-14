@@ -11,6 +11,8 @@
 #include <QVariant>
 #include <QVector>
 
+using namespace Messages;
+
 struct ContactImage {
 	QString type;
 	QString uri;

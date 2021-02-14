@@ -288,7 +288,7 @@ ScrollView {
             id: msgDelegate
             contact: model.contact
             chatId: model.chatId
-            message: model.message
+            message: model.parsedText
             plainText: model.plainText
             timestamp: parseInt(model.timestamp, 10)
             sticker: model.sticker

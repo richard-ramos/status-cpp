@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QVector>
 
+using namespace Messages;
 class ContactsModel : public QAbstractListModel
 {
 	Q_OBJECT

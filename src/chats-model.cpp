@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <array>
 
+using namespace Messages;
+
 ChatsModel::ChatsModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
@@ -31,7 +33,8 @@ void ChatsModel::init()
 
 void ChatsModel::setupMessageModel()
 {
-	foreach(Chat* chat, m_chats){
+	foreach(Chat* chat, m_chats)
+	{
 		chat->get_messages()->set_contacts(m_contacts);
 	}
 }
@@ -71,24 +74,15 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 
 	switch(role)
 	{
-	case Id:
-		return QVariant(chat->get_id());
-	case Name:
-		return QVariant(chat->get_name());
-	case Muted:
-		return QVariant(chat->get_muted());
-	case Identicon:
-		return QVariant(chat->get_identicon());
-	case UnreadMessages:
-		return QVariant(chat->get_unviewedMessagesCount());
-	case Type:
-		return QVariant(chat->get_chatType());
-	case Color:
-		return QVariant(chat->get_color());
-	case Timestamp:
-		return QVariant(chat->get_timestamp());
-	case LastMessage:
-		return QVariant(QVariant::fromValue(chat->get_lastMessage()));
+	case Id: return QVariant(chat->get_id());
+	case Name: return QVariant(chat->get_name());
+	case Muted: return QVariant(chat->get_muted());
+	case Identicon: return QVariant(chat->get_identicon());
+	case UnreadMessages: return QVariant(chat->get_unviewedMessagesCount());
+	case Type: return QVariant(chat->get_chatType());
+	case Color: return QVariant(chat->get_color());
+	case Timestamp: return QVariant(chat->get_timestamp());
+	case LastMessage: return QVariant(QVariant::fromValue(chat->get_lastMessage()));
 	case Messages:
 		return QVariant(QVariant::fromValue(chat->get_messages()));
 
@@ -134,10 +128,7 @@ void ChatsModel::join(ChatType chatType, QString id)
 
 void ChatsModel::startMessenger()
 {
-	const auto response =
-		Status::instance()
-			->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList())
-			.toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList()).toJsonObject();
 	// TODO: do something with mailservers/ranges
 
 	foreach(const QJsonValue& filter, response["result"]["filters"].toArray())
@@ -153,11 +144,10 @@ void ChatsModel::startMessenger()
 
 void ChatsModel::loadChats()
 {
-	const auto response = Status::instance()
-							  ->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList())
-							  .toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList()).toJsonObject();
 
-	if(response["result"].isNull()) return;
+	if(response["result"].isNull())
+		return;
 
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	foreach(const QJsonValue& value, response["result"].toArray())

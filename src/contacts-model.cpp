@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <array>
 
+using namespace Messages;
+
 ContactsModel::ContactsModel(QObject* parent)
 	: QAbstractListModel(parent)
 {

@@ -7,16 +7,22 @@
 #include <QJsonObject>
 #include <QQmlApplicationEngine>
 #include <QRandomGenerator>
+#include <QString>
+#include <QStringBuilder>
 #include <QUuid>
 #include <QtConcurrent>
-
 #include <algorithm>
 #include <array>
 
+#include "contacts-model.hpp"
+#include "content-type.hpp"
 #include "message.hpp"
 #include "messages-model.hpp"
-#include "contacts-model.hpp"
+#include "message-format.hpp"
 #include "status.hpp"
+#include "utils.hpp"
+
+using namespace Messages;
 
 MessagesModel::MessagesModel(QObject* parent)
 	: QAbstractListModel(parent)
@@ -35,6 +41,9 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[ChatId] = "chatId";
 	roles[SectionIdentifier] = "sectionIdentifier";
 	roles[Timestamp] = "timestamp";
+	roles[ParsedText] = "parsedText";
+	roles[Sticker] = "sticker";
+
 	return roles;
 }
 
@@ -43,10 +52,16 @@ int MessagesModel::rowCount(const QModelIndex& parent = QModelIndex()) const
 	return m_messages.size();
 }
 
-QString sectionIdentifier(const Message* msg){
-	if(msg->get_contentType() == ContentType::Group){
+QString sectionIdentifier(const Message* msg)
+{
+	if(msg->get_contentType() == ContentType::Group)
+	{
+		// Force section change, because group status messages are sent with the
+		// same fromAuthor, and ends up causing the header to not be shown
 		return "GroupChatMessage";
-	} else {
+	}
+	else
+	{
 		return msg->get_from();
 	}
 }
@@ -60,24 +75,19 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 
 	Message* msg = m_messages[index.row()];
 
-	switch (role)
-    {
-        case Id: return QVariant(msg->get_id());
-		case PlainText: 
-			return QVariant(msg->get_text());
-		case Contact:
-			return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
-		case ContentType:
-			return QVariant(msg->get_contentType());
-		case Clock:
-			return QVariant(msg->get_clock());
-		case ChatId:
-			return QVariant(msg->get_chatId());
-		case Timestamp:
-			return QVariant(msg->get_timestamp());
-		case SectionIdentifier:
-			return QVariant(sectionIdentifier(msg));
-    }
+	switch(role)
+	{
+	case Id: return QVariant(msg->get_id());
+	case PlainText: return QVariant(msg->get_text());
+	case Contact: return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
+	case ContentType: return QVariant(msg->get_contentType());
+	case Clock: return QVariant(msg->get_clock());
+	case ChatId: return QVariant(msg->get_chatId());
+	case Timestamp: return QVariant(msg->get_timestamp());
+	case SectionIdentifier: return QVariant(sectionIdentifier(msg));
+	case ParsedText: return QVariant(Messages::Format::renderBlock(msg, m_contacts));
+	case Sticker: return QVariant(msg->get_sticker());
+	}
 
 	return QVariant();
 }

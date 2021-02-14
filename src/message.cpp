@@ -1,5 +1,9 @@
 #include "message.hpp"
 #include <QObject>
+#include <QJsonArray>
+#include <QJsonObject>
+
+using namespace Messages;
 
 Message::Message(QObject* parent)
 	: QObject(parent)
@@ -22,6 +26,7 @@ Message::Message(const QJsonValue data, QObject* parent)
 	, m_text(data["text"].toString())
 	, m_timestamp(data["timestamp"].toString())
 	, m_whisperTimestamp(data["whisperTimestamp"].toString())
+	, m_parsedText(data["parsedText"].toArray())
 {
 	int contentType = data["contentType"].toInt();
 	if(contentType < ContentType::FetchMoreMessagesButton || contentType > ContentType::Community)
@@ -43,8 +48,3 @@ Message::Message(const QJsonValue data, QObject* parent)
 		m_messageType = static_cast<MessageType>(messageType);
 	}
 }
-// commandParameters: null
-// parsedText
-//QML_READONLY_PROPERTY(QString, quotedMessage)
-//QML_READONLY_PROPERTY(QString, replace)
-// sticker
