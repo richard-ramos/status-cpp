@@ -86,7 +86,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case Timestamp: return QVariant(msg->get_timestamp());
 	case SectionIdentifier: return QVariant(sectionIdentifier(msg));
 	case ParsedText: return QVariant(Messages::Format::renderBlock(msg, m_contacts));
-	case Sticker: return QVariant(msg->get_sticker());
+	case Sticker: return QVariant(Messages::Format::decodeSticker(msg));
 	}
 
 	return QVariant();

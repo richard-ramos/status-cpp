@@ -9,6 +9,11 @@ Message::Message(QObject* parent)
 	: QObject(parent)
 { }
 
+QString Message::get_sticker_hash()
+{
+	return m_sticker.hash;
+}
+
 Message::Message(const QJsonValue data, QObject* parent)
 	: QObject(parent)
 	, m_id(data["id"].toString())
@@ -46,5 +51,10 @@ Message::Message(const QJsonValue data, QObject* parent)
 	else
 	{
 		m_messageType = static_cast<MessageType>(messageType);
+	}
+
+	if(m_contentType == ContentType::Sticker){
+		m_sticker.hash = data["sticker"]["hash"].toString();
+		m_sticker.pack = data["sticker"]["pack"].toInt();
 	}
 }

@@ -16,6 +16,13 @@
 
 namespace Messages
 {
+
+struct Sticker
+{
+	QString hash;
+	int pack;
+};
+
 class Message : public QObject
 {
 	Q_OBJECT
@@ -42,9 +49,14 @@ public:
 	//QML_READONLY_PROPERTY(QString, replace)
 	QML_READONLY_PROPERTY(bool, rtl)
 	QML_READONLY_PROPERTY(bool, seen)
-	QML_READONLY_PROPERTY(QString, sticker)
 	QML_READONLY_PROPERTY(QString, text)
 	QML_READONLY_PROPERTY(QString, timestamp)
 	QML_READONLY_PROPERTY(QString, whisperTimestamp)
+
+public:
+	QString get_sticker_hash();
+
+private:
+	Sticker m_sticker;
 };
-} // namespace Message
+} // namespace Messages

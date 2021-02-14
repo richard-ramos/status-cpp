@@ -4,3 +4,6 @@
 [submodule "vendor/SortFilterProxyModel"]
 	path = vendor/SortFilterProxyModel
 	url = https://github.com/oKcerG/SortFilterProxyModel
+[submodule "vendor/bitcoin-core-base58"]
+	path = vendor/bitcoin-core-base58
+	url = https://github.com/benma/bitcoin-core-base58.git

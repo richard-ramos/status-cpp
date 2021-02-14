@@ -31,6 +31,7 @@ enum RenderBlockTypes
 };
 
 QString renderBlock(Message* message, ContactsModel* contactsModel);
+QString decodeSticker(Message* message);
 
 } // namespace Format
 } // namespace Messages
