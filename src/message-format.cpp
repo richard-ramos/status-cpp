@@ -1,28 +1,56 @@
 #include "message-format.hpp"
+#include "base58.h"
+#include "constants.hpp"
+#include "contact.hpp"
 #include "contacts-model.hpp"
 #include "message.hpp"
+#include "settings.hpp"
+#include "utils.hpp"
 #include <QHash>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QString>
 #include <QStringBuilder>
-#include<string>
-#include "base58.h"
-#include<iostream> 
+#include <iostream>
+#include <string>
 
 using namespace Messages;
 using namespace Messages::Format;
 
-/*
-
-// TODO: make this receive a contacts model
-QString MessagesModel::mention(QString pubKey) {
-	if(m_contacts.get(pubKey) != null){
-		return "ABCABCABC" // FORMAT  username with same function as qml, and removing suffix
-	} else {
+QString mention(QString pubKey, ContactsModel* contactsModel)
+{
+	Contact* contact(contactsModel->get(pubKey));
+	if(contact != nullptr)
+	{
+		if(contact->get_ensVerified() && contact->get_name() != "")
+		{
+			if(contact->get_name().endsWith(Constants::StatusDomain))
+			{
+				return contact->get_name().left(contact->get_name().length() - 14);
+			}
+			else
+			{
+				return contact->get_name();
+			}
+		}
+		else if(contact->get_localNickname() != "")
+		{
+			return contact->get_localNickname();
+		}
+		else
+		{
+			return contact->get_alias();
+		}
+	}
+	else
+	{
+		if(Settings::instance()->publicKey() == pubKey)
+		{
+			// TODO: check if ens name
+		}
 		return Utils::generateAlias(pubKey);
 	}
-}*/
+}
 
 QHash<QString, RenderInlineTypes> renderInlineMap{
 	{"", Empty},
@@ -53,7 +81,7 @@ QString renderInline(const QJsonObject& elem, ContactsModel* contactsModel)
 	case Strong: return "<strong>" % value % "</strong>";
 	case StrongEmph: return "<strong><em>" % value % "</em></strong>";
 	case Link: return elem["destination"].toString();
-	case Mention: return "<a href=\"//" % value % "\" class=\"mention\">" % "ABCDEFG" % "</a>";
+	case Mention: return "<a href=\"//" % value % "\" class=\"mention\">" % mention(value, contactsModel) % "</a>";
 	case StatusTag: return "<a href=\"#" % value % "\" class=\"status-tag\">#" % value % "</a>";
 	case Del: return "<del>" % value % "</del>";
 	}
@@ -110,26 +138,29 @@ QString Messages::Format::renderBlock(Message* message, ContactsModel* contactsM
 	return result.join("");
 }
 
-
 QString Messages::Format::decodeSticker(Message* message)
 {
 	QString stickerHash = message->get_sticker_hash();
 
-	if(stickerHash.left(2) != QStringLiteral("e3")){
+	if(stickerHash.left(2) != QStringLiteral("e3"))
+	{
 		qWarning() << "Could not decode sticker. It may still be valid, but requires a different codec to be used: " + message->get_sticker_hash();
 		return "";
 	}
 
-	if(stickerHash.left(6) == QStringLiteral("e30170")){
+	if(stickerHash.left(6) == QStringLiteral("e30170"))
+	{
 		stickerHash.remove(0, 6);
 	}
 
-	if(message->get_sticker_hash().left(8) == QStringLiteral("e3010170")){
+	if(message->get_sticker_hash().left(8) == QStringLiteral("e3010170"))
+	{
 		stickerHash.remove(0, 8);
 	}
 
 	std::vector<unsigned char> vch;
-	for (int i = 0; i < stickerHash.length(); i += 2) {
+	for(int i = 0; i < stickerHash.length(); i += 2)
+	{
 		QString byteString = stickerHash.mid(i, 2);
 		unsigned char b = std::strtol(byteString.toUtf8().data(), NULL, 16);
 		vch.push_back(b);

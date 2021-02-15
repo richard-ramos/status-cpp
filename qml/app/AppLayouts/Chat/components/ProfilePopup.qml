@@ -325,7 +325,7 @@ ModalPopup {
             anchors.bottom: parent.bottom
             //% "Send Message"
             text: qsTrId("send-message")
-            visible: !contact.isBlocked && chatsModel.activeChannel.id !== contact.id
+            visible: !contact.isBlocked && chatsModel.activeChannel.id !== contact.id // TODO:
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (tabBar.currentIndex !== 0)

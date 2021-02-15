@@ -23,6 +23,8 @@ using namespace Messages;
 Contact::Contact(QString id, QObject* parent)
 	: QObject(parent)
 	, m_id(id)
+	, m_alias(Utils::generateAlias(id))
+	, m_identicon(Utils::generateIdenticon(id))
 { }
 
 Contact::Contact(Message* msg, QObject* parent)
@@ -67,17 +69,22 @@ Contact::Contact(const QJsonValue data, QObject* parent)
 	}
 
 	// TODO: determine if it's possible to have more than one image
-	if(data["images"].toObject()["thumbnail"].isNull()) return;
+	if(data["images"].toObject()["thumbnail"].isNull())
+		return;
 	ContactImage image;
 	image.type = data["images"].toObject()["thumbnail"].toObject()["type"].toString();
 	image.uri = data["images"].toObject()["thumbnail"].toObject()["uri"].toString();
 	m_images << image;
 }
 
-QString Contact::image(){
-	if(m_images.size() > 0){
+QString Contact::image()
+{
+	if(m_images.size() > 0)
+	{
 		return m_images[0].uri;
-	} else {
+	}
+	else
+	{
 		return m_identicon;
 	}
 }
@@ -105,9 +112,12 @@ void Contact::toggleAdd()
 {
 	QString tag(":contact/added");
 	int index = m_systemTags.indexOf(tag);
-	if(index == -1){
+	if(index == -1)
+	{
 		m_systemTags << tag;
-	} else {
+	}
+	else
+	{
 		m_systemTags.remove(index);
 	}
 	emit contactToggled(m_id);
@@ -121,9 +131,12 @@ void Contact::toggleBlock()
 	// TODO: DRY
 	QString tag(":contact/blocked");
 	int index = m_systemTags.indexOf(tag);
-	if(index == -1){
+	if(index == -1)
+	{
 		m_systemTags << tag;
-	} else {
+	}
+	else
+	{
 		m_systemTags.remove(index);
 	}
 	emit blockedToggled(m_id);
@@ -138,9 +151,8 @@ void Contact::save()
 		QMutexLocker locker(&m_mutex);
 
 		QJsonArray systemTagsArr;
-		for (auto & tag : m_systemTags)
+		for(auto& tag : m_systemTags)
 			systemTagsArr.append(tag);
-
 
 		QJsonObject contact{{"id", m_id},
 							{"address", m_address},
@@ -158,10 +170,7 @@ void Contact::save()
 							// TODO: images ???
 							{"localNickname", m_localNickname}};
 
-		const auto response =
-			Status::instance()
-				->callPrivateRPC("wakuext_saveContact", QJsonArray{contact}.toVariantList())
-				.toJsonObject();
+		const auto response = Status::instance()->callPrivateRPC("wakuext_saveContact", QJsonArray{contact}.toVariantList()).toJsonObject();
 		qDebug() << response;
 		if(!response["error"].isUndefined())
 		{
@@ -193,7 +202,8 @@ void Contact::update(const QJsonValue data)
 		m_systemTags << value.toString();
 	}
 
-	if(data["images"].toObject()["thumbnail"].isNull()) return;
+	if(data["images"].toObject()["thumbnail"].isNull())
+		return;
 	ContactImage image;
 	image.type = data["images"].toObject()["thumbnail"].toObject()["type"].toString();
 	image.uri = data["images"].toObject()["thumbnail"].toObject()["uri"].toString();

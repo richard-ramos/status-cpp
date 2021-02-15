@@ -31,6 +31,7 @@ public:
 
 	Q_INVOKABLE Contact* get(int row) const;
 	Q_INVOKABLE Contact* get(QString id) const;
+	Q_INVOKABLE Contact* get_or_create(QString id);
 	Q_INVOKABLE void contactUpdated(QString id);
 	Q_INVOKABLE void push(Contact* contact);
 

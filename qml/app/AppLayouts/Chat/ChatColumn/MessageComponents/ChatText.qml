@@ -45,14 +45,14 @@ Item {
         clip: true
         onLinkActivated: function (link) {
             if(link.startsWith("#")) {
-                chatsModel.joinChat(link.substring(1), Constants.chatTypePublic);
+                chatsModel.join(ChatType.Public, link.substring(1));
                 return;
             }
 
             if (link.startsWith('//')) {
                 let pk = link.replace("//", "");
-                const userProfileImage = appMain.getProfileImage(pk)
-                openProfilePopup(chatsModel.userNameOrAlias(pk), pk, userProfileImage || utilsModel.generateIdenticon(pk))
+                profilePopup.contact = contactsModel.get_or_create(pk);
+                profilePopup.open();
                 return;
             }
 

@@ -122,6 +122,16 @@ Contact* ContactsModel::get(QString id) const
 	return m_contactsMap[id];
 }
 
+Contact* ContactsModel::get_or_create(QString id)
+{
+	if(m_contactsMap.contains(id))
+		return m_contactsMap[id];
+
+	Contact* contact = new Contact(id, this);
+	insert(contact);
+	return contact;
+}
+
 Contact* ContactsModel::upsert(Message* msg)
 {
 	if(m_contactsMap.contains(msg->get_from()))
