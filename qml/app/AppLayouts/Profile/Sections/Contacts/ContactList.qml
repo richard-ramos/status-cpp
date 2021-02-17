@@ -20,7 +20,7 @@ ListView {
     model: contacts
     
     delegate: Contact {
-        name: Utils.getUsernameLabel(contactsModel.get(model.contactId), false)
+        name: Utils.getUsernameLabel(contactsModel.get(model.contactId))
         contactId: model.contactId
         localNickname: model.localNickname
         identicon: model.image

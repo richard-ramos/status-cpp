@@ -8,6 +8,9 @@ QtObject {
     property string thumbnail;
     property string identicon;
 
+    property string defaultLargeImage: largeImage || identicon;
+    property string defaultThumbnail: thumbnail || identicon;
+
     function parseResponse(result){
         if(!result) return;
         result.forEach(r => {

@@ -20,8 +20,7 @@ Loader {
                 border.color: Style.current.border
                 showLoadingIndicator: false
                 source: {
-                    // TODO show current user profile picture or identicon
-                    return !isCurrentUser ? contact.image : profileModel.profile.identicon
+                    return !isCurrentUser ? contact.image : identityImage.defaultThumbnail
                 }
                 smooth: false
                 antialiasing: true

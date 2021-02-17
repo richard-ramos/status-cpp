@@ -33,7 +33,7 @@ Item {
                 contactId: model.contactId
                 isContact: model.isAdded
                 isUser: false
-                name: Utils.getUsernameLabel(contactsModel.get(model.contactId), false)
+                name: Utils.getUsernameLabel(contactsModel.get(model.contactId))
                 identicon: model.image
                 visible: model.isAdded && (root.filterText === "" ||  // TODO: use SortFilterProxyModel instead
                     model.localNickname.toLowerCase().includes(root.filterText.toLowerCase()) || 

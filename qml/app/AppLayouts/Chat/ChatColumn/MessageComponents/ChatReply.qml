@@ -34,7 +34,7 @@ Loader {
 
             StyledTextEdit {
                 id: lblReplyAuthor
-                text: "↳" + Utils.getUsernameLabel(replyMessage.contact)
+                text: "↳" + Utils.getUsernameLabel(replyMessage.contact, isCurrentUser)
                 color: root.elementsColor
                 readOnly: true
                 selectByMouse: true

@@ -49,6 +49,10 @@ public:
 	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);
 	Q_INVOKABLE void closeSession();
 
+	void emitMessageSignal(QJsonObject ev);
+
+
+
 signals:
 	void signal(SignalType signal);
 	void login(QString error);
@@ -61,6 +65,6 @@ private:
 	static Status* theInstance;
 	explicit Status(QObject* parent = nullptr);
 	static std::map<QString, SignalType> signalMap;
-	static void statusGoEventCallback(const char* event);
+	static void signalCallback(const char* data);
 	void processSignal(QString ev);
 };

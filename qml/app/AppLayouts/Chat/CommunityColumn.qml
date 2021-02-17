@@ -9,7 +9,6 @@ import "./ContactsColumn"
 import "./CommunityComponents"
 
 Item {
-    // TODO unhardcode
     property int chatGroupsListViewCount: channelList.channelListCount
 
     id: root

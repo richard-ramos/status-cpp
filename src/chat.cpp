@@ -133,6 +133,7 @@ void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 		{
 			throw std::domain_error(response["error"]["message"].toString().toUtf8());
 		}
+		Status::instance()->emitMessageSignal(response["result"].toObject());
 	});
 }
 

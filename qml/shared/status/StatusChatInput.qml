@@ -386,9 +386,10 @@ Rectangle {
     function showReplyArea(message) {
         isReply = true
         const contact = message.contact;
-        replyArea.userName = Utils.getUsernameLabel(contact);
+        const isCurrentUser = message.from == StatusSettings.PublicKey;
+        replyArea.userName = Utils.getUsernameLabel(contact, isCurrentUser);
         replyArea.message = message.text;
-        replyArea.identicon = contact.image;
+        replyArea.identicon = isCurrentUser ? identityImage.defaultThumbnail : contact.image;
         messageInputField.forceActiveFocus();
     }
 

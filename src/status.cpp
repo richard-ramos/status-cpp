@@ -28,7 +28,7 @@ Status* Status::instance()
 Status::Status(QObject* parent)
 	: QObject(parent)
 {
-	SetSignalEventCallback((void*)&Status::statusGoEventCallback);
+	SetSignalEventCallback((void*)&Status::signalCallback);
 
 	signalMap = {{"messages.new", SignalType::Message},
 				 {"wallet", SignalType::Wallet},
@@ -104,9 +104,13 @@ void Status::processSignal(QString ev)
 	}
 }
 
-void Status::statusGoEventCallback(const char* event)
+void Status::emitMessageSignal(QJsonObject ev){
+	emit instance()->message(ev);
+}
+
+void Status::signalCallback(const char* data)
 {
-	QtConcurrent::run(instance(), &Status::processSignal, QString(event));
+	QtConcurrent::run(instance(), &Status::processSignal, QString(data));
 }
 
 void Status::closeSession()

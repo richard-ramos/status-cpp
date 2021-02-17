@@ -71,7 +71,7 @@ ModalPopup {
 
         StyledTextEdit {
             id: profileName
-            text: Utils.getUsernameLabel(contact, false) // TODO: isCurrentUser?
+            text: Utils.getUsernameLabel(contact) // TODO: isCurrentUser?
             anchors.top: parent.top
             anchors.topMargin: Style.current.padding
             anchors.left: profilePic.right

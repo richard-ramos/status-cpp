@@ -30,7 +30,7 @@ ModalPopup {
 
         RoundedImage {
             id: profilePic
-            source: identityImage.largeImage || identityImage.identicon
+            source: identityImage.defaultLargeImage
             width: 160
             height: 160
             anchors.verticalCenter: parent.verticalCenter
