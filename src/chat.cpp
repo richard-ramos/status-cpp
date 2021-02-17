@@ -43,7 +43,7 @@ Chat::Chat(QString id,
 	, m_muted(muted)
 {
 	// Needs to be initialized because it's undefined
-	m_messages = new MessagesModel();
+	m_messages = new MessagesModel(m_id);
 	m_messages->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
 
@@ -88,7 +88,7 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	}
 
 	// Needs to be initialized because it's undefined
-	m_messages = new MessagesModel();
+	m_messages = new MessagesModel(m_id);
 	m_messages->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
 

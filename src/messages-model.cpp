@@ -16,18 +16,19 @@
 
 #include "contacts-model.hpp"
 #include "content-type.hpp"
+#include "message-format.hpp"
 #include "message.hpp"
 #include "messages-model.hpp"
-#include "message-format.hpp"
 #include "status.hpp"
 #include "utils.hpp"
 
 using namespace Messages;
 
-MessagesModel::MessagesModel(QObject* parent)
-	: QAbstractListModel(parent)
+MessagesModel::MessagesModel(QString chatId, QObject* parent)
+	: m_chatId(chatId)
+	, QAbstractListModel(parent)
 {
-	qDebug() << "MessagesModel::constructor";
+	qDebug() << "MessagesModel::constructor for chatId: " << m_chatId;
 }
 
 QHash<int, QByteArray> MessagesModel::roleNames() const
@@ -103,7 +104,8 @@ void MessagesModel::push(Message* msg)
 {
 	// TODO: check replace to, and drop existing message
 
-	if(m_messageMap.contains(msg->get_id())) return;
+	if(m_messageMap.contains(msg->get_id()))
+		return;
 
 	QQmlApplicationEngine::setObjectOwnership(msg, QQmlApplicationEngine::CppOwnership);
 	msg->setParent(this);
@@ -111,4 +113,17 @@ void MessagesModel::push(Message* msg)
 	m_messageMap[msg->get_id()] = msg;
 	m_messages << msg;
 	endInsertRows();
+}
+
+void MessagesModel::loadMessages()
+{
+	const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, "", 20}.toVariantList()).toJsonObject();
+	qDebug() << "Loaded messages for chatId: " << m_chatId;
+	// TODO: handle cursor
+	foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
+	{
+		Message* message = new Message(msgJson);
+		m_contacts->upsert(message);
+		push(message);
+	}
 }

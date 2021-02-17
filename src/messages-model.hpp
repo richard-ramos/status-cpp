@@ -40,7 +40,7 @@ public:
 		// CommunityId
 	};
 
-	explicit MessagesModel(QObject* parent = nullptr);
+	explicit MessagesModel(QString chatId, QObject* parent = nullptr);
 
 	QHash<int, QByteArray> roleNames() const;
 	virtual int rowCount(const QModelIndex&) const;
@@ -52,10 +52,14 @@ public:
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
 	QString renderBlock(Message* message) const;
+
+public:
+	void loadMessages();
 	
 
 private:
 	QVector<Message*> m_messages;
 	QHash<QString, Message*> m_messageMap;
+	QString m_chatId;
 
 };

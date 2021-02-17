@@ -36,6 +36,7 @@ void ChatsModel::setupMessageModel()
 	foreach(Chat* chat, m_chats)
 	{
 		chat->get_messages()->set_contacts(m_contacts);
+		chat->get_messages()->loadMessages();
 	}
 }
 
