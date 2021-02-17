@@ -47,7 +47,7 @@ public:
 	QML_READONLY_PROPERTY(QJsonArray, parsedText)
 	QML_READONLY_PROPERTY(QString, responseTo)
 	//QML_READONLY_PROPERTY(QString, quotedMessage)
-	//QML_READONLY_PROPERTY(QString, replace)
+	QML_READONLY_PROPERTY(QString, replace)
 	QML_READONLY_PROPERTY(bool, rtl)
 	QML_READONLY_PROPERTY(bool, seen)
 	QML_READONLY_PROPERTY(QString, text)

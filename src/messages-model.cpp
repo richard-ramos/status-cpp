@@ -1,3 +1,11 @@
+#include "messages-model.hpp"
+#include "contacts-model.hpp"
+#include "content-type.hpp"
+#include "message-format.hpp"
+#include "message.hpp"
+#include "status.hpp"
+#include "utils.hpp"
+#include <QApplication>
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QFile>
@@ -10,17 +18,9 @@
 #include <QString>
 #include <QStringBuilder>
 #include <QUuid>
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 #include <array>
-
-#include "contacts-model.hpp"
-#include "content-type.hpp"
-#include "message-format.hpp"
-#include "message.hpp"
-#include "messages-model.hpp"
-#include "status.hpp"
-#include "utils.hpp"
 
 using namespace Messages;
 
@@ -29,6 +29,7 @@ MessagesModel::MessagesModel(QString chatId, QObject* parent)
 	, QAbstractListModel(parent)
 {
 	qDebug() << "MessagesModel::constructor for chatId: " << m_chatId;
+	QObject::connect(this, &MessagesModel::messageLoaded, this, &MessagesModel::push); // TODO: replace added
 }
 
 QHash<int, QByteArray> MessagesModel::roleNames() const
@@ -102,10 +103,21 @@ Message* MessagesModel::get(QString messageId) const
 
 void MessagesModel::push(Message* msg)
 {
-	// TODO: check replace to, and drop existing message
+	if(msg->get_replace() != ""){
+		// Delete existing message from UI since it's going to be replaced
+		if(m_messageMap.contains(msg->get_id())){
+			int row = m_messages.indexOf(m_messageMap[msg->get_id()]);
+			beginRemoveRows(QModelIndex(), row, row);
+			delete m_messageMap[msg->get_id()];
+			m_messages.remove(row);
+			endRemoveRows();
+		}
+	}
 
 	if(m_messageMap.contains(msg->get_id()))
 		return;
+
+	m_contacts->upsert(msg);
 
 	QQmlApplicationEngine::setObjectOwnership(msg, QQmlApplicationEngine::CppOwnership);
 	msg->setParent(this);
@@ -117,13 +129,15 @@ void MessagesModel::push(Message* msg)
 
 void MessagesModel::loadMessages()
 {
-	const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, "", 20}.toVariantList()).toJsonObject();
-	qDebug() << "Loaded messages for chatId: " << m_chatId;
-	// TODO: handle cursor
-	foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
-	{
-		Message* message = new Message(msgJson);
-		m_contacts->upsert(message);
-		push(message);
-	}
+	QtConcurrent::run([=] {
+		const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, "", 20}.toVariantList()).toJsonObject();
+		qDebug() << "Loaded messages for chatId: " << m_chatId;
+		// TODO: handle cursor
+		foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
+		{
+			Message* message = new Message(msgJson);
+			message->moveToThread(QApplication::instance()->thread());
+			emit messageLoaded(message);
+		}
+	});
 }

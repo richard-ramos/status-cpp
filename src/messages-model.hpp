@@ -57,6 +57,10 @@ public:
 	void loadMessages();
 	
 
+signals:
+	void messageLoaded(Message* message);
+
+
 private:
 	QVector<Message*> m_messages;
 	QHash<QString, Message*> m_messageMap;
