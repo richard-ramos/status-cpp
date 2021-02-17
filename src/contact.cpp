@@ -48,6 +48,15 @@ bool Contact::operator==(const Contact& c)
 	return m_id == c.get_id();
 }
 
+QVector<QString> Contact::getSystemTags(){
+	return m_systemTags;
+}
+
+QVector<ContactImage> Contact::getImages(){
+	return m_images;
+}
+
+
 Contact::Contact(const QJsonValue data, QObject* parent)
 	: QObject(parent)
 	, m_id(data["id"].toString())
@@ -227,6 +236,9 @@ void Contact::update(Contact* newContact)
 	update_tributeToTalk(newContact->get_tributeToTalk());
 	update_localNickname(newContact->get_localNickname());
 
-	// TODO: Update system tags
-	// TODO: update images
+	// TODO: test this when syncing
+	m_images = newContact->getImages();
+	m_systemTags = newContact->getSystemTags();
+	
+	imageChanged(m_id);
 }

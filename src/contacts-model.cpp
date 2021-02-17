@@ -96,12 +96,14 @@ void ContactsModel::loadContacts()
 
 void ContactsModel::push(Contact* contact)
 {
-	if(m_contactsMap.contains(contact->get_id())){
+	if(m_contactsMap.contains(contact->get_id()))
+	{
+		// Contact already has been upserted when loading the messages
 		m_contactsMap[contact->get_id()]->update(contact);
-	} else {
-		beginInsertRows(QModelIndex(), rowCount(), rowCount());
+	}
+	else
+	{
 		insert(contact);
-		endInsertRows();
 	}
 }
 
@@ -109,8 +111,11 @@ void ContactsModel::insert(Contact* contact)
 {
 	QQmlApplicationEngine::setObjectOwnership(contact, QQmlApplicationEngine::CppOwnership);
 	contact->setParent(this);
+	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	m_contacts << contact;
 	m_contactsMap[contact->get_id()] = contact;
+	endInsertRows();
+	emit added(contact->get_id());
 	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactUpdated);
 	QObject::connect(contact, &Contact::blockedToggled, this, &ContactsModel::contactUpdated);
 	QObject::connect(contact, &Contact::imageChanged, this, &ContactsModel::contactUpdated);
@@ -145,21 +150,12 @@ Contact* ContactsModel::upsert(Message* msg)
 	}
 	else
 	{
-		beginInsertRows(QModelIndex(), rowCount(), rowCount());
 		Contact* newContact = new Contact(msg->get_from(), msg->get_ensName());
 		msg->update_contact(newContact);
 		insert(newContact);
-		emit added(newContact->get_id());
-		endInsertRows();
 		return newContact;
 	}
 }
-
-/*
-void ContactsModel::add(QString contactId, QString ensName)
-{
-
-}*/
 
 void ContactsModel::update(QJsonValue updates)
 {
@@ -182,7 +178,6 @@ void ContactsModel::update(QJsonValue updates)
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			Contact* newContact = new Contact(contactJson);
 			insert(newContact);
-			emit added(newContact->get_id());
 			endInsertRows();
 		}
 	}

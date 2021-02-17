@@ -10,8 +10,8 @@
 #include <QVariant>
 #include <QVector>
 
-
-struct ContactImage {
+struct ContactImage
+{
 	QString type;
 	QString uri;
 	int fileSize;
@@ -49,7 +49,6 @@ public:
 	Q_PROPERTY(bool isBlocked READ isBlocked NOTIFY blockedToggled)
 	Q_PROPERTY(QString image READ image NOTIFY imageChanged)
 
-
 signals:
 	void contactToggled(QString contactId);
 	void blockedToggled(QString contactId);
@@ -59,7 +58,6 @@ private:
 	QMutex m_mutex;
 	QVector<QString> m_systemTags;
 	QVector<ContactImage> m_images;
-
 
 public:
 	bool operator==(const Contact& m);
@@ -71,9 +69,11 @@ public:
 	bool isBlocked();
 	QString image();
 
+	QVector<ContactImage> getImages();
+	QVector<QString> getSystemTags();
+
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void changeNickname(QString newNickname);
 	Q_INVOKABLE void toggleAdd();
 	Q_INVOKABLE void toggleBlock();
-
 };
