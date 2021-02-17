@@ -82,7 +82,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case Id: return QVariant(msg->get_id());
 	case ResponseTo: return QVariant(msg->get_responseTo());
 	case PlainText: return QVariant(msg->get_text());
-	case Contact: return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
+	case Contact: return QVariant(QVariant::fromValue(m_contacts->upsert(msg)));
 	case ContentType: return QVariant(msg->get_contentType());
 	case Clock: return QVariant(msg->get_clock());
 	case ChatId: return QVariant(msg->get_chatId());

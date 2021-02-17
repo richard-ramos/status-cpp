@@ -3,7 +3,7 @@
 #include "chat-type.hpp"
 #include "content-type.hpp"
 #include "message-type.hpp"
-//#include "contact.hpp"
+#include "contact.hpp"
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -53,6 +53,9 @@ public:
 	QML_READONLY_PROPERTY(QString, text)
 	QML_READONLY_PROPERTY(QString, timestamp)
 	QML_READONLY_PROPERTY(QString, whisperTimestamp)
+
+	QML_READONLY_PROPERTY(Contact*, contact)
+
 
 public:
 	QString get_sticker_hash();

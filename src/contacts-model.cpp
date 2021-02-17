@@ -96,9 +96,13 @@ void ContactsModel::loadContacts()
 
 void ContactsModel::push(Contact* contact)
 {
-	beginInsertRows(QModelIndex(), rowCount(), rowCount());
-	insert(contact);
-	endInsertRows();
+	if(m_contactsMap.contains(contact->get_id())){
+		m_contactsMap[contact->get_id()]->update(contact);
+	} else {
+		beginInsertRows(QModelIndex(), rowCount(), rowCount());
+		insert(contact);
+		endInsertRows();
+	}
 }
 
 void ContactsModel::insert(Contact* contact)
@@ -136,12 +140,14 @@ Contact* ContactsModel::upsert(Message* msg)
 {
 	if(m_contactsMap.contains(msg->get_from()))
 	{
+		msg->update_contact(m_contactsMap[msg->get_from()]);
 		return m_contactsMap[msg->get_from()];
 	}
 	else
 	{
 		beginInsertRows(QModelIndex(), rowCount(), rowCount());
-		Contact* newContact = new Contact(msg);
+		Contact* newContact = new Contact(msg->get_from(), msg->get_ensName());
+		msg->update_contact(newContact);
 		insert(newContact);
 		emit added(newContact->get_id());
 		endInsertRows();

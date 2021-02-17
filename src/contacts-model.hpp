@@ -1,5 +1,6 @@
 #pragma once
 
+#include "message.hpp"
 #include "contact.hpp"
 #include <QAbstractListModel>
 #include <QHash>

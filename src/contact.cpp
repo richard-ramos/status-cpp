@@ -18,23 +18,23 @@
 #include <QtConcurrent>
 #include <stdexcept>
 
-using namespace Messages;
-
 Contact::Contact(QString id, QObject* parent)
 	: QObject(parent)
 	, m_id(id)
 	, m_alias(Utils::generateAlias(id))
 	, m_identicon(Utils::generateIdenticon(id))
-{ }
-
-Contact::Contact(Message* msg, QObject* parent)
-	: QObject(parent)
-	, m_id(msg->get_from())
-	, m_name(msg->get_ensName())
-	, m_alias(msg->get_alias())
-	, m_identicon(msg->get_identicon())
 {
-	qDebug() << "Contact::Contact - Contact does not exist. Creating from message - " << msg->get_from();
+	qDebug() << "Contact::Contact - Contact does not exist.";
+}
+
+Contact::Contact(QString id, QString ensName, QObject* parent)
+	: QObject(parent)
+	, m_id(id)
+	, m_alias(Utils::generateAlias(id))
+	, m_identicon(Utils::generateIdenticon(id))
+	, m_name(ensName)
+{
+	qDebug() << "Contact::Contact - Contact does not exist.";
 }
 
 Contact::~Contact()
@@ -209,4 +209,24 @@ void Contact::update(const QJsonValue data)
 	image.uri = data["images"].toObject()["thumbnail"].toObject()["uri"].toString();
 	m_images << image;
 	imageChanged(m_id);
+}
+
+void Contact::update(Contact* newContact)
+{
+	// Data is old
+	if(m_lastUpdated.toLongLong() > newContact->get_lastUpdated().toLongLong())
+		return;
+
+	update_address(newContact->get_address());
+	update_name(newContact->get_name());
+	update_ensVerified(newContact->get_ensVerified());
+	update_ensVerifiedAt(newContact->get_ensVerifiedAt());
+	update_lastENSClockValue(newContact->get_lastENSClockValue());
+	update_ensVerificationRetries(newContact->get_ensVerificationRetries());
+	update_lastUpdated(newContact->get_lastUpdated());
+	update_tributeToTalk(newContact->get_tributeToTalk());
+	update_localNickname(newContact->get_localNickname());
+
+	// TODO: Update system tags
+	// TODO: update images
 }

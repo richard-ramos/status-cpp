@@ -1,6 +1,5 @@
 #pragma once
 
-#include "message.hpp"
 #include <QDebug>
 #include <QJsonObject>
 #include <QMutex>
@@ -11,7 +10,6 @@
 #include <QVariant>
 #include <QVector>
 
-using namespace Messages;
 
 struct ContactImage {
 	QString type;
@@ -29,7 +27,7 @@ class Contact : public QObject
 
 public:
 	explicit Contact(QString id, QObject* parent = nullptr);
-	explicit Contact(Message* msg, QObject* parent = nullptr);
+	explicit Contact(QString id, QString ensName, QObject* parent = nullptr);
 	explicit Contact(const QJsonValue data, QObject* parent = nullptr);
 	virtual ~Contact();
 
@@ -67,6 +65,8 @@ public:
 	bool operator==(const Contact& m);
 
 	void update(const QJsonValue data);
+	void update(Contact* contact);
+
 	bool isAdded();
 	bool isBlocked();
 	QString image();

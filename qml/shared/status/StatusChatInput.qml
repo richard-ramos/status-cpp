@@ -385,7 +385,7 @@ Rectangle {
 
     function showReplyArea(message) {
         isReply = true
-        const contact = contactsModel.get(message.from);
+        const contact = message.contact;
         replyArea.userName = Utils.getUsernameLabel(contact);
         replyArea.message = message.text;
         replyArea.identicon = contact.image;
