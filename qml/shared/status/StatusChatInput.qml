@@ -8,7 +8,7 @@ import "../../imports"
 import "../../shared"
 import "../../app/AppLayouts/Chat/ChatColumn/samples"
 import "../../app/AppLayouts/Chat/ChatColumn"
-
+import im.status.desktop 1.0
 import "./emojiList.js" as EmojiJSON
 
 Rectangle {
@@ -196,7 +196,7 @@ Rectangle {
             paste = false;
             const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
             const deparsedEmoji = Emoji.deparse(messageInputField.text);
-            const plainText = chatsModel.plainText(deparsedEmoji);
+            const plainText = Status.plainText(deparsedEmoji);
             messageInputField.text = Emoji.parse(plainText.replace(/\n/g, "<br />"));
             messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
 
@@ -383,11 +383,12 @@ Rectangle {
         imageArea.imageSource = control.fileUrls[0]
     }
 
-    function showReplyArea(userName, message, identicon) {
+    function showReplyArea(message) {
         isReply = true
-        replyArea.userName = userName
-        replyArea.message = message
-        replyArea.identicon = identicon
+        const contact = contactsModel.get(message.from);
+        replyArea.userName = Utils.getUsernameLabel(contact);
+        replyArea.message = message.text;
+        replyArea.identicon = contact.image;
         messageInputField.forceActiveFocus();
     }
 

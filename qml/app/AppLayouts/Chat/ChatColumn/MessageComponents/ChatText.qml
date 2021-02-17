@@ -6,7 +6,7 @@ import im.status.desktop 1.0
 
 Item {
     property bool longChatText: true
-    property bool veryLongChatText: chatsModel.plainText(message).length >
+    property bool veryLongChatText: plainText.length >
                                     (appSettings.useCompactMode ? Constants.limitLongChatTextCompactMode : Constants.limitLongChatText)
     property bool readMore: false
     property alias textField: chatText

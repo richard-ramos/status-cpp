@@ -12,8 +12,10 @@ Loader {
     property var container
     property int chatHorizontalPadding
 
+    property var replyMessage: chat.messages.get(responseTo)
+
     id: root
-    active: responseTo != "" && replyMessageIndex > -1
+    active: responseTo !== "" && replyMessage !== null
 
     sourceComponent: Component {
         Item {
@@ -22,7 +24,7 @@ Loader {
 
             id: chatReply
             // childrenRect.height shows a binding loop for some reason, so we use heights instead
-            height: lblReplyAuthor.height + ((repliedMessageType === Constants.imageType ? imgReplyImage.height : lblReplyMessage.height) + 5 + 8)
+            height: lblReplyAuthor.height + ((replyMessage.contentType === Constants.imageType ? imgReplyImage.height : lblReplyMessage.height) + 5 + 8)
 
             TextMetrics {
                 id: txtAuthorMetrics
@@ -32,7 +34,7 @@ Loader {
 
             StyledTextEdit {
                 id: lblReplyAuthor
-                text: "↳" + repliedMessageAuthor
+                text: "↳" + Utils.getUsernameLabel(contactsModel.get(replyMessage.from))
                 color: root.elementsColor
                 readOnly: true
                 selectByMouse: true
@@ -43,7 +45,7 @@ Loader {
 
             ChatImage {
                 id: imgReplyImage
-                visible: repliedMessageType == Constants.imageType
+                visible: replyMessage.contentType == Constants.imageType
                 imageWidth: 50
                 imageSource: repliedMessageImage
                 anchors.top: lblReplyAuthor.bottom
@@ -55,7 +57,7 @@ Loader {
 
             StyledTextEdit {
                 id: lblReplyMessage
-                visible: repliedMessageType != Constants.imageType
+                visible: replyMessage.contentType != Constants.imageType
                 Component.onCompleted: textFieldImplicitWidth = implicitWidth
                 anchors.top: lblReplyAuthor.bottom
                 anchors.topMargin: 5
@@ -69,7 +71,7 @@ Loader {
                         `</style>`+
                     `</head>`+
                     `<body>`+
-                        `${Emoji.parse(Utils.linkifyAndXSS(repliedMessageContent), "26x26")}`+
+                        `${Emoji.parse(Utils.linkifyAndXSS(replyMessage.text), "26x26")}`+
                     `</body>`+
                 `</html>`
                 textFormat: Text.RichText
@@ -84,8 +86,8 @@ Loader {
             }
 
             Separator {
-                anchors.top: repliedMessageType == Constants.imageType ? imgReplyImage.bottom : lblReplyMessage.bottom
-                anchors.topMargin: repliedMessageType == Constants.imageType ? 15 : 8
+                anchors.top: replyMessage.contentType == Constants.imageType ? imgReplyImage.bottom : lblReplyMessage.bottom
+                anchors.topMargin: replyMessage.contentType == Constants.imageType ? 15 : 8
                 anchors.left: lblReplyMessage.left
                 anchors.right: lblReplyMessage.right
                 anchors.rightMargin: root.chatHorizontalPadding

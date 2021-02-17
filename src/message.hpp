@@ -45,6 +45,7 @@ public:
 	QML_READONLY_PROPERTY(MessageType, messageType)
 	QML_READONLY_PROPERTY(bool, isNew)
 	QML_READONLY_PROPERTY(QJsonArray, parsedText)
+	QML_READONLY_PROPERTY(QString, responseTo)
 	//QML_READONLY_PROPERTY(QString, quotedMessage)
 	//QML_READONLY_PROPERTY(QString, replace)
 	QML_READONLY_PROPERTY(bool, rtl)

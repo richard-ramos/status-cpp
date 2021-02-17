@@ -27,13 +27,13 @@
 #include "constants.hpp"
 #include "contact.hpp"
 #include "contacts-model.hpp"
+#include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
-#include "ens-utils.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -77,7 +77,6 @@ int main(int argc, char* argv[])
 	QScopedPointer<Settings> settings(Settings::instance());
 	QScopedPointer<Ens::Utils> ensUtils(new Ens::Utils());
 
-
 	qmlRegisterType<LoginModel>("im.status.desktop", 1, 0, "LoginModel");
 	qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
 	qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
@@ -85,8 +84,9 @@ int main(int argc, char* argv[])
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
-	qRegisterMetaType<Contact*>("Contact *");
 
+	qRegisterMetaType<Contact*>("Contact *");
+	qRegisterMetaType<Message*>("Message *");
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
 
@@ -96,7 +96,6 @@ int main(int argc, char* argv[])
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "EnsUtils", ensUtils.get());
-
 
 	engine.load(QUrl(QStringLiteral("../qml/main.qml")));
 	// engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

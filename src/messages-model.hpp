@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #include <QDebug>
 #include <QVector>
+#include <QHash>
 #include "contacts-model.hpp"
 
 using namespace Messages;
@@ -25,7 +26,8 @@ public:
 		ChatId = Qt::UserRole + 7,
 		SectionIdentifier = Qt::UserRole + 8,
 		ParsedText = Qt::UserRole + 9,
-		Sticker = Qt::UserRole + 10
+		Sticker = Qt::UserRole + 10,
+		ResponseTo = Qt::UserRole + 11
 		// OutgoingStatus
 		// ResponseTo
 		// Index?
@@ -44,6 +46,8 @@ public:
 	virtual int rowCount(const QModelIndex&) const;
 	virtual QVariant data(const QModelIndex& index, int role) const;
 	void push(Message* message);
+	Q_INVOKABLE Message* get(QString messageId) const;
+
 	
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
@@ -52,4 +56,6 @@ public:
 
 private:
 	QVector<Message*> m_messages;
+	QHash<QString, Message*> m_messageMap;
+
 };

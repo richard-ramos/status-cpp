@@ -9,6 +9,7 @@ import "./ChatColumn"
 import "./ChatColumn/ChatComponents"
 import "./data"
 import "../Wallet"
+import im.status.desktop 1.0
 
 StackLayout {
     id: root
@@ -89,14 +90,11 @@ StackLayout {
     function showReplyArea() {
         isReply = true;
         isImage = false;
-        let replyMessageIndex = chatsModel.messageList.getMessageIndex(SelectedMessage.messageId);
-        if (replyMessageIndex === -1) return;
-        
-        let userName = chatsModel.messageList.getMessageData(replyMessageIndex, "userName")
-        let message = chatsModel.messageList.getMessageData(replyMessageIndex, "message")
-        let identicon = chatsModel.messageList.getMessageData(replyMessageIndex, "identicon")
 
-        chatInput.showReplyArea(userName, message, identicon)
+        const message = chat.messages.get(SelectedMessage.messageId);
+        if(!message) return;
+        
+        chatInput.showReplyArea(message)
     }
 
     function requestAddressForTransaction(address, amount, tokenAddress, tokenDecimals = 18) {
@@ -299,10 +297,10 @@ StackLayout {
                     if (chatInput.fileUrls.length > 0){
                         chatsModel.sendImage(chatInput.fileUrls[0], false);
                     }
-                    var msg = chatsModel.plainText(Emoji.deparse(chatInput.textInput.text))
+                    var msg = Status.plainText(Emoji.deparse(chatInput.textInput.text))
                     if (msg.length > 0){
                         msg = chatInput.interpretMessage(msg)
-                        chatsModel.sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg) ? Constants.emojiType : Constants.messageType, false);
+                        chatsModel.get(index).sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg), false);
                         chatInput.textInput.textFormat = TextEdit.PlainText;
                         if(event) event.accepted = true
                         chatInput.messageSound.stop()

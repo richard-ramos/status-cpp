@@ -30,6 +30,7 @@ Item {
     property string authorCurrentMsg: "authorCurrentMsg"
     property string authorPrevMsg: "authorPrevMsg"
 
+    // TODO:
     property string prevMsgTimestamp: chatsModel.messageList.getMessageData(prevMessageIndex, "timestamp")
     property bool shouldRepeatHeader: ((parseInt(timestamp, 10) - parseInt(prevMsgTimestamp, 10)) / 60 / 1000) > Constants.repeatHeaderInterval
 
@@ -44,12 +45,6 @@ Item {
 
     property bool isExpired: (outgoingStatus == "sending" && (Math.floor(timestamp) + 180000) < Date.now())
     property bool isStatusUpdate: false
-
-    property int replyMessageIndex: chatsModel.messageList.getMessageIndex(responseTo);
-    property string repliedMessageAuthor: replyMessageIndex > -1 ? chatsModel.messageList.getMessageData(replyMessageIndex, "userName") : "";
-    property string repliedMessageContent: replyMessageIndex > -1 ? chatsModel.messageList.getMessageData(replyMessageIndex, "message") : "";
-    property int repliedMessageType: replyMessageIndex > -1 ? parseInt(chatsModel.messageList.getMessageData(replyMessageIndex, "contentType")) : 0;
-    property string repliedMessageImage: replyMessageIndex > -1 ? chatsModel.messageList.getMessageData(replyMessageIndex, "image") : "";
 
     property var imageClick: function () {}
     property var scrollToBottom: function () {}
@@ -95,6 +90,8 @@ Item {
         }
     }
 
+    // TODO:
+    /*
     Connections {
         enabled: !placeholderMessage
         target: profileModel.contacts.list
@@ -103,7 +100,7 @@ Item {
                 profileImageSource = appMain.getProfileImage(userPubKey, isCurrentUser, useLargeImage)
             }
         }
-    }
+    }*/
 
     Component {
         id: messageContextMenuComponent
@@ -139,7 +136,7 @@ Item {
         messageContextMenu.isProfile = !!isProfileClick
         messageContextMenu.isSticker = isSticker
         messageContextMenu.emojiOnly = emojiOnly
-        messageContextMenu.show(root.profileImageSource)
+        messageContextMenu.show()
         // Position the center of the menu where the mouse is
         messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2
     }

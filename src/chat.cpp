@@ -1,5 +1,6 @@
 #include "chat.hpp"
 #include "chat-type.hpp"
+#include "content-type.hpp"
 #include "messages-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
@@ -113,7 +114,7 @@ void Chat::update(const QJsonValue data)
 	update_muted(data["muted"].toBool());
 }
 
-void Chat::sendMessage(QString message, bool isReply, bool isEmoji)
+void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 {
 	QString preferredUsername = Settings::instance()->preferredName();
 	QtConcurrent::run([=] {
@@ -121,10 +122,10 @@ void Chat::sendMessage(QString message, bool isReply, bool isEmoji)
 		QJsonObject obj{
 			{"chatId", m_id},
 			{"text", message},
-			// TODO: {"responseTo", replyTo},
+			{"responseTo", replyTo},
 			{"ensName", preferredUsername},
 			{"sticker", QJsonValue()},
-			{"contentType", 1} // TODO: replace by enum class
+			{"contentType", isEmoji ? ContentType::Emoji : ContentType::Message}
 			// TODO: {"communityId", communityId}
 		};
 		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();

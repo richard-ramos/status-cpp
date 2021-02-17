@@ -66,7 +66,7 @@ private:
 
 public:
 	Q_INVOKABLE void save();
-	Q_INVOKABLE void sendMessage(QString message, bool isReply, bool isEmoji);
+	Q_INVOKABLE void sendMessage(QString message, QString replyTo, bool isEmoji);
 	Q_INVOKABLE void leave();
 
 	bool operator==(const Chat &c);

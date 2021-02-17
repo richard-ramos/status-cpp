@@ -43,6 +43,7 @@ public:
 	Q_INVOKABLE QString generateQRCode(QString publicKey);
 
 	Q_INVOKABLE void copyToClipboard(const QString& value); // TODO: extract to utils singleton
+	Q_INVOKABLE QString plainText(const QString& value);
 
 	Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
 	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);

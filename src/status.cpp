@@ -12,6 +12,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QTextDocumentFragment>
 #include <QtConcurrent/QtConcurrent>
 
 std::map<QString, Status::SignalType> Status::signalMap;
@@ -77,13 +78,14 @@ void Status::processSignal(QString ev)
 	if(!signalMap.count(signalEvent["type"].toString()))
 	{
 		qWarning() << "Unknown signal: " << signalEvent["type"].toString();
+		qDebug() << ev;
 		return;
 	}
 
 	signalType = signalMap[signalEvent["type"].toString()];
 
 	qDebug() << "Signal received: " << signalType;
-
+	
 	switch(signalType)
 	{
 	case NodeLogin:
@@ -98,6 +100,7 @@ void Status::processSignal(QString ev)
 	case Message:
 		emit instance()->message(signalEvent["event"].toObject());
 		break;
+
 	}
 }
 
@@ -203,4 +206,9 @@ void Status::callPrivateRPC(QString method, QVariantList params, const QJSValue&
 void Status::copyToClipboard(const QString& value)
 {
 	return Utils::copyToClipboard(value);
+}
+
+QString Status::plainText(const QString& value)
+{
+	return QTextDocumentFragment::fromHtml( value ).toPlainText();
 }

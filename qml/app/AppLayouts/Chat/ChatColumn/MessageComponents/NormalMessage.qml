@@ -1,6 +1,7 @@
 import QtQuick 2.13
 import "../../../../../shared"
 import "../../../../../imports"
+import im.status.desktop 1.0
 
 Item {
     property var clickMessage: function () {}
@@ -22,7 +23,7 @@ Item {
 
     UserImage {
         id: chatImage
-        visible: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
+        visible: chat.chatType !== ChatType.OneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
         anchors.left: parent.left
         anchors.leftMargin: Style.current.padding
         anchors.top:  dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
@@ -31,7 +32,7 @@ Item {
 
     UsernameLabel {
         id: chatName
-        visible: true // TODO: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
+        visible: chat.chatType !== ChatType.OneToOne && isMessage && headerRepeatCondition && !root.isCurrentUser
         anchors.leftMargin: 20
         anchors.top: dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
         anchors.topMargin: 0
@@ -46,7 +47,7 @@ Item {
         property int chatVerticalPadding: isImage ? 4 : 6
         property int chatHorizontalPadding: isImage ? 0 : 12
         property bool longReply: chatReply.active && repliedMessageContent.length > maxMessageChars
-        property bool longChatText: chatsModel.plainText(message).split('\n').some(function (messagePart) {
+        property bool longChatText: plainText.split('\n').some(function (messagePart) {
             return messagePart.length > maxMessageChars
         })
 

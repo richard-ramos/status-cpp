@@ -32,6 +32,8 @@ Message::Message(const QJsonValue data, QObject* parent)
 	, m_timestamp(data["timestamp"].toString())
 	, m_whisperTimestamp(data["whisperTimestamp"].toString())
 	, m_parsedText(data["parsedText"].toArray())
+	, m_responseTo(data["responseTo"].toString())
+
 {
 	int contentType = data["contentType"].toInt();
 	if(contentType < ContentType::FetchMoreMessagesButton || contentType > ContentType::Community)

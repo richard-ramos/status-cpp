@@ -43,6 +43,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[Timestamp] = "timestamp";
 	roles[ParsedText] = "parsedText";
 	roles[Sticker] = "sticker";
+	roles[ResponseTo] = "responseTo";
 
 	return roles;
 }
@@ -78,6 +79,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	switch(role)
 	{
 	case Id: return QVariant(msg->get_id());
+	case ResponseTo: return QVariant(msg->get_responseTo());
 	case PlainText: return QVariant(msg->get_text());
 	case Contact: return QVariant(QVariant::fromValue(m_contacts->get(msg->get_from())));
 	case ContentType: return QVariant(msg->get_contentType());
@@ -92,11 +94,21 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
+Message* MessagesModel::get(QString messageId) const
+{
+	return m_messageMap[messageId];
+}
+
 void MessagesModel::push(Message* msg)
 {
+	// TODO: check replace to, and drop existing message
+
+	if(m_messageMap.contains(msg->get_id())) return;
+
 	QQmlApplicationEngine::setObjectOwnership(msg, QQmlApplicationEngine::CppOwnership);
 	msg->setParent(this);
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
+	m_messageMap[msg->get_id()] = msg;
 	m_messages << msg;
 	endInsertRows();
 }

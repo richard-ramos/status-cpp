@@ -3,6 +3,7 @@
 #include "constants.hpp"
 #include "contact.hpp"
 #include "contacts-model.hpp"
+#include "content-type.hpp"
 #include "message.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
@@ -140,6 +141,8 @@ QString Messages::Format::renderBlock(Message* message, ContactsModel* contactsM
 
 QString Messages::Format::decodeSticker(Message* message)
 {
+	if(message->get_contentType() != ContentType::Sticker) return "";
+	
 	QString stickerHash = message->get_sticker_hash();
 
 	if(stickerHash.left(2) != QStringLiteral("e3"))
