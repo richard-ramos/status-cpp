@@ -29,6 +29,7 @@ class Message : public QObject
 
 public:
 	explicit Message(QObject* parent = nullptr);
+	explicit Message(QString id, ContentType contentType, QObject* parent);
 	explicit Message(const QJsonValue data, QObject* parent = nullptr);
 
 	QML_READONLY_PROPERTY(QString, id)

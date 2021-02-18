@@ -30,6 +30,8 @@ MessagesModel::MessagesModel(QString chatId, QObject* parent)
 {
 	qDebug() << "MessagesModel::constructor for chatId: " << m_chatId;
 	QObject::connect(this, &MessagesModel::messageLoaded, this, &MessagesModel::push); // TODO: replace added
+
+	addFakeMessages();
 }
 
 QHash<int, QByteArray> MessagesModel::roleNames() const
@@ -83,7 +85,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case Id: return QVariant(msg->get_id());
 	case ResponseTo: return QVariant(msg->get_responseTo());
 	case PlainText: return QVariant(msg->get_text());
-	case Contact: return QVariant(QVariant::fromValue(m_contacts->upsert(msg)));
+	case Contact: return QVariant(msg->get_contentType() != ContentType::ChatIdentifier ? QVariant::fromValue(m_contacts->upsert(msg)) : "");
 	case ContentType: return QVariant(msg->get_contentType());
 	case Clock: return QVariant(msg->get_clock());
 	case ChatId: return QVariant(msg->get_chatId());
@@ -103,9 +105,11 @@ Message* MessagesModel::get(QString messageId) const
 
 void MessagesModel::push(Message* msg)
 {
-	if(msg->get_replace() != ""){
+	if(msg->get_replace() != "")
+	{
 		// Delete existing message from UI since it's going to be replaced
-		if(m_messageMap.contains(msg->get_id())){
+		if(m_messageMap.contains(msg->get_id()))
+		{
 			int row = m_messages.indexOf(m_messageMap[msg->get_id()]);
 			beginRemoveRows(QModelIndex(), row, row);
 			delete m_messageMap[msg->get_id()];
@@ -127,11 +131,14 @@ void MessagesModel::push(Message* msg)
 	endInsertRows();
 }
 
-void MessagesModel::loadMessages()
+void MessagesModel::loadMessages(bool initialLoad)
 {
+	if(!initialLoad && m_cursor == "") return;
+	
 	QtConcurrent::run([=] {
-		const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, "", 20}.toVariantList()).toJsonObject();
-		qDebug() << "Loaded messages for chatId: " << m_chatId;
+		const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
+		m_cursor = response["result"]["cursor"].toString();
+
 		// TODO: handle cursor
 		foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
 		{
@@ -139,5 +146,15 @@ void MessagesModel::loadMessages()
 			message->moveToThread(QApplication::instance()->thread());
 			emit messageLoaded(message);
 		}
+
+		emit messagesLoaded();
 	});
+}
+
+void MessagesModel::addFakeMessages() {
+	Message* chatIdentifier = new Message("chatIdentifier", ContentType::ChatIdentifier, this);
+	QQmlApplicationEngine::setObjectOwnership(chatIdentifier, QQmlApplicationEngine::CppOwnership);
+	beginInsertRows(QModelIndex(), rowCount(), rowCount());
+	m_messages << chatIdentifier;
+	endInsertRows();
 }

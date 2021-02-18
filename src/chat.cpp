@@ -194,6 +194,11 @@ void Chat::deleteChatHistory()
 	}
 }
 
+void Chat::loadMoreMessages()
+{
+	m_messages->loadMessages(false);
+}
+
 void Chat::save()
 {
 	//QtConcurrent::run([=] {

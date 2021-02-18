@@ -1,12 +1,18 @@
 #include "message.hpp"
-#include <QObject>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QObject>
 
 using namespace Messages;
 
 Message::Message(QObject* parent)
 	: QObject(parent)
+{ }
+
+Message::Message(QString id, ContentType contentType, QObject* parent)
+	: QObject(parent)
+	, m_id(id)
+	, m_contentType(contentType)
 { }
 
 QString Message::get_sticker_hash()
@@ -55,7 +61,8 @@ Message::Message(const QJsonValue data, QObject* parent)
 		m_messageType = static_cast<MessageType>(messageType);
 	}
 
-	if(m_contentType == ContentType::Sticker){
+	if(m_contentType == ContentType::Sticker)
+	{
 		m_sticker.hash = data["sticker"]["hash"].toString();
 		m_sticker.pack = data["sticker"]["pack"].toInt();
 	}

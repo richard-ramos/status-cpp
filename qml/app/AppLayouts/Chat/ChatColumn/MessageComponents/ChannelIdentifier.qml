@@ -21,17 +21,17 @@ Column {
         width: 120
         height: 120
         radius: 120
-        border.width: chatsModel.activeChannel.chatType === Constants.chatTypeOneToOne ? 2 : 0
+        border.width: chat.chatType === Constants.chatTypeOneToOne ? 2 : 0
         border.color: Style.current.border
         color: {
-            if (chatsModel.activeChannel.chatType === Constants.chatTypeOneToOne) {
+            if (chat.chatType === Constants.chatTypeOneToOne) {
                 return Style.current.transparent
             }
-            return chatsModel.activeChannel.color
+            return chat.color
         }
 
         RoundedImage {
-            visible: chatsModel.activeChannel.chatType === Constants.chatTypeOneToOne
+            visible: chat.chatType === Constants.chatTypeOneToOne
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             width: 120
@@ -42,8 +42,8 @@ Column {
         }
 
         StyledText {
-            visible: chatsModel.activeChannel.chatType !== Constants.chatTypeOneToOne
-            text: Utils.removeStatusEns((chatsModel.activeChannel.name.charAt(0) === "#" ? chatsModel.activeChannel.name.charAt(1) : chatsModel.activeChannel.name.charAt(0)).toUpperCase())
+            visible: chat.chatType !== Constants.chatTypeOneToOne
+            text: Utils.removeStatusEns((chat.name.charAt(0) === "#" ? chat.name.charAt(1) : chat.name.charAt(0)).toUpperCase())
             opacity: 0.7
             font.weight: Font.Bold
             font.pixelSize: 51
@@ -57,10 +57,10 @@ Column {
         id: channelName
         wrapMode: Text.Wrap
         text: {
-            switch(chatsModel.activeChannel.chatType) {
-                case Constants.chatTypePublic: return "#" + chatsModel.activeChannel.name;
+            switch(chat.chatType) {
+                case Constants.chatTypePublic: return "#" + chat.name;
                 case Constants.chatTypeOneToOne: return Utils.removeStatusEns(chatsModel.activeChannel.name)
-                default: return chatsModel.activeChannel.name
+                default: return chats.name
             }
         }
         font.weight: Font.Bold
@@ -80,7 +80,7 @@ Column {
             id: descText
             wrapMode: Text.Wrap
             text: {
-                switch(chatsModel.activeChannel.chatType) {
+                switch(chat.chatType) {
                     case Constants.chatTypePrivateGroupChat: return qsTr(`Welcome to the beginning of the <span style="color: ${Style.current.textColor}">%1</span> group!`).arg(chatsModel.activeChannel.name);
                     case Constants.chatTypeOneToOne: return qsTr(`Any messages you send here are encrypted and can only be read by you and <span style="color: ${Style.current.textColor}">%1</span>`).arg(Utils.removeStatusEns(chatsModel.activeChannel.name))
                     default: return "";
@@ -96,7 +96,7 @@ Column {
     }
 
     Item {
-        visible: chatsModel.activeChannel.chatType === Constants.chatTypePrivateGroupChat && !chatsModel.activeChannel.isMember
+        visible: chat.chatType === Constants.chatTypePrivateGroupChat && !chat.isMember
         anchors.horizontalCenter: parent.horizontalCenter
         width: joinChat.width
         height: visible ? 100 : 10

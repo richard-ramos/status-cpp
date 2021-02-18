@@ -54,16 +54,20 @@ public:
 	QString renderBlock(Message* message) const;
 
 public:
-	void loadMessages();
+	void loadMessages(bool initialLoad = true);
 	
 
 signals:
 	void messageLoaded(Message* message);
-
+	void messagesLoaded();
 
 private:
 	QVector<Message*> m_messages;
 	QHash<QString, Message*> m_messageMap;
 	QString m_chatId;
+
+	QString m_cursor;
+
+	void addFakeMessages();
 
 };
