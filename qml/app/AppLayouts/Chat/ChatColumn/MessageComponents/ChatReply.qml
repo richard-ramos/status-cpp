@@ -47,7 +47,7 @@ Loader {
                 id: imgReplyImage
                 visible: replyMessage.contentType == Constants.imageType
                 imageWidth: 50
-                imageSource: repliedMessageImage
+                imageSource: replyMessage.image
                 anchors.top: lblReplyAuthor.bottom
                 anchors.topMargin: 5
                 anchors.left: parent.left

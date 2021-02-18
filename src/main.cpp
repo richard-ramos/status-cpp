@@ -27,6 +27,7 @@
 #include "constants.hpp"
 #include "contact.hpp"
 #include "contacts-model.hpp"
+#include "content-type.hpp"
 #include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
@@ -92,6 +93,8 @@ int main(int argc, char* argv[])
 
 	qRegisterMetaType<ChatType>("ChatType");
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
+	qRegisterMetaType<ContentType>("ContentType");
+	qmlRegisterUncreatableType<ContentTypeClass>("im.status.desktop", 1, 0, "ContentType", "Not creatable as it is an enum type");
 
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());

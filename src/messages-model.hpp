@@ -47,6 +47,7 @@ public:
 	virtual QVariant data(const QModelIndex& index, int role) const;
 	void push(Message* message);
 	Q_INVOKABLE Message* get(QString messageId) const;
+	Q_INVOKABLE Message* get(int row) const;
 
 	
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)

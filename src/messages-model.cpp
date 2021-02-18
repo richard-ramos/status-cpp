@@ -103,6 +103,12 @@ Message* MessagesModel::get(QString messageId) const
 	return m_messageMap[messageId];
 }
 
+Message* MessagesModel::get(int row) const
+{
+	return m_messages[row];
+}
+
+
 void MessagesModel::push(Message* msg)
 {
 	if(msg->get_replace() != "")

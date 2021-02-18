@@ -15,7 +15,7 @@ StyledText {
         let yesterday = new Date()
         yesterday.setDate(now.getDate()-1)
 
-        let prevMsgTimestamp = chatsModel.messageList.getMessageData(prevMessageIndex, "timestamp")
+        let prevMsgTimestamp = messages.get(prevMessageIndex).timestamp;
         var currentMsgDate = new Date(parseInt(timestamp, 10));
         var prevMsgDate = prevMsgTimestamp === "" ? new Date(0) : new Date(parseInt(prevMsgTimestamp, 10));
         if(currentMsgDate.getDay() !== prevMsgDate.getDay()){

@@ -30,8 +30,8 @@ Item {
     property string authorCurrentMsg: "authorCurrentMsg"
     property string authorPrevMsg: "authorPrevMsg"
 
-    // TODO:
-    property string prevMsgTimestamp: chatsModel.messageList.getMessageData(prevMessageIndex, "timestamp")
+    property string prevMsgTimestamp: prevMessageIndex > - 1 ? messages.get(prevMessageIndex).timestamp : 0
+    
     property bool shouldRepeatHeader: ((parseInt(timestamp, 10) - parseInt(prevMsgTimestamp, 10)) / 60 / 1000) > Constants.repeatHeaderInterval
 
     property bool isEmoji: contentType === Constants.emojiType
@@ -50,9 +50,9 @@ Item {
     property var scrollToBottom: function () {}
     property string userPubKey: {
         if (contentType === Constants.chatIdentifier) {
-            return chatId
+            return chat.chatId
         }
-        return contact.from
+        return contact.id
     }
     property bool useLargeImage: contentType === Constants.chatIdentifier
 
