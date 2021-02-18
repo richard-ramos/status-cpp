@@ -245,7 +245,7 @@ StackLayout {
 
             Loader {
                 id: loadingMessagesIndicator
-                active: chatsModel.loadingMessages
+                active: false // chatsModel.loadingMessages // TODO:
                 sourceComponent: loadingIndicator
                 anchors.right: parent.right
                 anchors.bottom: chatInput.top

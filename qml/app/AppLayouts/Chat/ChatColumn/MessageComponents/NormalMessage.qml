@@ -46,7 +46,7 @@ Item {
         readonly property int maxMessageChars: (defaultMaxMessageChars * messageWidth) / defaultMessageWidth
         property int chatVerticalPadding: isImage ? 4 : 6
         property int chatHorizontalPadding: isImage ? 0 : 12
-        property bool longReply: chatReply.active && repliedMessageContent.length > maxMessageChars
+        property bool longReply: chatReply.active && chat.messages.get(responseTo).message > maxMessageChars
         property bool longChatText: plainText.split('\n').some(function (messagePart) {
             return messagePart.length > maxMessageChars
         })
