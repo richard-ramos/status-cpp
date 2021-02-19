@@ -142,7 +142,7 @@ StackLayout {
             z: 60
             Rectangle {
                 Component.onCompleted: {
-                    isConnected = chatsModel.isOnline
+                    isConnected = Status.IsOnline;
                     if(!isConnected){
                         connectedStatusRect.visible = true 
                     }
@@ -171,7 +171,7 @@ StackLayout {
             }
 
             Connections {
-                target: chatsModel
+                target: Status
                 onOnlineStatusChanged: {
                     if (connected == isConnected) return;
                     isConnected = connected;

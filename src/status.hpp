@@ -51,7 +51,7 @@ public:
 
 	void emitMessageSignal(QJsonObject ev);
 
-
+	Q_PROPERTY(bool IsOnline READ isOnline NOTIFY onlineStatusChanged)
 
 signals:
 	void signal(SignalType signal);
@@ -61,10 +61,16 @@ signals:
 	void message(QJsonObject update);
 	void logout();
 
+	void onlineStatusChanged(bool connected);
+
 private:
 	static Status* theInstance;
 	explicit Status(QObject* parent = nullptr);
 	static std::map<QString, SignalType> signalMap;
 	static void signalCallback(const char* data);
 	void processSignal(QString ev);
+
+	bool isOnline();
+
+	bool m_online;
 };

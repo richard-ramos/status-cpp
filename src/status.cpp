@@ -11,8 +11,8 @@
 #include <QJSEngine>
 #include <QString>
 #include <QStringList>
-#include <QVariant>
 #include <QTextDocumentFragment>
+#include <QVariant>
 #include <QtConcurrent/QtConcurrent>
 
 std::map<QString, Status::SignalType> Status::signalMap;
@@ -28,6 +28,8 @@ Status* Status::instance()
 Status::Status(QObject* parent)
 	: QObject(parent)
 {
+	m_online = false;
+
 	SetSignalEventCallback((void*)&Status::signalCallback);
 
 	signalMap = {{"messages.new", SignalType::Message},
@@ -50,22 +52,14 @@ Status::Status(QObject* parent)
 
 void uint64ToStrReplacements(QString& input)
 {
-	input.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":(\\d+)")),
-				  QStringLiteral("\"lastClockValue\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"timestamp\":(\\d+)")),
-				  QStringLiteral("\"timestamp\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":(\\d+)")),
-				  QStringLiteral("\"deletedAtClockValue\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"clock\":(\\d+)")),
-				  QStringLiteral("\"clock\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":(\\d+)")),
-				  QStringLiteral("\"whisperTimestamp\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":(\\d+)")),
-				  QStringLiteral("\"ensVerifiedAt\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":(\\d+)")),
-				  QStringLiteral("\"lastENSClockValue\":\"\\1\""));
-	input.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":(\\d+)")),
-				  QStringLiteral("\"lastUpdated\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":(\\d+)")), QStringLiteral("\"lastClockValue\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"timestamp\":(\\d+)")), QStringLiteral("\"timestamp\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":(\\d+)")), QStringLiteral("\"deletedAtClockValue\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"clock\":(\\d+)")), QStringLiteral("\"clock\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":(\\d+)")), QStringLiteral("\"whisperTimestamp\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":(\\d+)")), QStringLiteral("\"ensVerifiedAt\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":(\\d+)")), QStringLiteral("\"lastENSClockValue\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":(\\d+)")), QStringLiteral("\"lastUpdated\":\"\\1\""));
 }
 
 void Status::processSignal(QString ev)
@@ -85,26 +79,30 @@ void Status::processSignal(QString ev)
 	signalType = signalMap[signalEvent["type"].toString()];
 
 	qDebug() << "Signal received: " << signalType;
-	
+
 	switch(signalType)
 	{
-	case NodeLogin:
-		emit instance()->login(signalEvent["event"]["error"].toString());
+	case NodeLogin: emit instance()->login(signalEvent["event"]["error"].toString()); break;
+	case NodeReady: emit instance()->nodeReady(signalEvent["event"]["error"].toString()); break;
+	case NodeStopped: emit instance()->nodeStopped(signalEvent["event"]["error"].toString()); break;
+	case Message: emit instance()->message(signalEvent["event"].toObject()); break;
+	case DiscoverySummary:
+		if(signalEvent["event"].toArray().count() > 0 && !m_online)
+		{
+			m_online = true;
+			emit onlineStatusChanged(true);
+		}
+		else if(signalEvent["event"].toArray().count() == 0 && m_online)
+		{
+			m_online = false;
+			emit onlineStatusChanged(false);
+		}
 		break;
-	case NodeReady:
-		emit instance()->nodeReady(signalEvent["event"]["error"].toString());
-		break;
-	case NodeStopped:
-		emit instance()->nodeStopped(signalEvent["event"]["error"].toString());
-		break;
-	case Message:
-		emit instance()->message(signalEvent["event"].toObject());
-		break;
-
 	}
 }
 
-void Status::emitMessageSignal(QJsonObject ev){
+void Status::emitMessageSignal(QJsonObject ev)
+{
 	emit instance()->message(ev);
 }
 
@@ -142,9 +140,8 @@ QString Status::generateQRCode(QString publicKey)
 	svg << QString("data:image/svg+xml;utf8,");
 	svg << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD "
 				   "SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">");
-	svg << QString(
-			   "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 %1 %2\" "
-			   "stroke=\"none\"><rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/><path d=\"")
+	svg << QString("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 %1 %2\" "
+				   "stroke=\"none\"><rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/><path d=\"")
 			   .arg(sz + border * 2)
 			   .arg(sz + border * 2);
 	for(int y = 0; y < sz; y++)
@@ -161,28 +158,19 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 {
 	qDebug() << "CallPrivateRPC - method:" << method;
 
-	QJsonObject payload{
-		{"jsonrpc", "2.0"}, {"method", method}, {"params", QJsonValue::fromVariant(params)}};
+	QJsonObject payload{{"jsonrpc", "2.0"}, {"method", method}, {"params", QJsonValue::fromVariant(params)}};
 	qDebug() << payload;
 	QString payloadStr = Utils::jsonToStr(payload);
 
 	// WARNING: uint64 are expected instead of strings.
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"lastClockValue\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"timestamp\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"timestamp\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"deletedAtClockValue\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"clock\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"clock\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"whisperTimestamp\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"ensVerifiedAt\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"lastENSClockValue\":\\1"));
-	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":\\s\"(\\d+?)\"")),
-					   QStringLiteral("\"lastUpdated\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"lastClockValue\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"timestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"timestamp\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"deletedAtClockValue\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"clock\":\\s\"(\\d+?)\"")), QStringLiteral("\"clock\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"whisperTimestamp\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":\\s\"(\\d+?)\"")), QStringLiteral("\"ensVerifiedAt\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"lastENSClockValue\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":\\s\"(\\d+?)\"")), QStringLiteral("\"lastUpdated\":\\1"));
 
 	const char* result = CallPrivateRPC(payloadStr.toUtf8().data());
 
@@ -196,14 +184,13 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 void Status::callPrivateRPC(QString method, QVariantList params, const QJSValue& callback)
 {
 	auto* watcher = new QFutureWatcher<QVariant>(this);
-	QObject::connect(
-		watcher, &QFutureWatcher<QVariant>::finished, this, [this, watcher, callback]() {
-			QVariant result = watcher->result();
-			QJSValue cbCopy(callback); // needed as callback is captured as const
-			QJSEngine* engine = qjsEngine(this);
-			cbCopy.call(QJSValueList{engine->toScriptValue(result)});
-			watcher->deleteLater();
-		});
+	QObject::connect(watcher, &QFutureWatcher<QVariant>::finished, this, [this, watcher, callback]() {
+		QVariant result = watcher->result();
+		QJSValue cbCopy(callback); // needed as callback is captured as const
+		QJSEngine* engine = qjsEngine(this);
+		cbCopy.call(QJSValueList{engine->toScriptValue(result)});
+		watcher->deleteLater();
+	});
 	watcher->setFuture(QtConcurrent::run(this, &Status::callPrivateRPC, method, params));
 }
 
@@ -214,5 +201,10 @@ void Status::copyToClipboard(const QString& value)
 
 QString Status::plainText(const QString& value)
 {
-	return QTextDocumentFragment::fromHtml( value ).toPlainText();
+	return QTextDocumentFragment::fromHtml(value).toPlainText();
+}
+
+bool Status::isOnline()
+{
+	return m_online;
 }
