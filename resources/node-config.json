@@ -8,10 +8,9 @@
     "StaticNodes": [],
     "TrustedMailServers": []
   },
-  "DataDir": "./ethereum/mainnet",
+  "DataDir": "./ethereum/mainnet_rpc",
   "EnableNTPSync": true,
   "KeyStoreDir": "./keystore",
-  "ListenAddr": "0.0.0.0:30306",
   "LogEnabled": true,
   "LogFile": "./geth.log",
   "LogLevel": "INFO",

@@ -2,6 +2,7 @@
 
 #include "mailserver-cycle.hpp"
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QObject>
 #include <QReadWriteLock>
 #include <QTimer>
@@ -17,7 +18,7 @@ class Settings : public QObject
 	Q_PROPERTY(QString Currency READ currency WRITE setCurrency NOTIFY currencyChanged)
 	Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY preferredNameChanged)
 	Q_PROPERTY(int Appearance READ appearance WRITE setAppearance NOTIFY appearanceChanged)
-
+	Q_PROPERTY(QString CurrentNetwork READ currentNetwork WRITE setCurrentNetwork NOTIFY currentNetworkChanged)
 
 public:
 	static Settings* instance();
@@ -89,10 +90,16 @@ public:
 	QString preferredName();
 	void setPreferredName(const QString& value);
 
+	QString currentNetwork();
+	void setCurrentNetwork(const QString& value);
+
 	int appearance();
 	void setAppearance(int value);
 
 	bool isMnemonicBackedUp();
+
+	QJsonObject getNodeConfig();
+
 
 signals:
 	void initialized();
@@ -100,6 +107,7 @@ signals:
 	void preferredNameChanged();
 	void appearanceChanged();
 	void mnemonicRemoved();
+	void currentNetworkChanged();
 
 private:
 	static Settings* theInstance;
@@ -111,17 +119,26 @@ private:
 	QString m_keyUID;
 	QString m_preferredName;
 	QString m_mnemonic;
+	QString m_currentNetwork;
+	QString m_installationId;
+	QString m_fleet;
+	QJsonArray m_networks;
+
 	int m_appearance;
 
 	QReadWriteLock lock;
 
-	void saveSettings(SettingTypes setting, QString value);
-		void saveSettings(SettingTypes setting, int value);
+	void saveSettings(SettingTypes setting, const QString& value);
+	void saveSettings(SettingTypes setting, const int& value);
+	void saveSettings(SettingTypes setting, const QJsonArray& value);
+	void saveSettings(SettingTypes setting, const QJsonObject& value);
 
+	void save(const QJsonArray& input);
 
 	// TODO: move this to mailserver model
 	MailserverCycle mailserverCycle;
 	QTimer* timer;
+
 
 public:
 	Q_INVOKABLE void startMailserverCycle();
