@@ -69,7 +69,9 @@ void Settings::init()
 	m_installationId = settings[settingsMap[SettingTypes::InstallationId]].toString();
 	m_fleet = settings[settingsMap[SettingTypes::Fleet]].toString();
 	m_networks = settings[settingsMap[SettingTypes::Networks_Networks]].toArray();
-	qDebug() << settings;
+	
+	// defaults:
+	if(m_fleet == "") m_fleet = QStringLiteral("eth.prod");
 
 	m_initialized = true;
 	lock.unlock();
@@ -319,12 +321,35 @@ void Settings::setCurrentNetwork(const QString& value)
 	emit currentNetworkChanged();
 }
 
+void Settings::setFleet(const QString& value)
+{
+	lock.lockForWrite();
+	if(value != m_fleet)
+	{
+		m_fleet = value;
+		saveSettings(SettingTypes::Fleet, value);
+		saveSettings(SettingTypes::NodeConfig, getNodeConfig());
+	}
+	lock.unlock();
+	emit fleetChanged();
+}
+
 QString Settings::currentNetwork()
 {
 	lock.lockForRead();
 	if(!m_initialized)
 		return 0;
 	QString result(m_currentNetwork);
+	lock.unlock();
+	return result;
+}
+
+QString Settings::fleet()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+		return 0;
+	QString result(m_fleet);
 	lock.unlock();
 	return result;
 }

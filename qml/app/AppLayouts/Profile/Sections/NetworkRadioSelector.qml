@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 RowLayout {
     property string network: ""
@@ -15,9 +16,9 @@ RowLayout {
         title: qsTr("Warning!")
         confirmationText: qsTr("The account will be logged out. When you unlock it again, the selected network will be used")
         onConfirmButtonClicked: {
-            profileModel.network.current = newNetwork;
+            StatusSettings.CurrentNetwork = newNetwork;
+            Status.closeSession();
         }
-        onClosed: profileModel.network.triggerNetworkChange()
     }
 
     width: parent.width
@@ -30,9 +31,9 @@ RowLayout {
         Layout.alignment: Qt.AlignRight
         ButtonGroup.group: networkSettings
         rightPadding: 0
-        checked: profileModel.network.current  === network
+        checked: StatusSettings.CurrentNetwork === network
         onClicked: {
-            if (profileModel.network.current === network) return;
+            if (StatusSettings.CurrentNetwork === network) return;
             newNetwork = network;
             confirmDialog.open();
         }

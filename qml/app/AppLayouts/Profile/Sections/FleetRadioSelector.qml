@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 RowLayout {
     property string fleetName: ""
@@ -13,8 +14,10 @@ RowLayout {
         id: confirmDialog
         title: qsTr("Warning!")
         confirmationText: qsTr("Change fleet to %1").arg(newFleet)
-        onConfirmButtonClicked: profileModel.fleets.setFleet(newFleet)
-        onClosed: profileModel.fleets.triggerFleetChange()
+        onConfirmButtonClicked: {
+            StatusSettings.Fleet = newFleet;
+            Status.closeSession();
+        }
     }
 
 
@@ -28,9 +31,9 @@ RowLayout {
         Layout.alignment: Qt.AlignRight
         ButtonGroup.group: fleetSettings
         rightPadding: 0
-        checked: profileModel.fleets.fleet === fleetName
+        checked: StatusSettings.Fleet === fleetName
         onClicked: {
-            if (profileModel.fleets.fleet === fleetName) return;
+            if (StatusSettings.Fleet === fleetName) return;
             newFleet = fleetName;
             confirmDialog.open();
         }

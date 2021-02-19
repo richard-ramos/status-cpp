@@ -19,6 +19,7 @@ class Settings : public QObject
 	Q_PROPERTY(QString PreferredUsername READ preferredName WRITE setPreferredName NOTIFY preferredNameChanged)
 	Q_PROPERTY(int Appearance READ appearance WRITE setAppearance NOTIFY appearanceChanged)
 	Q_PROPERTY(QString CurrentNetwork READ currentNetwork WRITE setCurrentNetwork NOTIFY currentNetworkChanged)
+	Q_PROPERTY(QString Fleet READ fleet WRITE setFleet NOTIFY fleetChanged)
 
 public:
 	static Settings* instance();
@@ -93,6 +94,9 @@ public:
 	QString currentNetwork();
 	void setCurrentNetwork(const QString& value);
 
+	QString fleet();
+	void setFleet(const QString& value);
+
 	int appearance();
 	void setAppearance(int value);
 
@@ -108,6 +112,7 @@ signals:
 	void appearanceChanged();
 	void mnemonicRemoved();
 	void currentNetworkChanged();
+	void fleetChanged();
 
 private:
 	static Settings* theInstance;
