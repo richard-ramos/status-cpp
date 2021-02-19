@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -125,8 +126,7 @@ ModalPopup {
                                 addNetworkPopup.networkId = parseInt(networkInput.text, 10);
                             }
 
-                            profileModel.network.add(nameInput.text, rpcInput.text, addNetworkPopup.networkId, addNetworkPopup.networkType)
-                            profileModel.network.reloadCustomNetworks();
+                            customNetworksModel.add(nameInput.text, rpcInput.text, addNetworkPopup.networkId, addNetworkPopup.networkType)
                             addNetworkPopup.close()
                         }
                     }
@@ -279,13 +279,19 @@ ModalPopup {
 
             StatusSectionHeadline {
                 text: qsTr("Custom Networks")
+                visible: customNetworksRepeater.count > 0
+            }
+
+            CustomNetworksModel {
+                id: customNetworksModel
             }
 
             Repeater {
-                model: profileModel.network.customNetworkList
+                id: customNetworksRepeater
+                model: customNetworksModel
                 delegate: NetworkRadioSelector {
                     networkName: name
-                    network: customNetworkId
+                    network: networkId
                 }
             }
         }

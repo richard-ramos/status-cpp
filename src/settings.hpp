@@ -94,6 +94,9 @@ public:
 	QString currentNetwork();
 	void setCurrentNetwork(const QString& value);
 
+	QJsonArray networks();
+	void setNetworks(const QJsonArray& value);
+
 	QString fleet();
 	void setFleet(const QString& value);
 
@@ -113,6 +116,7 @@ signals:
 	void mnemonicRemoved();
 	void currentNetworkChanged();
 	void fleetChanged();
+	void networksChanged();
 
 private:
 	static Settings* theInstance;

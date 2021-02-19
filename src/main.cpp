@@ -28,6 +28,7 @@
 #include "contact.hpp"
 #include "contacts-model.hpp"
 #include "content-type.hpp"
+#include "custom-networks-model.hpp"
 #include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
@@ -82,6 +83,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<OnboardingModel>("im.status.desktop", 1, 0, "OnboardingModel");
 	qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
 	qmlRegisterType<ContactsModel>("im.status.desktop", 1, 0, "ContactsModel");
+	qmlRegisterType<CustomNetworksModel>("im.status.desktop", 1, 0, "CustomNetworksModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
@@ -90,6 +92,8 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<Message*>("Message *");
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
+
+	qRegisterMetaType<CustomNetwork>("CustomNetwork");
 
 	qRegisterMetaType<ChatType>("ChatType");
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
