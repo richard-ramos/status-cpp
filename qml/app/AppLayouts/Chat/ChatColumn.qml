@@ -277,7 +277,7 @@ StackLayout {
                 anchors.bottom: parent.bottom
                 recentStickers: chatsModel.stickers.recent
                 stickerPackList: chatsModel.stickers.stickerPacks
-                chatType: chatsModel.activeChannel.chatType
+                chatType: chat.chatType
                 onSendTransactionCommandButtonClicked: {
                     if (chatsModel.activeChannel.ensVerified) {
                         txModalLoader.sourceComponent = cmpSendTransactionWithEns

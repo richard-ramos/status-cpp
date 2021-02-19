@@ -60,7 +60,6 @@ public:
 
 signals:
 	void messageLoaded(Message* message);
-	void messagesLoaded();
 
 private:
 	QVector<Message*> m_messages;

@@ -152,8 +152,6 @@ void MessagesModel::loadMessages(bool initialLoad)
 			message->moveToThread(QApplication::instance()->thread());
 			emit messageLoaded(message);
 		}
-
-		emit messagesLoaded();
 	});
 }
 

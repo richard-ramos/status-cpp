@@ -59,6 +59,9 @@ public:
 
 signals:
 	void left(QString chatId);
+	void sendingMessage();
+	void sendingMessageFailed();
+	void messagesLoaded();
 
 private:
 	QMutex m_mutex;

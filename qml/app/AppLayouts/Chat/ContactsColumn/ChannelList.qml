@@ -36,7 +36,7 @@ Item {
         delegate: Channel {
             name: model.name
             muted: model.muted
-            lastMessage: model.lastMessage.text
+            lastMessage: model.lastMessage
             timestamp: model.timestamp
             chatType: model.chatType
             identicon: model.identicon

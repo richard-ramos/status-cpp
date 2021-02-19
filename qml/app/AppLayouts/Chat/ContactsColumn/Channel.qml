@@ -114,8 +114,7 @@ Rectangle {
                 case Constants.stickerType: return qsTrId("sticker");
                 //% "No messages"
                 default: 
-                    return lastMessage || qsTrId("no-messages")
-                    // TODO: format return lastMessage ? Emoji.parse(Utils.filterXSS(lastMessage)).replace(/\n|\r/g, ' ') : qsTrId("no-messages")
+                    return lastMessage ? Emoji.parse(Utils.filterXSS(lastMessage)).replace(/\n|\r/g, ' ') : qsTrId("no-messages")
             }
         }
         textFormat: Text.RichText
@@ -178,7 +177,6 @@ Rectangle {
         }
         onClicked: {
             if (mouse.button & Qt.RightButton) {
-                console.log("THE INDEX IS: ", index)
                 channelContextMenu.openMenu(index, muted, chatType, name, chatId, identicon)
                 return;
             }

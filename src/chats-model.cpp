@@ -1,6 +1,7 @@
 #include "chats-model.hpp"
 #include "chat-type.hpp"
 #include "chat.hpp"
+#include "message-format.hpp"
 #include "message.hpp"
 #include "status.hpp"
 #include "utils.hpp"
@@ -83,14 +84,11 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case Type: return QVariant(chat->get_chatType());
 	case Color: return QVariant(chat->get_color());
 	case Timestamp: return QVariant(chat->get_timestamp());
-	case LastMessage: return QVariant(QVariant::fromValue(chat->get_lastMessage()));
-	case Messages:
-		return QVariant(QVariant::fromValue(chat->get_messages()));
-
-		// TODO: case HasMentions: return QVariant(chat->get_hasMentions());
-		//TODO: case ContentType: return QVariant(chat->get_contentType());
+	case LastMessage: return QVariant(Messages::Format::renderSimpleText(chat->get_lastMessage(), m_contacts));
+	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
 	}
-
+	// TODO: case HasMentions: return QVariant(chat->get_hasMentions());
+	//TODO: case ContentType: return QVariant(chat->get_contentType());
 	return QVariant();
 }
 

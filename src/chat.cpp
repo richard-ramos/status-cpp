@@ -117,6 +117,8 @@ void Chat::update(const QJsonValue data)
 void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 {
 	QString preferredUsername = Settings::instance()->preferredName();
+	emit sendingMessage();
+
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{
@@ -131,6 +133,7 @@ void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
 		if(!response["error"].isUndefined())
 		{
+			emit sendingMessageFailed();
 			throw std::domain_error(response["error"]["message"].toString().toUtf8());
 		}
 		Status::instance()->emitMessageSignal(response["result"].toObject());
@@ -197,6 +200,7 @@ void Chat::deleteChatHistory()
 void Chat::loadMoreMessages()
 {
 	m_messages->loadMessages(false);
+	emit messagesLoaded();
 }
 
 void Chat::save()

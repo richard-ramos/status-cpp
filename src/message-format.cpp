@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QString>
 #include <QStringBuilder>
+#include <QTextDocumentFragment>
 #include <iostream>
 #include <string>
 
@@ -118,6 +119,58 @@ QString codeblock(const QJsonObject& p)
 
 QHash<QString, RenderBlockTypes> renderBlockMap{{"paragraph", Paragraph}, {"blockquote", Blockquote}, {"codeblock", Codeblock}};
 
+// See render - inline in status - react / src / status_im / ui / screens / chat / message / message.cljs
+QString renderSimplifiedInline(const QJsonObject& elem, ContactsModel* contactsModel)
+{
+	QString value(elem["literal"].toString().toHtmlEscaped().replace("\r\n", "<br />").replace("\n", "<br />"));
+	QString textType = elem["type"].toString();
+
+	if(!renderInlineMap.contains(textType))
+		return " " % value % " ";
+
+	switch(renderInlineMap[textType])
+	{
+	case Link: return elem["destination"].toString();
+	case Mention: return mention(value, contactsModel);
+	case StatusTag: return "#" % value;
+	default: return " " % QTextDocumentFragment::fromHtml(value).toPlainText() % " ";
+	}
+}
+
+QString simple_paragraph(const QJsonObject& p, ContactsModel* contactsModel)
+{
+	QStringList inlineResult;
+	foreach(const QJsonValue& child, p["children"].toArray())
+	{
+		inlineResult << renderSimplifiedInline(child.toObject(), contactsModel);
+	}
+
+	return inlineResult.join("");
+}
+
+QString Messages::Format::renderSimpleText(Message* message, ContactsModel* contactsModel)
+{
+	QStringList result;
+	foreach(const QJsonValue& pMsg, message->get_parsedText())
+	{
+		const QJsonObject p = pMsg.toObject();
+		QString textType = p["type"].toString();
+
+		if(!renderBlockMap.contains(textType))
+			continue;
+			
+		if(renderBlockMap[textType] == RenderBlockTypes::Paragraph)
+		{
+			result << QTextDocumentFragment::fromHtml(simple_paragraph(p, contactsModel)).toPlainText();
+		}
+		else
+		{
+			result << QTextDocumentFragment::fromHtml(pMsg["literal"].toString()).toPlainText();
+		}
+	}
+	return result.join("");
+}
+
 QString Messages::Format::renderBlock(Message* message, ContactsModel* contactsModel)
 {
 	QStringList result;
@@ -141,8 +194,9 @@ QString Messages::Format::renderBlock(Message* message, ContactsModel* contactsM
 
 QString Messages::Format::decodeSticker(Message* message)
 {
-	if(message->get_contentType() != ContentType::Sticker) return "";
-	
+	if(message->get_contentType() != ContentType::Sticker)
+		return "";
+
 	QString stickerHash = message->get_sticker_hash();
 
 	if(stickerHash.left(2) != QStringLiteral("e3"))
