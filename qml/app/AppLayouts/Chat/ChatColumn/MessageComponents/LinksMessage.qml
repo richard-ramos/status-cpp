@@ -53,37 +53,7 @@ Column {
                     linkMessageLoader.sourceComponent = linkMessageLoader.getSourceComponent()
                 }
             }
-            Connections {
-                target: chatsModel
-                onLinkPreviewDataWasReceived: {
-                    let response
-                    try {
-                        response = JSON.parse(previewData)
 
-                    } catch (e) {
-                        console.error(previewData, e)
-                        return
-                    }
-
-
-                    if (response.uuid !== root.uuid) return
-
-                    if (!response.success) {
-                        console.error(response.result.error)
-                        return undefined
-                    }
-
-                    linkData = response.result
-
-                    if (linkData.contentType.startsWith("image/")) {
-                        return linkMessageLoader.sourceComponent = unfurledImageComponent
-                    }
-                    if (linkData.site && linkData.title) {
-                        linkData.address = link
-                        return linkMessageLoader.sourceComponent = unfurledLinkComponent
-                    }
-                }
-            }
 
             function getSourceComponent() {
                 // Reset the height in case we set it to 0 below. See note below
@@ -112,7 +82,24 @@ Column {
                         return
                     }
                     fetched = true
-                    return chatsModel.getLinkPreviewData(link, root.uuid)
+
+                    Utils.getLinkPreviewData(link, function(err, result){
+                        if (err) {
+                            console.error(error)
+                            return undefined
+                        }
+
+                        linkData = result
+
+                        if (linkData.contentType.startsWith("image/")) {
+                            return linkMessageLoader.sourceComponent = unfurledImageComponent
+                        }
+                        if (linkData.site && linkData.title) {
+                            linkData.address = link
+                            return linkMessageLoader.sourceComponent = unfurledLinkComponent
+                        }
+
+                    });
                 }
                 // setting the height to 0 allows the "enable link" dialog to
                 // disappear correctly when appSettings.neverAskAboutUnfurlingAgain

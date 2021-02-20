@@ -165,6 +165,7 @@ void ChatsModel::loadChats()
 
 Chat* ChatsModel::get(int row) const
 {
+	if(row < 0) return nullptr;
 	return m_chats[row];
 }
 

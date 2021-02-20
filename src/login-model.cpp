@@ -20,9 +20,7 @@
 
 QVector<NodeAccount> openAccounts()
 {
-	QString fullDirPath =
-		QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
-	const char* result{OpenAccounts(fullDirPath.toUtf8().data())};
+	const char* result{OpenAccounts(Constants::applicationPath(Constants::DataDir).toUtf8().data())};
 	QJsonArray multiAccounts = QJsonDocument::fromJson(result).array();
 
 	QVector<NodeAccount> vector;

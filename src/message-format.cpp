@@ -158,7 +158,7 @@ QString Messages::Format::renderSimpleText(Message* message, ContactsModel* cont
 
 		if(!renderBlockMap.contains(textType))
 			continue;
-			
+
 		if(renderBlockMap[textType] == RenderBlockTypes::Paragraph)
 		{
 			result << QTextDocumentFragment::fromHtml(simple_paragraph(p, contactsModel)).toPlainText();
@@ -224,4 +224,27 @@ QString Messages::Format::decodeSticker(Message* message)
 	}
 
 	return QString::fromStdString(EncodeBase58(vch));
+}
+
+QString Messages::Format::linkUrls(Message* message)
+{
+	QStringList links;
+
+	foreach(const QJsonValue& pMsg, message->get_parsedText())
+	{
+		const QJsonObject p = pMsg.toObject();
+		if(p["type"].toString() != QStringLiteral("paragraph"))
+			continue;
+		foreach(const QJsonValue& child, p["children"].toArray())
+		{
+			const QJsonObject c = child.toObject();
+			QString textType = c["type"].toString();
+			QString destination = c["destination"].toString();
+
+			if(textType == "link" && destination.startsWith("http"))
+				links << destination;
+		}
+	}
+
+	return links.join(" ");
 }

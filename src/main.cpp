@@ -29,8 +29,8 @@
 #include "contacts-model.hpp"
 #include "content-type.hpp"
 #include "custom-networks-model.hpp"
-#include "ens-utils.hpp"
 #include "ens-model.hpp"
+#include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
 #include "messages-model.hpp"
@@ -62,10 +62,22 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	// Initialize app directory
+	if(Constants::applicationPath().isEmpty())
+	{
+		QDir d{Constants::applicationPath()};
+		if(!d.mkpath(d.absolutePath()))
+		{
+			QMessageBox msgBox;
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setText("Cannot determine storage location");
+			msgBox.exec();
+			return 1;
+		}
+	}
+
 	// Init keystore
-	// TODO: extract to separate file
-	QString fullDirPath = QCoreApplication::applicationDirPath() + Constants::DataDir; // TODO: set correct path
-	const char* initKeystoreResult = InitKeystore(QString(fullDirPath + "/keystore").toUtf8().data());
+	const char* initKeystoreResult = InitKeystore(Constants::applicationPath(Constants::Keystore).toUtf8().data());
 	QJsonObject initKeystoreJson = QJsonDocument::fromJson(initKeystoreResult).object();
 	if(initKeystoreJson["error"].toString() != "")
 	{

@@ -27,7 +27,8 @@ public:
 		SectionIdentifier = Qt::UserRole + 8,
 		ParsedText = Qt::UserRole + 9,
 		Sticker = Qt::UserRole + 10,
-		ResponseTo = Qt::UserRole + 11
+		ResponseTo = Qt::UserRole + 11,
+		LinkUrls = Qt::UserRole + 12
 		// OutgoingStatus
 		// ResponseTo
 		// Index?
@@ -36,7 +37,6 @@ public:
 		// AUdioDurationMs
 		// EmojiReactions
 		// CommandParameters
-		// LinkUrls
 		// CommunityId
 	};
 

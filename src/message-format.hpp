@@ -32,6 +32,7 @@ enum RenderBlockTypes
 
 QString renderBlock(Message* message, ContactsModel* contactsModel);
 QString renderSimpleText(Message* message, ContactsModel* contactsModel);
+QString linkUrls(Message* message);
 
 QString decodeSticker(Message* message);
 

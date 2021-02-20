@@ -48,6 +48,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[ParsedText] = "parsedText";
 	roles[Sticker] = "sticker";
 	roles[ResponseTo] = "responseTo";
+	roles[LinkUrls] = "linkUrls";
 
 	return roles;
 }
@@ -93,6 +94,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case SectionIdentifier: return QVariant(sectionIdentifier(msg));
 	case ParsedText: return QVariant(Messages::Format::renderBlock(msg, m_contacts));
 	case Sticker: return QVariant(Messages::Format::decodeSticker(msg));
+	case LinkUrls: return QVariant(Messages::Format::linkUrls(msg));
 	}
 
 	return QVariant();
@@ -107,7 +109,6 @@ Message* MessagesModel::get(int row) const
 {
 	return m_messages[row];
 }
-
 
 void MessagesModel::push(Message* msg)
 {
@@ -139,12 +140,14 @@ void MessagesModel::push(Message* msg)
 
 void MessagesModel::loadMessages(bool initialLoad)
 {
-	if(!initialLoad && m_cursor == "") return;
-	
-	QtConcurrent::run([=] {
-		const auto response = Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
-		m_cursor = response["result"]["cursor"].toString();
+	if(!initialLoad && m_cursor == "")
+		return;
 
+	QtConcurrent::run([=] {
+		const auto response =
+			Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
+		m_cursor = response["result"]["cursor"].toString();
+		qDebug() << response;
 		// TODO: handle cursor
 		foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
 		{
@@ -155,7 +158,8 @@ void MessagesModel::loadMessages(bool initialLoad)
 	});
 }
 
-void MessagesModel::addFakeMessages() {
+void MessagesModel::addFakeMessages()
+{
 	Message* chatIdentifier = new Message("chatIdentifier", ContentType::ChatIdentifier, this);
 	QQmlApplicationEngine::setObjectOwnership(chatIdentifier, QQmlApplicationEngine::CppOwnership);
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());

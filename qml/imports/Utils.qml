@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick 2.13
 import "../shared/xss.js" as XSS
 import "../shared/polyfill.number.toLocaleString.js" as NumberPolyFill
+import im.status.desktop 1.0
 
 QtObject {
     function isHex(value) {
@@ -314,6 +315,10 @@ QtObject {
         } else {
             return contact.alias
         }
+    }
+
+    function getLinkPreviewData(link, cb){
+        RpcClient.call("wakuext_getLinkPreviewData", [link], cb);
     }
     
 }

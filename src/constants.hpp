@@ -5,6 +5,7 @@
 namespace Constants
 {
 const QString DataDir = "/datadir";
+const QString Keystore = "/datadir/keystore";
 
 const QString PathWalletRoot("m/44'/60'/0'/0");
 const QString PathEip1581("m/43'/60'/1581'");
@@ -15,5 +16,7 @@ const QString DefaultNetworkName("mainnet_rpc");
 const QString ZeroAddress("0x0000000000000000000000000000000000000000");
 
 const QString StatusDomain(".stateofus.eth");
+
+QString applicationPath(QString path = "");
 
 } // namespace Constants
