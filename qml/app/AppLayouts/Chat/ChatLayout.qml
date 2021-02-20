@@ -95,12 +95,18 @@ SplitView {
     }
    
 
-    function openProfilePopup(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam, parentPopup){
-        var popup = profilePopupComponent.createObject(chatView);
+    function openProfilePopup(showFooter, contact, parentPopup){
+        var popup = profilePopupComponent.createObject(chatView, {contact: contact, noFooter: !showFooter});
         if(parentPopup){
             popup.parentPopup = parentPopup;
         }
-        popup.openPopup(StatusSettings.PublicKey !== fromAuthorParam, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam);
+        if(popup.isCurrentUser){
+            popup.contact = UserIdentity;
+            popup.contact.image = identityImage.defaultThumbnail;
+            popup.height = 310;
+            popup.noFooter = true;
+        }
+        popup.open();
     }
 
     property Component profilePopupComponent: ProfilePopup {

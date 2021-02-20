@@ -6,6 +6,7 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
+import im.status.desktop 1.0
 
 PopupMenu {
     property bool isProfile: false
@@ -23,6 +24,7 @@ PopupMenu {
     function show() {
         popup();
     }
+
     /*function show(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam, emojiReactionsModel) {
         userName = userNameParam || ""
         nickname = nicknameParam || ""
@@ -110,8 +112,7 @@ PopupMenu {
                 profileHeader.hovered = false
             }
             onClicked: {
-                profilePopup.contact = messageContextMenu.contact;
-                profilePopup.open();
+                openProfilePopup(true, messageContextMenu.contact);
             }
         }
     }
@@ -126,8 +127,7 @@ PopupMenu {
         //% "View profile"
         text: qsTrId("view-profile")
         onTriggered: {
-            profilePopup.contact = messageContextMenu.contact;
-            profilePopup.open();
+            openProfilePopup(true, messageContextMenu.contact);
         }
         icon.source: "../../../img/profileActive.svg"
         icon.width: 16

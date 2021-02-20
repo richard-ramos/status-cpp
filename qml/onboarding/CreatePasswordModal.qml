@@ -4,7 +4,6 @@ import QtQuick.Dialogs 1.3
 import "../imports"
 import "../shared"
 import "../shared/status"
-import "../model"
 
 ModalPopup {
     property bool loading: false

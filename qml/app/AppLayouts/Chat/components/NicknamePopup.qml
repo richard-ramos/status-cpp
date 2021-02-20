@@ -40,9 +40,9 @@ ModalPopup {
         }
 
         StyledText {
-            text: isEnsVerified ? alias : fromAuthor
+            text: contact.isEnsVerified ? contact.alias : contact.id
             width: 160
-            elide: !isEnsVerified ? Text.ElideMiddle : Text.ElideNone
+            elide: !contact.isEnsVerified ? Text.ElideMiddle : Text.ElideNone
             anchors.left: nicknameTitle.left
             anchors.bottom: parent.bottom
             anchors.bottomMargin: Style.current.padding

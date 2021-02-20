@@ -42,7 +42,7 @@ Item {
                     parent.font.underline = false
                 }
                 onClicked: {
-                    openProfilePopup("SET USERNAME HERE"/*TODO: profileModel.profile.username*/, StatusSettings.PublicKey, identityImage.thumbnail || identityImage.identicon);
+                    openProfilePopup(false, UserIdentity);
                 }
             }
         }

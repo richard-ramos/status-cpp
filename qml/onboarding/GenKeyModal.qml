@@ -2,7 +2,6 @@ import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtGraphicalEffects 1.13
 import "../imports"
-import "../model"
 import "../shared"
 import "../shared/status"
 import "./Login"

@@ -15,9 +15,12 @@ Item {
     property bool isMessage: true
     property bool isEmoji: false
     property bool isCurrentUser: false
+    property var contact: UserIdentity
     property int contentType: 1
 
-    // TODO: create fake contact
+    Binding { target: contact; property: "image"; value: identityImage.defaultThumbnail }
+
+
 
     //% "Hey"
     property string message: qsTrId("ens-test-message")

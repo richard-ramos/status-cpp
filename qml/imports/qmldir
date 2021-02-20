@@ -7,4 +7,5 @@ singleton SelectedMessage 1.0 ./SelectedMessage.qml
 singleton Backpressure 1.0 ./Backpressure/Backpressure.qml
 
 singleton RpcClient 1.0 ./RPC/RpcClient.qml
+singleton UserIdentity 1.0 ./UserIdentity.qml
 IdentityImage 1.0 ./RPC/IdentityImage.qml

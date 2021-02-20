@@ -1,2 +1,0 @@
-module Model
-singleton SignUp 1.0 ./SignUp.qml

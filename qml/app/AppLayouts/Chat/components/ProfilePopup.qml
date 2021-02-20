@@ -16,18 +16,11 @@ ModalPopup {
 
     property var contact
 
-    property var identicon: ""
-    property var userName: ""
-    property string nickname: ""
-    property var fromAuthor: ""
-    property var text: ""
-    property var alias: ""
+    property bool isCurrentUser: contact.id == StatusSettings.PublicKey
 
     readonly property int innerMargin: 20
     
-    property bool isEnsVerified: false
     property bool noFooter: false
-    property bool isBlocked: false
 
     signal blockButtonClicked(name: string, address: string)
     signal unblockButtonClicked(name: string, address: string)
@@ -40,20 +33,6 @@ ModalPopup {
 
     clip: true
     noTopMargin: true
-
-    function openPopup(showFooter, userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam) {
-        userName = userNameParam || ""
-        nickname = nicknameParam || ""
-        fromAuthor = fromAuthorParam || ""
-        identicon = identiconParam || ""
-        text = textParam || ""
-        isEnsVerified = chatsModel.isEnsVerified(this.fromAuthor)
-        isBlocked = profileModel.contacts.isContactBlocked(this.fromAuthor);
-        alias = chatsModel.alias(this.fromAuthor) || ""
-        
-        noFooter = !showFooter;
-        popup.open()
-    }
 
     header: Item {
         height: 78
@@ -71,7 +50,7 @@ ModalPopup {
 
         StyledTextEdit {
             id: profileName
-            text: Utils.getUsernameLabel(contact) // TODO: isCurrentUser?
+            text: Utils.getUsernameLabel(contact)
             anchors.top: parent.top
             anchors.topMargin: Style.current.padding
             anchors.left: profilePic.right
@@ -198,6 +177,7 @@ ModalPopup {
 
         Separator {
             id: separator2
+            visible: !isCurrentUser
             anchors.top: valueShareURL.bottom
             anchors.topMargin: popup.innerMargin
             anchors.left: parent.left
@@ -214,6 +194,7 @@ ModalPopup {
             text: qsTrId("nickname")
             anchors.top: separator2.top
             anchors.topMargin: popup.innerMargin
+            visible: !isCurrentUser
         }
 
         SVGImage {
@@ -226,6 +207,7 @@ ModalPopup {
             anchors.bottomMargin: 5
             width: 13
             fillMode: Image.PreserveAspectFit
+            visible: !isCurrentUser
             ColorOverlay {
                 anchors.fill: parent
                 source: parent
@@ -241,6 +223,7 @@ ModalPopup {
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: nicknameCaret.verticalCenter
             color: Style.current.secondaryText
+            visible: !isCurrentUser
         }
 
         MouseArea {
@@ -305,7 +288,7 @@ ModalPopup {
             borderColor: Style.current.border
             bgColor: isAdded ? "transparent" : Style.current.buttonBackgroundColor
             hoveredBorderColor: Style.current.transparent
-            visible: !isBlocked
+            visible: !contact.isBlocked
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (contact.isAdded) {
