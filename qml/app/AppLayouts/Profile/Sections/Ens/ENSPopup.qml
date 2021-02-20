@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.3
 import QtQml.Models 2.3
 import "../../../../../imports"
 import "../../../../../shared"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -15,13 +16,13 @@ ModalPopup {
 
     onOpened: {
         for(var i in ensNames.contentItem.children){
-            ensNames.contentItem.children[i].checked = ensNames.contentItem.children[i].text === profileModel.ens.preferredUsername
+            ensNames.contentItem.children[i].checked = ensNames.contentItem.children[i].text === StatusSettings.PreferredUsername
         }
     }
 
     StyledText {
         id: lbl1
-        text: profileModel.ens.preferredUsername ? 
+        text: StatusSettings.PreferredUsername ? 
               //% "Your messages are displayed to others with this username:"
               qsTrId("your-messages-are-displayed-to-others-with-this-username-")
               :
@@ -36,7 +37,7 @@ ModalPopup {
         id: lbl2
         anchors.top: lbl1.bottom
         anchors.topMargin: Style.current.padding
-        text: profileModel.ens.preferredUsername
+        text: StatusSettings.PreferredUsername
         font.pixelSize: 17
         font.weight: Font.Bold
     }
@@ -53,14 +54,14 @@ ModalPopup {
 
         ListView {
             anchors.fill: parent
-            model: profileModel.ens
+            model: ensModel
             spacing: 0
             clip: true
             id: ensNames
             delegate: RadioDelegate {
                 id: radioDelegate
                 text: username
-                checked: profileModel.ens.preferredUsername === username
+                checked: StatusSettings.PreferredUsername === username
 
                 contentItem: StyledText {
                     color: Style.current.textColor
@@ -81,7 +82,7 @@ ModalPopup {
     }
 
     onNewUsernameChanged: {
-        btnSelectPreferred.state = newUsername === profileModel.ens.preferredUsername ? "inactive" : "active"
+        btnSelectPreferred.state = newUsername === StatusSettings.PreferredUsername ? "inactive" : "active"
     }
     
     footer: Item {
@@ -125,7 +126,7 @@ ModalPopup {
                 anchors.fill: parent
                 onClicked : {
                     if(btnSelectPreferred.state === "active"){
-                        profileModel.ens.preferredUsername = newUsername;
+                        StatusSettings.PreferredUsername = newUsername;
                         newUsername = ""; 
                         popup.close();  
                     }

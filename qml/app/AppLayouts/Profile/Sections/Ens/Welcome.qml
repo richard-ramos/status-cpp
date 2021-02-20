@@ -4,7 +4,7 @@ import QtQuick.Controls 2.14
 import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
-
+import im.status.desktop 1.0
 Item {
     signal startBtnClicked()
 
@@ -100,7 +100,7 @@ Item {
             StyledText {
                 id: element1Subtitle
                 //% "An ENS name can replace your random 3-word name in chat. Be @yourname instead of %1."
-                text: qsTrId("an-ens-name-can-replace-your-random-3-word-name-in-chat--be--yourname-instead-of--1-").arg(profileModel.profile.username)
+                text: qsTrId("an-ens-name-can-replace-your-random-3-word-name-in-chat--be--yourname-instead-of--1-").arg(Status.generateAlias(StatusSettings.PublicKey))
                 anchors.left: element1Number.right
                 anchors.leftMargin: 24
                 anchors.top: element1Title.bottom
@@ -283,7 +283,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Style.current.padding
         anchors.horizontalCenter: parent.horizontalCenter
-        enabled:  profileModel.network.current === Constants.networkMainnet // Comment this to use on testnet
+        enabled:  StatusSettings.CurrentNetwork === Constants.networkMainnet // Comment this to use on testnet
         //% "Start"
         text: enabled ? 
           qsTrId("start") :

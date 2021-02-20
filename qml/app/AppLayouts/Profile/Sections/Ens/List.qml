@@ -5,6 +5,7 @@ import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
 import "../../../Chat/ChatColumn/MessageComponents"
+import im.status.desktop 1.0
 
 Item {
     signal addBtnClicked()
@@ -15,16 +16,21 @@ Item {
     property bool isEmoji: false
     property bool isCurrentUser: false
     property int contentType: 1
+
+    // TODO: create fake contact
+
     //% "Hey"
     property string message: qsTrId("ens-test-message")
     property string authorCurrentMsg: "0"
     property string authorPrevMsg: "1"
     property var clickMessage: function(){}
-    property string identicon: profileModel.profile.identicon
+    property string identicon: identityImage.defaultThumbnail
     property int timestamp: 1577872140
 
     function shouldDisplayExampleMessage(){
-        return profileModel.ens.rowCount() > 0 && profileModel.ens.pendingLen() != profileModel.ens.rowCount() && profileModel.ens.preferredUsername !== ""
+        // TODO:
+        return true;
+        // return ensModel.rowCount() > 0 && profileModel.ens.pendingLen() != ensModel.rowCount() && StatusSettings.PreferredUsername !== ""
     }
 
     Component {
@@ -97,7 +103,7 @@ Item {
             Loader {
                 sourceComponent: model.username.endsWith(".stateofus.eth") ? statusENS : normalENS
                 property string username: model.username
-                property bool isPending: model.isPending
+                property bool isPending: false // TODO: model.isPending
                 active: true
                 anchors.left: circle.right
                 anchors.leftMargin: Style.current.smallPadding
@@ -183,7 +189,7 @@ Item {
             ListView {
                 id: lvEns
                 anchors.fill: parent
-                model: profileModel.ens
+                model: ensModel
                 spacing: 10
                 clip: true
                 delegate: ensDelegate
@@ -199,7 +205,7 @@ Item {
 
     StyledText {
         id: chatSettingsLabel
-        visible: profileModel.ens.rowCount() > 0 && profileModel.ens.pendingLen() != profileModel.ens.rowCount()
+        visible: true // TODO: profileModel.ens.rowCount() > 0 && profileModel.ens.pendingLen() != profileModel.ens.rowCount()
         //% "Chat Settings"
         text: qsTrId("chat-settings")
         anchors.left: parent.left
@@ -230,7 +236,7 @@ Item {
             id: usernameLabel2
             visible: chatSettingsLabel.visible
             //% "None selected"
-            text: profileModel.ens.preferredUsername || qsTrId("none-selected")
+            text: StatusSettings.PreferredUsername || qsTrId("none-selected")
             anchors.left: usernameLabel.right
             anchors.leftMargin: Style.current.padding
             font.pixelSize: 14
@@ -259,7 +265,7 @@ Item {
 
         UsernameLabel {
             id: chatName
-            label.text: "@" + (profileModel.ens.preferredUsername.replace(".stateofus.eth", ""))
+            label.text: "@" + (StatusSettings.PreferredUsername.replace(".stateofus.eth", ""))
             label.color: Style.current.blue
             anchors.leftMargin: 20
             anchors.top: parent.top
@@ -316,13 +322,14 @@ Item {
 
 
     Connections {
-        target: profileModel.ens
-        onPreferredUsernameChanged: {
+        target: StatusSettings
+        onPreferredNameChanged: {
             messagesShownAs.visible = shouldDisplayExampleMessage()
         }
-        onUsernameConfirmed: {
+        // TODO:
+        /*onUsernameConfirmed: {
             messagesShownAs.visible = shouldDisplayExampleMessage()
             chatSettingsLabel.visible = true
-        }
+        }*/
     }
 }

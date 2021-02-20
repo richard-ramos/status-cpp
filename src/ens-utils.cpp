@@ -22,7 +22,7 @@ QString Ens::Utils::formatUsername(QString username)
 	}
 	else
 	{
-		return username + Ens::StatusDomain;
+		return username + Constants::StatusDomain;
 	}
 }
 
@@ -89,6 +89,30 @@ QString Ens::Utils::pubKey(QString username)
 	return "0x04" + publicKey.right(128);
 }
 
+QString Ens::Utils::address(QString username)
+{
+	QString usernameHash(namehash(formatUsername(username)));
+	QString ensResolver(resolver(usernameHash));
+
+	if(ensResolver == Constants::ZeroAddress)
+		return "";
+
+	QJsonObject payload{
+		{"to", ensResolver},
+		{"from", Constants::ZeroAddress},
+		{"data", AddressSignature + usernameHash},
+	};
+
+	const auto response = Status::instance()->callPrivateRPC("eth_call", QJsonArray{payload, "latest"}.toVariantList()).toJsonObject();
+
+	QString address(response["result"].toString());
+
+	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000")
+		return "";
+
+	return "0x" + address.right(40);
+}
+
 void Ens::Utils::pubKey(QString username, const QJSValue& callback)
 {
 	auto* watcher = new QFutureWatcher<QString>(this);
@@ -100,4 +124,36 @@ void Ens::Utils::pubKey(QString username, const QJSValue& callback)
 		watcher->deleteLater();
 	});
 	watcher->setFuture(QtConcurrent::run(this, &Ens::Utils::pubKey, username));
+}
+
+void Ens::Utils::address(QString username, const QJSValue& callback)
+{
+	auto* watcher = new QFutureWatcher<QString>(this);
+	QObject::connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher, callback]() {
+		QString result = watcher->result();
+		QJSValue cbCopy(callback); // needed as callback is captured as const
+		QJSEngine* engine = qjsEngine(this);
+		cbCopy.call(QJSValueList{engine->toScriptValue(result)});
+		watcher->deleteLater();
+	});
+	watcher->setFuture(QtConcurrent::run(this, &Ens::Utils::address, username));
+}
+
+QString Ens::Utils::owner(QString username)
+{
+	QString usernameHash(namehash(formatUsername(username)));
+
+	QJsonObject payload{
+		{"to", RegistryAddress},
+		{"from", Constants::ZeroAddress},
+		{"data", OwnerSignature + usernameHash},
+	};
+
+	const auto response = Status::instance()->callPrivateRPC("eth_call", QJsonArray{payload, "latest"}.toVariantList()).toJsonObject();
+	QString address(response["result"].toString());
+
+	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000")
+		return "";
+
+	return "0x" + address.right(40);
 }

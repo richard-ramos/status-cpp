@@ -5,6 +5,7 @@ import QtQml.StateMachine 1.14 as DSM
 import "../../../../imports"
 import "../../../../shared"
 import "./Ens"
+import im.status.desktop 1.0
 
 Item {
     id: ensContainer
@@ -25,8 +26,12 @@ Item {
     signal goToWelcome();
     signal goToList();
 
-    function goToStart(){                  /* Comment this to use on testnet      */
-        if(profileModel.ens.rowCount() > 0 && profileModel.network.current === "mainnet_rpc"){
+    ENSModel {
+        id: ensModel
+    }
+
+    function goToStart(){             /* Comment this to use on testnet                        */
+        if(ensModel.rowCount() > 0 && StatusSettings.CurrentNetwork === Constants.networkMainnet){
             goToList();
         } else {
             goToWelcome();
@@ -252,7 +257,6 @@ Item {
         List {
             onAddBtnClicked: next("search")
             onSelectEns: {
-                profileModel.ens.details(username)
                 selectedUsername = username;
                 next("details")
             }
@@ -274,6 +278,8 @@ Item {
         }
     }
 
+    /*
+    TODO:
     Connections {
         target: profileModel.ens
         onTransactionWasSent: {
@@ -316,5 +322,5 @@ Item {
             toastMessage.link = `${walletModel.etherscanLink}/${txHash}`
             toastMessage.open()
         }
-    }
+    }*/
 }

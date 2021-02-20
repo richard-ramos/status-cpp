@@ -7,7 +7,7 @@ import "../../../../shared"
 import "../../../../shared/status"
 
 Item {
-    property string ensName: profileModel.profile.preferredUsername || ""
+    property string ensName: StatusSettings.PreferredUsername || ""
     property string username
     property string pubkey
 

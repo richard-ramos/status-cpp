@@ -30,6 +30,7 @@
 #include "content-type.hpp"
 #include "custom-networks-model.hpp"
 #include "ens-utils.hpp"
+#include "ens-model.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
 #include "messages-model.hpp"
@@ -84,6 +85,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<ChatsModel>("im.status.desktop", 1, 0, "ChatsModel");
 	qmlRegisterType<ContactsModel>("im.status.desktop", 1, 0, "ContactsModel");
 	qmlRegisterType<CustomNetworksModel>("im.status.desktop", 1, 0, "CustomNetworksModel");
+	qmlRegisterType<ENSModel>("im.status.desktop", 1, 0, "ENSModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
