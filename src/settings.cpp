@@ -69,6 +69,15 @@ void Settings::init()
 	m_installationId = settings[settingsMap[SettingTypes::InstallationId]].toString();
 	m_fleet = settings[settingsMap[SettingTypes::Fleet]].toString();
 	m_networks = settings[settingsMap[SettingTypes::Networks_Networks]].toArray();
+	m_walletRootAddress = settings[settingsMap[SettingTypes::WalletRootAddress]].toString();
+
+	if(!settings[settingsMap[SettingTypes::Usernames]].isUndefined())
+	{
+		foreach(const QJsonValue& value, settings[settingsMap[SettingTypes::Usernames]].toArray())
+		{
+			m_usernames << value.toString();
+		}
+	}
 
 	// defaults:
 	if(m_fleet == "")
@@ -109,6 +118,16 @@ void Settings::saveSettings(SettingTypes setting, const QString& value)
 	save(QJsonArray{settingsMap[setting], value});
 }
 
+void Settings::saveSettings(SettingTypes setting, const QVector<QString>& value)
+{
+	QJsonArray valueArray;
+	foreach(const QString& v, value)
+	{
+		valueArray << v;
+	}
+	save(QJsonArray{settingsMap[setting], valueArray});
+}
+
 void Settings::save(const QJsonArray& input)
 {
 	QJsonObject obj{{"method", "settings_saveSetting"}, {"params", input}};
@@ -120,7 +139,11 @@ QString Settings::publicKey()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QString();
+	}
+
 	QString result(m_publicKey);
 	lock.unlock();
 	return result;
@@ -130,7 +153,10 @@ QString Settings::keyUID()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QString();
+	}
 	QString result(m_keyUID);
 	lock.unlock();
 	return result;
@@ -140,7 +166,10 @@ QString Settings::mnemonic()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QString();
+	}
 	QString result(m_mnemonic);
 	lock.unlock();
 	return result;
@@ -162,7 +191,10 @@ QString Settings::currency()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QString();
+	}
 	QString result(m_currency);
 	lock.unlock();
 	return result;
@@ -175,16 +207,19 @@ void Settings::setPreferredName(const QString& value)
 	{
 		m_preferredName = value;
 		saveSettings(SettingTypes::PreferredUsername, value);
-		emit preferredNameChanged();
 	}
 	lock.unlock();
+	emit preferredNameChanged();
 }
 
 QString Settings::preferredName()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QString();
+	}
 	QString result(m_preferredName);
 	lock.unlock();
 	return result;
@@ -206,7 +241,10 @@ int Settings::appearance()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return 0;
+	}
 	int result(m_appearance);
 	lock.unlock();
 	return result;
@@ -226,7 +264,10 @@ bool Settings::isMnemonicBackedUp()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return false;
+	}
 	bool result(m_mnemonic == "");
 	lock.unlock();
 	return result;
@@ -339,7 +380,10 @@ QString Settings::currentNetwork()
 {
 	lock.lockForRead();
 	if(!m_initialized)
-		return 0;
+	{
+		lock.unlock();
+		return QString();
+	}
 	QString result(m_currentNetwork);
 	lock.unlock();
 	return result;
@@ -349,7 +393,10 @@ QString Settings::fleet()
 {
 	lock.lockForRead();
 	if(!m_initialized)
-		return 0;
+	{
+		lock.unlock();
+		return QString();
+	}
 	QString result(m_fleet);
 	lock.unlock();
 	return result;
@@ -371,8 +418,49 @@ QJsonArray Settings::networks()
 {
 	lock.lockForRead();
 	if(!m_initialized)
+	{
+		lock.unlock();
 		return QJsonArray();
+	}
 	QJsonArray result(m_networks);
+	lock.unlock();
+	return result;
+}
+
+QVector<QString> Settings::usernames()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QVector<QString>{};
+	}
+	QVector<QString> result = m_usernames;
+	lock.unlock();
+	return result;
+}
+
+void Settings::setUsernames(QVector<QString> value)
+{
+	lock.lockForWrite();
+	if(value != m_usernames)
+	{
+		m_usernames = value;
+		saveSettings(SettingTypes::Usernames, value);
+	}
+	lock.unlock();
+	emit usernamesChanged();
+}
+
+QString Settings::walletRootAddress()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QString();
+	}
+	QString result(m_walletRootAddress);
 	lock.unlock();
 	return result;
 }

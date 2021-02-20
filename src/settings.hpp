@@ -100,8 +100,13 @@ public:
 	QString fleet();
 	void setFleet(const QString& value);
 
+	QString walletRootAddress();
+
 	int appearance();
 	void setAppearance(int value);
+
+	QVector<QString> usernames();
+	void setUsernames(QVector<QString> value);
 
 	bool isMnemonicBackedUp();
 
@@ -117,6 +122,7 @@ signals:
 	void currentNetworkChanged();
 	void fleetChanged();
 	void networksChanged();
+	void usernamesChanged();
 
 private:
 	static Settings* theInstance;
@@ -131,7 +137,9 @@ private:
 	QString m_currentNetwork;
 	QString m_installationId;
 	QString m_fleet;
+	QString m_walletRootAddress;
 	QJsonArray m_networks;
+	QVector<QString> m_usernames;
 
 	int m_appearance;
 
@@ -141,6 +149,7 @@ private:
 	void saveSettings(SettingTypes setting, const int& value);
 	void saveSettings(SettingTypes setting, const QJsonArray& value);
 	void saveSettings(SettingTypes setting, const QJsonObject& value);
+	void saveSettings(SettingTypes setting, const QVector<QString>& value);
 
 	void save(const QJsonArray& input);
 
