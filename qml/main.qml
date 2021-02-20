@@ -318,7 +318,7 @@ ApplicationWindow {
 
                 DSM.SignalTransition {
                     targetState: appState
-                    signal: Status.nodeReady
+                    signal: Status.login
                     guard: !error
                 }
             }

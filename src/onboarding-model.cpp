@@ -343,7 +343,7 @@ QString OnboardingModel::importMnemonic(QString mnemonic)
 	mData << acc;
 	endResetModel();
 
-	return acc.id;
+	return acc.keyUid;
 }
 
 void OnboardingModel::setup(QString accountId, QString password)
@@ -352,13 +352,12 @@ void OnboardingModel::setup(QString accountId, QString password)
 		std::find_if(mData.begin(), mData.end(), [accountId](const GeneratedAccount& m) -> bool {
 			return m.keyUid == accountId;
 		});
-	if(genAccount != mData.end())
+	if(genAccount->keyUid == accountId)
 	{
 		QtConcurrent::run([=] {
 			bool result(saveAccountAndLogin(genAccount, password));
 
 			// TODO: clear mnemonic from memory in list
-
 			emit accountSaved(result);
 		});
 	}
