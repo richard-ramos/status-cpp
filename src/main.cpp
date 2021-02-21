@@ -44,9 +44,9 @@ int main(int argc, char* argv[])
 	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
 	QApplication app(argc, argv);
-
-	app.setOrganizationDomain("Status.im");
-	app.setApplicationName("Status Desktop");
+	app.setOrganizationName("Status");
+	app.setOrganizationDomain("status.im");
+	app.setApplicationName("StatusDesktop");
 
 	QQmlApplicationEngine engine;
 

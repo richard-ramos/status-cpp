@@ -28,14 +28,8 @@ ApplicationWindow {
     width: 1232
     height: 770
     color: Style.current.background
-    title: {
-        // Set application settings
-        //% "Status Desktop"
-        Qt.application.name = qsTrId("status-desktop")
-        Qt.application.organization = "Status"
-        Qt.application.domain = "status.im"
-        return Qt.application.name
-    }
+           //% "Status Desktop"
+    title: qsTrId("status-desktop")
     visible: true
 
     function openPopup(popupComponent, params = {}) {
