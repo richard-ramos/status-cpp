@@ -123,10 +123,11 @@ ScrollView {
         }
 
         function clickOnNotification(chatId) {
+            applicationWindow.show()
             applicationWindow.raise()
+            applicationWindow.requestActivate()
             chatsModel.setActiveChannel(chatId)
             appMain.changeAppSection(Constants.chat)
-            applicationWindow.requestActivate()
         }
 
         Connections {
@@ -183,14 +184,18 @@ ScrollView {
                     let message;
                     if (appSettings.notificationMessagePreviewSetting > Constants.notificationPreviewNameOnly) {
                         switch(messageType){
-                        case Constants.imageType: message = qsTr("Image"); break
-                        case Constants.stickerType: message = qsTr("Sticker"); break
+                        //% "Image"
+                        case Constants.imageType: message = qsTrId("image"); break
+                        //% "Sticker"
+                        case Constants.stickerType: message = qsTrId("sticker"); break
                         default: message = Emoji.parse(msg, "26x26").replace(/\n|\r/g, ' ')
                         }
                     } else {
-                        message = qsTr("You have a new message")
+                        //% "You have a new message"
+                        message = qsTrId("you-have-a-new-message")
                     }
 
+                    currentlyHasANotification = true
                     if (appSettings.useOSNotifications && systemTray.supportsMessages) {
                         systemTray.showMessage(name,
                                                message,
@@ -232,7 +237,8 @@ ScrollView {
     MessageDialog {
         id: sendingMsgFailedPopup
         standardButtons: StandardButton.Ok
-        text: qsTr("Failed to send message.")
+        //% "Failed to send message."
+        text: qsTrId("failed-to-send-message-")
         icon: StandardIcon.Critical
     }
 

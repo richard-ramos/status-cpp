@@ -167,7 +167,8 @@ ModalPopup {
 
         TextWithLabel {
             id: valueShareURL
-            label: qsTr("Share Profile URL")
+            //% "Share Profile URL"
+            label: qsTrId("share-profile-url")
             text: "https://join.status.im/u/" + contact.id.substr(
                       0, 4) + "..." + contact.id.substr(contact.id.length - 5)
             anchors.top: separator.top
@@ -260,8 +261,10 @@ ModalPopup {
             borderColor: Style.current.border
             hoveredBorderColor: Style.current.transparent
             text: contact.isBlocked ?
-                      qsTr("Unblock User") :
-                      qsTr("Block User")
+                      //% "Unblock User"
+                      qsTrId("unblock-user") :
+                      //% "Block User"
+                      qsTrId("block-user")
             onClicked: {
                 if (contact.isBlocked) {
                     unblockContactConfirmationDialog.open();

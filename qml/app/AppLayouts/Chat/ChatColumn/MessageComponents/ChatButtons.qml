@@ -14,7 +14,7 @@ Rectangle {
     width: buttonRow.width + buttonsContainer.containerMargin * 2
     height: 36
     radius: Style.current.radius
-    color: Style.current.background
+    color: Style.current.modalBackground
     z: 52
 
     layer.enabled: true
@@ -71,7 +71,8 @@ Rectangle {
 
             StatusToolTip {
               visible: emojiBtn.hovered
-              text: qsTr("Add reaction")
+              //% "Add reaction"
+              text: qsTrId("add-reaction")
             }
         }
 
@@ -90,7 +91,8 @@ Rectangle {
 
             StatusToolTip {
               visible: replyBtn.hovered
-              text: qsTr("Reply")
+              //% "Reply"
+              text: qsTrId("message-reply")
             }
         }
     }

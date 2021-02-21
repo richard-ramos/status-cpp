@@ -77,17 +77,13 @@ Item {
             color: Style.current.darkGrey
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("No search results")
+            //% "No search results"
+            text: qsTrId("no-search-results")
         }
-    }
-
-    GroupInfoPopup {
-        id: groupInfoPopup
     }
 
     ChannelContextMenu {
         id: channelContextMenu
-        groupInfoPopup: groupInfoPopup
     }
 
     Connections {
@@ -111,13 +107,6 @@ Item {
         }
     }
 
-    Connections {
-        target: chatsModel
-        onAdded: {
-            // TODO: determine if added due to joining a chat, or due to 1:1
-            chatGroupsListView.currentIndex = index;
-        }
-    }
 }
 
 

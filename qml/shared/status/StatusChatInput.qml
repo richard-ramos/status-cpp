@@ -1,6 +1,6 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
-import QtGraphicalEffects 1.12
+import QtGraphicalEffects 1.13
 import QtQuick.Layouts 1.13
 import QtMultimedia 5.13
 import QtQuick.Dialogs 1.3
@@ -33,7 +33,8 @@ Rectangle {
 
     property int chatType
 
-    property string chatInputPlaceholder: qsTr("Type a message.")
+    //% "Type a message."
+    property string chatInputPlaceholder: qsTrId("type-a-message-")
 
     property alias textInput: messageInputField
     property bool isStatusUpdateInput: chatType === Constants.chatTypeStatusUpdate
@@ -103,6 +104,15 @@ Rectangle {
             return true
         }
         return false
+    }
+
+    function parseMarkdown(markdownText) {
+        const htmlText = markdownText
+          .replace(/\~\~([^*]+)\~\~/gim, '<span style="text-decoration: line-through">~~$1~~</span>')
+          .replace(/\*\*([^*]+)\*\*/gim, '<b>:asterisk::asterisk:$1:asterisk::asterisk:</b>')
+          .replace(/\`([^*]+)\`/gim, '<code>`$1`</code>')
+          .replace(/\*([^*]+)\*/gim, '<i>:asterisk:$1:asterisk:</i>')
+        return htmlText.replace(/\:asterisk\:/gim, "*")
     }
 
     function onKeyPress(event){
@@ -187,6 +197,16 @@ Rectangle {
         insertInTextInput(messageInputField.selectionStart, wrapWith);
         insertInTextInput(messageInputField.selectionEnd, wrapWith);
         messageInputField.deselect()
+        formatInputMessage()
+    }
+
+    function formatInputMessage() {
+        const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
+        const deparsedEmoji = Emoji.deparse(messageInputField.text);
+        const plainText = chatsModel.plainText(deparsedEmoji);
+        const formatted = parseMarkdown(Emoji.parse(plainText.replace(/\n/g, "<br />")))
+        messageInputField.text = formatted
+        messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
     }
 
     function onRelease(event) {
@@ -194,13 +214,15 @@ Rectangle {
         // we can only get it in the `released` event
         if (paste) {
             paste = false;
-            const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
-            const deparsedEmoji = Emoji.deparse(messageInputField.text);
-            const plainText = Status.plainText(deparsedEmoji);
-            messageInputField.text = Emoji.parse(plainText.replace(/\n/g, "<br />"));
-            messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
-
+            formatInputMessage()
             interrogateMessage();
+        } else {
+            if (event.key === Qt.Key_Asterisk ||
+                event.key === Qt.Key_QuoteLeft ||
+                event.key === Qt.Key_Space ||
+                event.key === Qt.Key_AsciiTilde) {
+                formatInputMessage()
+            }
         }
 
         if (event.key !== Qt.Key_Escape) {
@@ -448,12 +470,13 @@ Rectangle {
               chatsModel.plainText(Emoji.deparse(messageInputField.text)) :
               chatsModel.plainText(messageInputField.text);
 
-            let aliasName = item[suggestionsBox.property.split(",").map(p => p.trim()).find(p => !!item[p])]
+            var properties = "ensName, alias"; // Ignore localNickname
+
+            let aliasName = item[properties.split(",").map(p => p.trim()).find(p => !!item[p])]
             aliasName = aliasName.replace(/(\.stateofus)?\.eth/, "")
             let nameLen = aliasName.length + 2 // We're doing a +2 here because of the `@` and the trailing whitespace
             let position = 0;
             let text = ""
-
             if (currentText === "@") {
                 position = nameLen
                 text = "@" + aliasName + " "
@@ -665,7 +688,8 @@ Rectangle {
                 font.family: Style.current.fontRegular.name
                 wrapMode: TextArea.Wrap
                 height: parent.height
-                placeholderText: qsTr("Type a message")
+                //% "Type a message"
+                placeholderText: qsTrId("type-a-message")
                 placeholderTextColor: Style.current.secondaryText
                 selectByMouse: true
                 color: Style.current.textColor
@@ -679,35 +703,88 @@ Rectangle {
                     color: "transparent"
                 }
                 selectionColor: Style.current.primarySelectionColor
+                persistentSelection: true
+                onReleased: function (event) {
+                    if (messageInputField.selectedText.trim() !== "") {
+                        let x = event.x - (textFormatMenu.width / 2)
+                        textFormatMenu.popup(x, -messageInputField.height-2)
+                        messageInputField.forceActiveFocus();
+                    }
+                }
+
+                StatusTextFormatMenu {
+                    id: textFormatMenu
+                    Action {
+                        icon.name: "format-text-bold"
+                        icon.width: 12
+                        icon.height: 16
+                        onTriggered: wrapSelection("**")
+                        //% "Bold"
+                        text: qsTrId("bold")
+                    }
+                    Action {
+                        icon.name: "format-text-italic"
+                        icon.width: 12
+                        icon.height: 16
+                        onTriggered: wrapSelection("*")
+                        //% "Italic"
+                        text: qsTrId("italic")
+                    }
+                    Action {
+                        icon.name: "format-text-strike-through"
+                        icon.width: 20
+                        icon.height: 18
+                        onTriggered: wrapSelection("~~")
+                        //% "Strikethrough"
+                        text: qsTrId("strikethrough")
+                    }
+                    Action {
+                        icon.name: "format-text-code"
+                        icon.width: 20
+                        icon.height: 18
+                        onTriggered: wrapSelection("`")
+                        //% "Code"
+                        text: qsTrId("code")
+                    }
+                }
             }
-            Action {
-                shortcut: StandardKey.Bold
-                onTriggered: wrapSelection("**")
+
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: StandardKey.Bold
+                onActivated: wrapSelection("**")
             }
-            Action {
-                shortcut: StandardKey.Italic
-                onTriggered: wrapSelection("*")
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: StandardKey.Italic
+                onActivated: wrapSelection("*")
             }
-            Action {
-                shortcut: "Ctrl+Shift+Alt+C"
-                onTriggered: wrapSelection("```")
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: "Ctrl+Shift+Alt+C"
+                onActivated: wrapSelection("```")
             }
-            Action {
-                shortcut: "Ctrl+Shift+C"
-                onTriggered: wrapSelection("`")
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: "Ctrl+Shift+C"
+                onActivated: wrapSelection("`")
             }
-            Action {
-                shortcut: "Ctrl+Alt+-"
-                onTriggered: wrapSelection("~~")
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: "Ctrl+Alt+-"
+                onActivated: wrapSelection("~~")
             }
-            Action {
-                shortcut: "Ctrl+Shift+X"
-                onTriggered: wrapSelection("~~")
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: "Ctrl+Shift+X"
+                onActivated: wrapSelection("~~")
             }
-            Action {
-                shortcut: "Ctrl+Meta+Space"
-                onTriggered: emojiBtn.clicked()
+            Shortcut {
+                enabled: messageInputField.activeFocus
+                sequence: "Ctrl+Meta+Space"
+                onActivated: emojiBtn.clicked()
             }
+
         }
 
         Rectangle {
@@ -766,7 +843,8 @@ Rectangle {
                 icon.width: 16
                 icon.height: 18
                 borderRadius: 16
-                text: qsTr("Send")
+                //% "Send"
+                text: qsTrId("command-button-send")
                 type: "secondary"
                 flat: true
                 showBorder: true

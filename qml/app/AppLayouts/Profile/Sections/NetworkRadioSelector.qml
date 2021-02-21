@@ -7,17 +7,26 @@ import "../../../../shared/status"
 import im.status.desktop 1.0
 
 RowLayout {
+    id: root
     property string network: ""
     property string networkName: ""
     property string newNetwork: ""
+    property var parentPopup;
 
     ConfirmationDialog {
         id: confirmDialog
-        title: qsTr("Warning!")
-        confirmationText: qsTr("The account will be logged out. When you unlock it again, the selected network will be used")
+        //% "Warning!"
+        title: qsTrId("close-app-title")
+        //% "The account will be logged out. When you unlock it again, the selected network will be used"
+        confirmationText: qsTrId("logout-app-content")
         onConfirmButtonClicked: {
             StatusSettings.CurrentNetwork = newNetwork;
+            close();
+            root.parentPopup.close();
             Status.closeSession();
+        }
+        onClosed: {
+            StatusSettings.currentNetworkChanged()
         }
     }
 

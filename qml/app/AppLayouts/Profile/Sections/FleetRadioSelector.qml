@@ -9,6 +9,7 @@ import im.status.desktop 1.0
 RowLayout {
     property string fleetName: ""
     property string newFleet: ""
+    property var parentPopup;
 
     ConfirmationDialog {
         id: confirmDialog
@@ -18,7 +19,12 @@ RowLayout {
         confirmationText: qsTrId("change-fleet-to--1").arg(newFleet)
         onConfirmButtonClicked: {
             StatusSettings.Fleet = newFleet;
+            close();
+            root.parentPopup.close();
             Status.closeSession();
+        }
+        onClosed: {
+            StatusSettings.fleetChanged()
         }
     }
 

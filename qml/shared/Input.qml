@@ -135,12 +135,14 @@ Item {
                                 return inputBox.copyToClipboard ?
                                             //% "Copied"
                                             qsTrId("sharing-copied-to-clipboard")  :
-                                            qsTr("Pasted")
+                                            //% "Pasted"
+                                            qsTrId("pasted")
                             }
                             return inputBox.copyToClipboard ?
                                         //% "Copy"
                                         qsTrId("copy-to-clipboard") :
-                                        qsTr("Paste")
+                                        //% "Paste"
+                                        qsTrId("paste")
 
                         }
                         height: 28

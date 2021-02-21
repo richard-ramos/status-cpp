@@ -279,7 +279,8 @@ Item {
         NoFriendsRectangle {
             id: element
             visible: contactListView.count === 0
-            text: qsTr("You don’t have any contacts yet")
+            //% "You don’t have any contacts yet"
+            text: qsTrId("you-don-t-have-any-contacts-yet")
             width: parent.width
             anchors.verticalCenter: parent.verticalCenter
         }

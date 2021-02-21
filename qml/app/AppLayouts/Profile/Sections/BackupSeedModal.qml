@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.3
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -24,7 +25,8 @@ ModalPopup {
         height: 50
         StyledText {
             id: lblTitle
-            text: qsTr("Back up seed phrase")
+            //% "Back up seed phrase"
+            text: qsTrId("back-up-seed-phrase")
             font.pixelSize: 17
             font.bold: true
             anchors.left: parent.left
@@ -32,7 +34,8 @@ ModalPopup {
         StyledText {
             anchors.top: lblTitle.bottom
             anchors.topMargin: Style.current.smallPadding
-            text: qsTr("Step %1 of 3").arg(seedWord2Idx > -1 ? 3 : (seedWord1Idx > -1 ? 2 : 1))
+            //% "Step %1 of 3"
+            text: qsTrId("step--1-of-3").arg(seedWord2Idx > -1 ? 3 : (seedWord1Idx > -1 ? 2 : 1))
             font.pixelSize: 14
             anchors.left: parent.left
         }
@@ -65,7 +68,7 @@ ModalPopup {
 
                     Repeater {
                         id: mnemonicRepeater
-                        model: profileModel.mnemonic.get.split(" ")
+                        model: StatusSettings.Mnemonic.split(" ")
                         Rectangle {
                             id: word
                             height: 40
@@ -121,7 +124,8 @@ ModalPopup {
         anchors.right: parent.right
         StyledText {
             id: lblLoseSeed
-            text: qsTr("If you lose your seed phrase you lose your data and funds")
+            //% "If you lose your seed phrase you lose your data and funds"
+            text: qsTrId("your-data-belongs-to-you")
             wrapMode: Text.WordWrap
             font.pixelSize: 17
             font.bold: true
@@ -132,7 +136,8 @@ ModalPopup {
             anchors.top: lblLoseSeed.bottom
             anchors.topMargin: Style.current.smallPadding
             wrapMode: Text.WordWrap
-            text: qsTr("If you lose access, for example by losing your phone, you can only access your keys with your seed phrase. No one, but you has your seed phrase. Write it down. Keep it safe")
+            //% "If you lose access, for example by losing your phone, you can only access your keys with your seed phrase. No one, but you has your seed phrase. Write it down. Keep it safe"
+            text: qsTrId("your-data-belongs-to-you-description")
             anchors.left: parent.left
             anchors.right: parent.right
         }
@@ -144,10 +149,12 @@ ModalPopup {
         anchors.right: parent.right
         StyledText {
             id: txtChk
-            text: qsTr("Check your seed phrase")
+            //% "Check your seed phrase"
+            text: qsTrId("check-your-recovery-phrase")
         }
         StyledText {
-            text: qsTr("Word #%1").arg((seedWord2Idx > -1 ? seedWord2Idx : seedWord1Idx) + 1)
+            //% "Word #%1"
+            text: qsTrId("word---1").arg((seedWord2Idx > -1 ? seedWord2Idx : seedWord1Idx) + 1)
             anchors.left: txtChk.right
             anchors.leftMargin: 5
             color: Style.current.secondaryText
@@ -159,7 +166,8 @@ ModalPopup {
             anchors.topMargin: Style.current.padding
             anchors.left: txtChk.left
             anchors.right: parent.right
-            placeholderText: qsTr("Enter word")
+            //% "Enter word"
+            placeholderText: qsTrId("enter-word")
             text: ""
             validationError: popup.validationError
         }
@@ -170,16 +178,19 @@ ModalPopup {
             wrapMode: Text.WordWrap
             anchors.left: parent.left
             anchors.right: parent.right
-            text: qsTr("In order to check if you have backed up your seed phrase correctly, enter the word #%1 above").arg((seedWord2Idx > -1 ? seedWord2Idx : seedWord1Idx) + 1)
+            //% "In order to check if you have backed up your seed phrase correctly, enter the word #%1 above"
+            text: qsTrId("in-order-to-check-if-you-have-backed-up-your-seed-phrase-correctly--enter-the-word---1-above").arg((seedWord2Idx > -1 ? seedWord2Idx : seedWord1Idx) + 1)
             color: Style.current.secondaryText
         }
 
         ConfirmationDialog {
             id: removeSeedPhraseConfirm
-            title: qsTr("Are you sure?")
-            confirmationText: qsTr("You will not be able to see the whole seed phrase again")
+            //% "Are you sure?"
+            title: qsTrId("are-you-sure?")
+            //% "You will not be able to see the whole seed phrase again"
+            confirmationText: qsTrId("are-you-sure-description")
             onConfirmButtonClicked: {
-                profileModel.mnemonic.remove()
+                StatusSettings.removeMnemonic()
                 popup.close();
                 removeSeedPhraseConfirm.close();
             }
@@ -214,8 +225,10 @@ ModalPopup {
 
     footer: StatusButton {
         text: showWarning ? 
-                qsTr("Okay, continue") : 
-                qsTrId("Next")
+                //% "Okay, continue"
+                qsTrId("ok-continue") : 
+                //% "Next"
+                qsTrId("next")
         anchors.right: parent.right
         anchors.rightMargin: Style.current.smallPadding
         anchors.bottom: parent.bottom
@@ -227,8 +240,9 @@ ModalPopup {
                     seedWord1Idx = Math.floor(Math.random() * 12);
                 } else {
                     if(seedWord2Idx == -1){
-                        if(profileModel.mnemonic.getWord(seedWord1Idx) !== txtFieldWord.text){
-                            validationError = qsTr("Wrong word");
+                        if(StatusSettings.Mnemonic.split(" ")[seedWord1Idx] !== txtFieldWord.text){
+                            //% "Wrong word"
+                            validationError = qsTrId("wrong-word");
                             return;
                         }
 
@@ -239,8 +253,9 @@ ModalPopup {
                             seedWord2Idx = Math.floor(Math.random() * 12);
                         } while(seedWord2Idx == seedWord1Idx);
                     } else {
-                        if(profileModel.mnemonic.getWord(seedWord2Idx) !== txtFieldWord.text){
-                            validationError = qsTr("Wrong word");
+                        if(StatusSettings.Mnemonic.split(" ")[seedWord2Idx] !== txtFieldWord.text){
+                            //% "Wrong word"
+                            validationError = qsTrId("wrong-word");
                             return;
                         }
 

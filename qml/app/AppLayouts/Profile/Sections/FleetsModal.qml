@@ -21,14 +21,17 @@ ModalPopup {
 
         FleetRadioSelector {
             fleetName: Constants.eth_prod
+            parentPopup: popup
         }
 
         FleetRadioSelector {
             fleetName: Constants.eth_staging
+            parentPopup: popup
         }
 
         FleetRadioSelector {
             fleetName: Constants.eth_test
+            parentPopup: popup
         }
     }
 }

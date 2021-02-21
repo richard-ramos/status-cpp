@@ -161,11 +161,8 @@ ScrollView {
 
             delegate: Message {
                 id: msgDelegate
-                fromAuthor: model.fromAuthor
                 chatId: model.chatId
                 userName: model.userName
-                localName: model.localName
-                alias: model.alias
                 message: model.message
                 plainText: model.plainText
                 identicon: model.identicon

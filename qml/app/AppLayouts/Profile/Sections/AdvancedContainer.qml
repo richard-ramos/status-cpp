@@ -24,14 +24,14 @@ Item {
             //% "Network"
             text: qsTrId("network")
             currentValue: utilsModel.getNetworkName()
-            onClicked: networksModal.open()
+            onClicked: openPopup(networksModalComponent)
         }
 
         StatusSettingsLineButton {
             //% "Fleet"
             text: qsTrId("fleet")
             currentValue: profileModel.fleets.fleet
-            onClicked: fleetModal.open()
+            onClicked: openPopup(fleetModalComponent)
         }
 
         Item {
@@ -96,15 +96,17 @@ Item {
         }
     }
 
-    NetworksModal {
-        id: networksModal
+    Component {
+        id: networksModalComponent
+        NetworksModal {
+        }
     }
-
-    FleetsModal {
-        id: fleetModal
+    
+    Component {
+        id: fleetModalComponent
+        FleetsModal {
+        }
     }
-
-
 }
 
 /*##^##

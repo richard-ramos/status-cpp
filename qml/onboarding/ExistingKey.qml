@@ -20,7 +20,8 @@ Item {
             error = "";
             
             if(!Utils.isMnemonic(mnemonic)){
-                error = qsTr("Invalid seed phrase")
+                //% "Invalid seed phrase"
+                error = qsTrId("custom-seed-phrase")
             } else {
                 error = onboardingModel.validateMnemonic(mnemonic.trim())
             }

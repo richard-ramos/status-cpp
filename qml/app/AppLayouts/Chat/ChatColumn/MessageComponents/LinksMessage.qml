@@ -230,7 +230,8 @@ Column {
 
             StyledText {
                 id: enableText
-                text: qsTr("Enable link previews in chat?")
+                //% "Enable link previews in chat?"
+                text: qsTrId("enable-link-previews")
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
                 wrapMode: Text.WordWrap
@@ -241,7 +242,8 @@ Column {
 
             StyledText {
                 id: infoText
-                text: qsTr("Once enabled, links posted in the chat may share your metadata with their owners")
+                //% "Once enabled, links posted in the chat may share your metadata with their owners"
+                text: qsTrId("once-enabled--links-posted-in-the-chat-may-share-your-metadata-with-their-owners")
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
                 wrapMode: Text.WordWrap
@@ -258,7 +260,8 @@ Column {
 
             StatusButton {
                 id: enableBtn
-                text: qsTr("Enable in Settings")
+                //% "Enable in Settings"
+                text: qsTrId("enable-in-settings")
                 type: "secondary"
                 onClicked: {
                     appMain.changeAppSection(Constants.profile)
@@ -275,11 +278,11 @@ Column {
             }
 
             StatusButton {
-                text: qsTr("Don't ask me again")
+                //% "Don't ask me again"
+                text: qsTrId("dont-ask")
                 type: "secondary"
                 onClicked: {
                     appSettings.neverAskAboutUnfurlingAgain = true
-                    return undefined
                 }
                 width: parent.width
                 anchors.top: sep2.bottom

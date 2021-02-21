@@ -8,7 +8,8 @@ import im.status.desktop 1.0
 ModalPopup {
     id: popup
 
-    title: qsTr("Chat link previews")
+    //% "Chat link previews"
+    title: qsTrId("chat-link-previews")
 
     onClosed: {
         destroy()
@@ -32,11 +33,13 @@ ModalPopup {
 
         StatusSectionHeadline {
             id: labelWebsites
-            text: qsTr("Websites")
+            //% "Websites"
+            text: qsTrId("websites")
             width: parent.width
 
             StatusButton {
-                text: qsTr("Enable all")
+                //% "Enable all"
+                text: qsTrId("enable-all")
                 type: "secondary"
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
@@ -55,7 +58,7 @@ ModalPopup {
         }
 
         Connections {
-            target: applicationWindow
+            target: appMain
             onSettingsLoaded: {
                 popup.populatePreviewableSites()
             }
@@ -153,7 +156,8 @@ ModalPopup {
         }
 
         StyledText {
-            text: qsTr("Previewing links from these websites may share your metadata with their owners.")
+            //% "Previewing links from these websites may share your metadata with their owners."
+            text: qsTrId("previewing-links-from-these-websites-may-share-your-metadata-with-their-owners-")
             width: parent.width
             wrapMode: Text.WordWrap
             font.weight: Font.Thin

@@ -16,11 +16,13 @@ ModalPopup {
 
     function validate() {
         if (!Utils.isChatKey(chatKey.text) && !Utils.isValidETHNamePrefix(chatKey.text)) {
-            validationError = qsTr("Enter a valid chat key or ENS username");
+            //% "Enter a valid chat key or ENS username"
+            validationError = qsTrId("enter-a-valid-chat-key-or-ens-username");
             pubKey = ""
             ensUsername.text = "";
         } else if (StatusSettings.PublicKey === chatKey.text) {
-            validationError = qsTr("Can't chat with yourself");
+            //% "Can't chat with yourself"
+            validationError = qsTrId("can-t-chat-with-yourself");
         } else {
             validationError = ""
         }
@@ -41,7 +43,8 @@ ModalPopup {
                 searchResults.showProfileNotFoundMessage = true
             } else {
                 if (StatusSettings.PublicKey === resolvedPubKey) {
-                    popup.validationError = qsTr("Can't chat with yourself");
+                    //% "Can't chat with yourself"
+                    popup.validationError = qsTrId("can-t-chat-with-yourself");
                 } else {
                     searchResults.username = EnsUtils.formatUsername(chatKey.text);
                     let userAlias = Status.generateAlias(resolvedPubKey)
@@ -175,7 +178,6 @@ ModalPopup {
 
     PrivateChatPopupExistingContacts {
         id: existingContacts
-        model: addedContacts
         anchors.topMargin: this.height > 0 ? Style.current.xlPadding : 0
         anchors.top: chatKey.bottom
         filterText: chatKey.text
