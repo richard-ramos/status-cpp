@@ -389,7 +389,7 @@ Rectangle {
         const isCurrentUser = message.from == StatusSettings.PublicKey;
         replyArea.userName = Utils.getUsernameLabel(contact, isCurrentUser);
         replyArea.message = message.text;
-        replyArea.identicon = isCurrentUser ? identityImage.defaultThumbnail : contact.image;
+        replyArea.identicon = isCurrentUser ? identityImage.defaultThumbnail : getProfileImage(contact);
         messageInputField.forceActiveFocus();
     }
 

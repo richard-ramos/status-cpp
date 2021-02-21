@@ -20,7 +20,7 @@ Loader {
                 border.color: Style.current.border
                 showLoadingIndicator: false
                 source: {
-                    return !isCurrentUser ? contact.image : identityImage.defaultThumbnail
+                    return !isCurrentUser ? getProfileImage(contact) : identityImage.defaultThumbnail
                 }
                 smooth: false
                 antialiasing: true

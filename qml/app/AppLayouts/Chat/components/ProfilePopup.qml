@@ -45,7 +45,7 @@ ModalPopup {
             border.color: Style.current.border
             border.width: 1
             anchors.verticalCenter: parent.verticalCenter
-            source: contact.image
+            source: getProfileImage(contact)
         }
 
         StyledTextEdit {

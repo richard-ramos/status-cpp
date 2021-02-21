@@ -147,7 +147,7 @@ void MessagesModel::loadMessages(bool initialLoad)
 		const auto response =
 			Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
 		m_cursor = response["result"]["cursor"].toString();
-		qDebug() << response;
+
 		// TODO: handle cursor
 		foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
 		{

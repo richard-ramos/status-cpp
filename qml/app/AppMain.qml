@@ -16,24 +16,15 @@ RowLayout {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    function getProfileImage(pubkey, isCurrentUser, useLargeImage) {
-        if (isCurrentUser || (isCurrentUser === undefined && pubkey === profileModel.profile.pubKey)) {
-            return profileModel.profile.thumbnailImage
+    function getProfileImage(contact, useLargeImage) {
+        const isCurrentUser = contact.id == StatusSettings.PublicKey;
+        if (isCurrentUser) {
+            return useLargeImage ? identityImage.defaultLargeImage : identityImage.defaultThumbnail;
         }
-
-        const index = profileModel.contacts.list.getContactIndexByPubkey(pubkey)
-        if (index === -1) {
-            return
+        if (appSettings.onlyShowContactsProfilePics && !contact.isAdded) {
+            return contact.identicon;
         }
-
-        if (appSettings.onlyShowContactsProfilePics) {
-            const isContact = profileModel.contacts.list.rowData(index, "isContact")
-            if (isContact === "false") {
-                return
-            }
-        }
-
-        return profileModel.contacts.list.rowData(index, useLargeImage ? "largeImage" : "thumbnailImage")
+        return contact.image; // TODO: large image
     }
 
     function getUserNickname(pubKey) {

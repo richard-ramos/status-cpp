@@ -36,7 +36,7 @@ Column {
             property bool fetched: false
             property var linkData
             property int linkWidth: linksRepeater.width
-            active: true
+            active: true           
             
             Connections {
                 target: appSettings
@@ -84,6 +84,7 @@ Column {
                     fetched = true
 
                     Utils.getLinkPreviewData(link, function(err, result){
+                        linkMessageLoader.height = undefined;
                         if (err) {
                             console.error(error)
                             return undefined
@@ -278,6 +279,7 @@ Column {
                 type: "secondary"
                 onClicked: {
                     appSettings.neverAskAboutUnfurlingAgain = true
+                    return undefined
                 }
                 width: parent.width
                 anchors.top: sep2.bottom
