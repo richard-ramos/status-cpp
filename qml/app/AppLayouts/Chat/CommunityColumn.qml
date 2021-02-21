@@ -9,6 +9,7 @@ import "./ContactsColumn"
 import "./CommunityComponents"
 
 Item {
+    // TODO unhardcode
     property int chatGroupsListViewCount: channelList.channelListCount
 
     id: root
@@ -65,7 +66,8 @@ Item {
 
             Action {
                 enabled: chatsModel.activeCommunity.admin
-                text: qsTrId("Create channel")
+                //% "Create channel"
+                text: qsTrId("create-channel")
                 icon.source: "../../img/hash.svg"
                 icon.width: 20
                 icon.height: 20
@@ -73,7 +75,8 @@ Item {
             }
 
             Action {
-                text: qsTrId("Leave community")
+                //% "Leave community"
+                text: qsTrId("leave-community")
                 icon.source: "../../img/delete.svg"
                 icon.color: Style.current.red
                 icon.width: 20

@@ -394,6 +394,7 @@
       <file>./app/img/arrow-btn-active.svg</file>
       <file>./app/img/exclamation.svg</file>
       <file>./app/img/wallet.svg</file>
+      <file>./app/img/format-text-strike-through.svg</file>
       <file>./app/img/reply.svg</file>
       <file>./app/img/channel-icon-group.svg</file>
       <file>./app/img/check-circle.svg</file>
@@ -792,7 +793,9 @@
       <file>./app/img/nodeActive.svg</file>
       <file>./app/img/manage-wallet.svg</file>
       <file>./app/img/ens-header-dark@3x.png</file>
+      <file>./app/img/format-text-italic.svg</file>
       <file>./app/img/fetch.svg</file>
+      <file>./app/img/format-text-code.svg</file>
       <file>./app/img/group_chat.svg</file>
       <file>./app/img/hash.svg</file>
       <file>./app/img/send.svg</file>
@@ -836,6 +839,7 @@
       <file>./app/img/loading.png</file>
       <file>./app/img/appearance-normal-system.svg</file>
       <file>./app/img/reload.svg</file>
+      <file>./app/img/format-text-bold.svg</file>
       <file>./app/img/appearance-normal-light.svg</file>
       <file>./app/AppMain.qml</file>
       <file>./imports/Constants.qml</file>
@@ -7646,6 +7650,7 @@
       <file>./shared/SearchBox.qml</file>
       <file>./shared/status/StatusSettingsLineButton.qml</file>
       <file>./shared/status/StatusToolTip.qml</file>
+      <file>./shared/status/StatusTextFormatMenu.qml</file>
       <file>./shared/status/StatusEmojiSuggestionPopup.qml</file>
       <file>./shared/status/StatusChatCommandButton.qml</file>
       <file>./shared/status/StatusSectionDescItem.qml</file>

@@ -39,8 +39,10 @@ Button {
         StyledText {
             id: communityNbMember
             text: chatsModel.activeCommunity.nbMembers === 1 ? 
-                qsTr("1 member") : 
-                qsTr("%1 members").arg(chatsModel.activeCommunity.nbMembers)
+                //% "1 member"
+                qsTrId("1-member") : 
+                //% "%1 members"
+                qsTrId("-1-members").arg(chatsModel.activeCommunity.nbMembers)
             anchors.left: communityName.left
             anchors.top: communityName.bottom
             font.pixelSize: 12
@@ -59,7 +61,7 @@ Button {
             btnBackground.color = "transparent"
         }
         onEntered: {
-            btnBackground.color = Style.current.topBarChatInfoColor
+            btnBackground.color = Style.current.backgroundHover
         }
     }
 }

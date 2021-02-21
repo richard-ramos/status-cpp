@@ -37,6 +37,7 @@ Theme {
     property color inputColor: black
     property color modalBackground: white2
     property color backgroundHover: grey
+    property color backgroundHoverLight: grey
     property color secondaryText: darkGrey
     property color secondaryHover: tenPercentBlack
     property color primary: blue
@@ -47,16 +48,15 @@ Theme {
     property color backgroundTertiary: tenPercentBlue
     property color pillButtonTextColor: white
     property color chatReplyCurrentUser: darkGrey
-    property color topBarChatInfoColor: grey
     property color codeBackground: "#2E386B"
     property color primarySelectionColor: "#b4c8ff"
     property color emojiReactionBackground: "#e2e6e9"
     property color emojiReactionBackgroundHovered: "#d7dadd"
     property color emojiReactionActiveBackgroundHovered: "#cbd5f1"
     property color mentionColor: "#0DA4C9"
-    property color mentionBgColor: "#D4F3FA"
-    property color mentionMessageColor: "#E5F8FD"
-    property color mentionMessageHoverColor: mentionBgColor
+    property color mentionBgColor: "#1a07bce9"
+    property color mentionMessageColor: "#1a07bce9"
+    property color mentionMessageHoverColor: "#3307bce9"
 
     property color buttonForegroundColor: blue
     property color buttonBackgroundColor: secondaryBackground

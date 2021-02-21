@@ -7,7 +7,7 @@ import "../Profile/Sections"
 import "."
 
 Rectangle {
-    visible: !StatusSettings.isMnemonicBackedUp
+    visible: !profileModel.mnemonic.isBackedUp
     height: visible ? 32 : 0
     Layout.fillWidth: true
     color: Style.current.red
@@ -17,7 +17,8 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
 
         StyledText {
-            text: qsTr("Back up your seed phrase")
+            //% "Back up your seed phrase"
+            text: qsTrId("back-up-your-seed-phrase")
             font.pixelSize: 13
             anchors.verticalCenter: parent.verticalCenter
             color: Style.current.white
