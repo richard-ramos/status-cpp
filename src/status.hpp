@@ -49,6 +49,9 @@ public:
 	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);
 	Q_INVOKABLE void closeSession();
 
+	Q_PROPERTY(QString SettingsPath READ settingsPath CONSTANT)
+	QString settingsPath();
+
 	void emitMessageSignal(QJsonObject ev);
 
 	Q_PROPERTY(bool IsOnline READ isOnline NOTIFY onlineStatusChanged)

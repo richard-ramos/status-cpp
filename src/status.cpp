@@ -4,6 +4,7 @@
 #include "constants.hpp"
 #include "libstatus.h"
 #include "utils.hpp"
+#include "settings.hpp"
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFuture>
@@ -14,6 +15,8 @@
 #include <QTextDocumentFragment>
 #include <QVariant>
 #include <QtConcurrent/QtConcurrent>
+#include <QStandardPaths>
+#include <QFileInfo>
 
 std::map<QString, Status::SignalType> Status::signalMap;
 Status* Status::theInstance;
@@ -207,4 +210,8 @@ QString Status::plainText(const QString& value)
 bool Status::isOnline()
 {
 	return m_online;
+}
+
+QString Status::settingsPath(){
+	return Constants::applicationPath("settings/" + Settings::instance()->keyUID());
 }

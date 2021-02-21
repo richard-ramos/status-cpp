@@ -62,7 +62,7 @@ RowLayout {
 
     Settings {
         id: appSettings
-        fileName: profileModel.profileSettingsFile
+        fileName: Status.SettingsPath
         property var chatSplitView
         property var walletSplitView
         property var profileSplitView

@@ -18,5 +18,6 @@ const QString ZeroAddress("0x0000000000000000000000000000000000000000");
 const QString StatusDomain(".stateofus.eth");
 
 QString applicationPath(QString path = "");
+QString settingsPath();
 
 } // namespace Constants
