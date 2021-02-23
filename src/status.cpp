@@ -3,20 +3,20 @@
 #include "QrCode.hpp"
 #include "constants.hpp"
 #include "libstatus.h"
-#include "utils.hpp"
 #include "settings.hpp"
+#include "utils.hpp"
 #include <QCoreApplication>
 #include <QDebug>
+#include <QFileInfo>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QJSEngine>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QTextDocumentFragment>
 #include <QVariant>
 #include <QtConcurrent/QtConcurrent>
-#include <QStandardPaths>
-#include <QFileInfo>
 
 std::map<QString, Status::SignalType> Status::signalMap;
 Status* Status::theInstance;
@@ -65,6 +65,28 @@ void uint64ToStrReplacements(QString& input)
 	input.replace(QRegularExpression(QStringLiteral("\"lastUpdated\":(\\d+)")), QStringLiteral("\"lastUpdated\":\"\\1\""));
 }
 
+void Status::processDiscoverySummarySignal(const QJsonObject& signalEvent)
+{
+	QJsonArray peers(signalEvent["event"].toArray());
+
+	if(peers.count() > 0 && !m_online)
+	{
+		m_online = true;
+		emit onlineStatusChanged(true);
+	}
+	else if(peers.count() == 0 && m_online)
+	{
+		m_online = false;
+		emit onlineStatusChanged(false);
+	}
+
+	QVector<QString> peerVector;
+	foreach(const QJsonValue& peer, peers)
+		peerVector << peer.toObject()["enode"].toString();
+	
+	emit discoverySummary(peerVector);
+}
+
 void Status::processSignal(QString ev)
 {
 	// WARNING: Signals are returning bigints as numeric values instead of strings
@@ -89,18 +111,7 @@ void Status::processSignal(QString ev)
 	case NodeReady: emit instance()->nodeReady(signalEvent["event"]["error"].toString()); break;
 	case NodeStopped: emit instance()->nodeStopped(signalEvent["event"]["error"].toString()); break;
 	case Message: emit instance()->message(signalEvent["event"].toObject()); break;
-	case DiscoverySummary:
-		if(signalEvent["event"].toArray().count() > 0 && !m_online)
-		{
-			m_online = true;
-			emit onlineStatusChanged(true);
-		}
-		else if(signalEvent["event"].toArray().count() == 0 && m_online)
-		{
-			m_online = false;
-			emit onlineStatusChanged(false);
-		}
-		break;
+	case DiscoverySummary: processDiscoverySummarySignal(signalEvent); break;
 	}
 }
 
@@ -160,9 +171,7 @@ QString Status::generateQRCode(QString publicKey)
 QVariant Status::callPrivateRPC(QString method, QVariantList params)
 {
 	qDebug() << "CallPrivateRPC - method:" << method;
-
 	QJsonObject payload{{"jsonrpc", "2.0"}, {"method", method}, {"params", QJsonValue::fromVariant(params)}};
-	qDebug() << payload;
 	QString payloadStr = Utils::jsonToStr(payload);
 
 	// WARNING: uint64 are expected instead of strings.
@@ -212,6 +221,7 @@ bool Status::isOnline()
 	return m_online;
 }
 
-QString Status::settingsPath(){
+QString Status::settingsPath()
+{
 	return Constants::applicationPath("settings/" + Settings::instance()->keyUID());
 }

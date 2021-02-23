@@ -62,6 +62,7 @@ signals:
 	void nodeReady(QString error);
 	void nodeStopped(QString error);
 	void message(QJsonObject update);
+	void discoverySummary(QVector<QString> enodes);
 	void logout();
 
 	void onlineStatusChanged(bool connected);
@@ -72,6 +73,7 @@ private:
 	static std::map<QString, SignalType> signalMap;
 	static void signalCallback(const char* data);
 	void processSignal(QString ev);
+	void processDiscoverySummarySignal(const QJsonObject& signalEvent);
 
 	bool isOnline();
 

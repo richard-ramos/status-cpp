@@ -1,11 +1,12 @@
 #include "utils.hpp"
 #include "libstatus.h"
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QString>
-#include <QClipboard>
-#include <QGuiApplication>
+#include <QVector>
 
 QString Utils::generateAlias(QString publicKey)
 {
@@ -29,18 +30,16 @@ QString Utils::jsonToStr(QJsonArray& arr)
 	return QString::fromUtf8(doc.toJson());
 }
 
-
-/*
-QString Utils::resolveENS(QString ensName)
+QJsonArray Utils::toJsonArray(const QVector<QString>& value)
 {
-
-}*/
+	QJsonArray array;
+	for(auto& v : value)
+		array << v;
+	return array;
+}
 
 void Utils::copyToClipboard(const QString& value)
 {
-	QClipboard *clipboard = QGuiApplication::clipboard();
+	QClipboard* clipboard = QGuiApplication::clipboard();
 	clipboard->setText(value);
-
 }
-
-

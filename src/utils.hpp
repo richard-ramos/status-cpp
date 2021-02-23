@@ -2,6 +2,8 @@
 
 #include <QString>
 #include <QJsonObject>
+#include <QVector>
+#include <QJsonArray>
 
 
 class Utils
@@ -13,5 +15,6 @@ public:
 
 	static QString jsonToStr(QJsonObject& obj);
 	static QString jsonToStr(QJsonArray& arr);
+	static QJsonArray toJsonArray(const QVector<QString>& value);
 	
 };

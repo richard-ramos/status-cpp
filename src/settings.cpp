@@ -31,18 +31,17 @@ Settings::Settings(QObject* parent)
 	timer = new QTimer(this);
 	QObject::connect(this, &Settings::initialized, this, &Settings::startMailserverCycle);
 	QObject::connect(Status::instance(), &Status::logout, timer, &QTimer::stop);
+	QObject::connect(Status::instance(), &Status::discoverySummary, &mailserverCycle, &MailserverCycle::peerSummaryChange);
+
 }
 
 void Settings::startMailserverCycle()
 {
 	// Fire immediately
 	mailserverCycle.work();
-	Settings::instance()->setCurrency("DOP");
-
 	// Execute every 1 seconds
 	QObject::connect(timer, &QTimer::timeout, &mailserverCycle, &MailserverCycle::work);
-	timer->start(1000);
-	Settings::instance()->setCurrency("USD");
+	timer->start(10000);
 }
 
 Settings::~Settings()
