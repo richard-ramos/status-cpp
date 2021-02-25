@@ -4,6 +4,7 @@
 #include "message-format.hpp"
 #include "message.hpp"
 #include "status.hpp"
+#include "settings.hpp"
 #include "utils.hpp"
 #include <QAbstractListModel>
 #include <QDebug>
@@ -13,6 +14,7 @@
 #include <QQmlApplicationEngine>
 #include <algorithm>
 #include <array>
+#include "mailserver-cycle.hpp"
 
 using namespace Messages;
 
@@ -30,6 +32,7 @@ void ChatsModel::init()
 {
 	loadChats();
 	startMessenger();
+	Settings::instance()->mailserverCycle.initialMailserverRequest();
 }
 
 void ChatsModel::setupMessageModel()
@@ -110,6 +113,9 @@ void ChatsModel::join(ChatType chatType, QString id)
 		{
 			Chat* c = new Chat(id, chatType);
 			c->save();
+
+			QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
+
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			insert(c);
 			endInsertRows();

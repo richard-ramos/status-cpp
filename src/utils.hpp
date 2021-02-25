@@ -16,5 +16,5 @@ public:
 	static QString jsonToStr(QJsonObject& obj);
 	static QString jsonToStr(QJsonArray& arr);
 	static QJsonArray toJsonArray(const QVector<QString>& value);
-	
+	static QVector<QString> toStringVector(const QJsonArray& arr);
 };

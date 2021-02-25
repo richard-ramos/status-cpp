@@ -30,6 +30,12 @@ public:
 	Q_INVOKABLE void removeMnemonic();
 	Q_INVOKABLE QString getLinkPreviewWhitelist();
 
+	// TODO: move this to mailserver model
+	MailserverCycle mailserverCycle;
+signals:
+	void mailserverRequestSent();
+
+public:
 	enum SettingTypes
 	{
 		Appearance,
@@ -153,8 +159,6 @@ private:
 
 	void save(const QJsonArray& input);
 
-	// TODO: move this to mailserver model
-	MailserverCycle mailserverCycle;
 	QTimer* timer;
 
 

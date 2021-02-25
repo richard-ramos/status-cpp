@@ -403,6 +403,47 @@ RowLayout {
         }
     }
 
+    Loader {
+        id: loadingMessagesIndicator
+        active: false
+        sourceComponent: loadingIndicator
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: Style.current.padding
+        anchors.bottomMargin: Style.current.padding * 5
+    }
+
+    /** Begin: Extract to component **/
+
+    Component {
+        id: loadingIndicator
+        LoadingAnimation {}
+    }
+
+
+    Timer {
+        id: timer
+    }
+
+    property var mailserverRequestTimer: null
+
+    Connections {
+        target: StatusSettings
+        onMailserverRequestSent: {
+            loadingMessagesIndicator.active = true;
+            
+            if(mailserverRequestTimer != null && mailserverRequestTimer.running){
+                mailserverRequestTimer.stop();
+            }
+            mailserverRequestTimer = timer.setTimeout(function(){ 
+                loadingMessagesIndicator.active = false;
+            }, 5000);
+        }
+    }
+
+    /** End: Extract to component **/
+
+
     StackLayout {
         id: sLayout
         Layout.fillWidth: true

@@ -43,3 +43,13 @@ void Utils::copyToClipboard(const QString& value)
 	QClipboard* clipboard = QGuiApplication::clipboard();
 	clipboard->setText(value);
 }
+
+QVector<QString> Utils::toStringVector(const QJsonArray& arr)
+{
+	QVector<QString> result;
+	foreach(const QJsonValue& value, arr)
+	{
+		result << value.toString();
+	}
+	return result;
+}

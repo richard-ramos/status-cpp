@@ -14,6 +14,18 @@
 
 #include <QMutexLocker>
 
+// How do mailserver should work ?
+//
+// - We send a request to the mailserver, we are only interested in the
+//   messages since `last-request` up to the last seven days
+//   and the last 24 hours for topics that were just joined
+// - The mailserver doesn't directly respond to the request and
+//   instead we start receiving messages in the filters for the requested
+//   topics.
+// - If the mailserver was not ready when we tried for instance to request
+//   the history of a topic after joining a chat, the request will be done
+//   as soon as the mailserver becomes available
+
 MailserverCycle::MailserverCycle(QObject* parent)
 	: QThread(parent)
 { }
@@ -75,8 +87,10 @@ void MailserverCycle::connect(QString enode)
 		nodes[enode] = MailserverStatus::Connecting;
 		const auto response = Status::instance()->callPrivateRPC("admin_addPeer", QJsonArray{enode}.toVariantList());
 
+		// TODO: try to reconnect 3 times before switching mailserver
+
 		QtConcurrent::run([=] {
-			QThread::sleep(3); // Timeout connection attempt at 3 seconds
+			QThread::sleep(10); // Timeout connection attempt at 10 seconds
 			timeoutConnection(enode);
 		});
 	}
@@ -231,4 +245,157 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 		qDebug() << "Mailserver available!";
 		emit mailserverAvailable();
 	}
+}
+
+QVector<Topic> MailserverCycle::getMailserverTopics()
+{
+	const auto response = Status::instance()->callPrivateRPC("mailservers_getMailserverTopics", QJsonArray{}.toVariantList()).toJsonObject();
+	QVector<Topic> topics;
+	foreach(const QJsonValue& value, response["result"].toArray())
+	{
+		const QJsonObject obj = value.toObject();
+		Topic t;
+		t.discovery = obj["discovery?"].toBool();
+		t.lastRequest = obj["last-request"].toInt();
+		t.negotiated = obj["negotiated?"].toBool();
+		t.topic = obj["topic"].toString();
+		t.chatIds = Utils::toStringVector(obj["chat-ids"].toArray());
+		topics << t;
+	}
+	return topics;
+}
+
+void MailserverCycle::addMailserverTopic(Topic t)
+{
+	const auto response = Status::instance()->callPrivateRPC("mailservers_addMailserverTopic",
+															 QJsonArray{QJsonObject{{"topic", t.topic},
+																					{"discovery?", t.discovery},
+																					{"negotiated?", t.negotiated},
+																					{"chat-ids", Utils::toJsonArray(t.chatIds)},
+																					{"last-request", t.lastRequest}}}
+																 .toVariantList());
+}
+
+QString MailserverCycle::generateSymKeyFromPassword()
+{
+	// TODO: unhardcode this for non - status mailservers
+	const auto response =
+		Status::instance()->callPrivateRPC("waku_generateSymKeyFromPassword", QJsonArray{"status-offline-inbox"}.toVariantList()).toJsonObject();
+
+	return response["result"].toString();
+}
+
+void MailserverCycle::requestMessages(QVector<QString> topicList, qint64 fromValue, qint64 toValue, bool force)
+{
+	qDebug() << "Requesting messages from: " << get_activeMailserver();
+	QString generatedSymKey = generateSymKeyFromPassword();
+	requestMessagesCall(topicList, generatedSymKey, get_activeMailserver(), 1000, fromValue, toValue, force);
+}
+
+void MailserverCycle::requestMessagesCall(
+	QVector<QString> topics, QString symKeyID, QString peer, int numberOfMessages, qint64 fromTimestamp, qint64 toTimestamp, bool force)
+{
+	QtConcurrent::run([=] {
+		qint64 toValue = QDateTime::currentDateTimeUtc().toSecsSinceEpoch();
+		qint64 fromValue = toValue - 86400;
+
+		if(fromTimestamp != 0)
+		{
+			fromValue = fromTimestamp;
+		}
+
+		if(toTimestamp != 0)
+		{
+			toValue = toTimestamp;
+		}
+
+		const auto response = Status::instance()
+								  ->callPrivateRPC("wakuext_requestMessages",
+												   QJsonArray{QJsonObject{{"topics", Utils::toJsonArray(topics)},
+																		  {"mailServerPeer", peer},
+																		  {"symKeyID", symKeyID},
+																		  {"timeout", 30},
+																		  {"limit", numberOfMessages},
+																		  {"cursor", QJsonValue()},
+																		  {"from", fromValue},
+																		  {"to", toValue},
+																		  {"force", force}}}
+													   .toVariantList())
+								  .toJsonObject();
+
+		qDebug() << response;
+	});
+}
+
+void MailserverCycle::initialMailserverRequest()
+{
+	QMutexLocker locker(&m_mutex);
+
+	QVector<Topic> mailserverTopics = getMailserverTopics();
+
+	qint64 fromValue = QDateTime::currentDateTimeUtc().toSecsSinceEpoch() - 86400; // 24 hours ago
+
+	if(mailserverTopics.count() == 0)
+		return;
+
+	// TODO: how to do a map and min?
+	int minRequest = mailserverTopics.at(0).lastRequest;
+	QVector<QString> topicList;
+	for(int i = 0; i < mailserverTopics.size(); ++i)
+	{
+		topicList << mailserverTopics.at(i).topic;
+		if(mailserverTopics.at(i).lastRequest < minRequest)
+		{
+			minRequest = mailserverTopics.at(i).lastRequest;
+		}
+	}
+
+	if(!isMailserverAvailable())
+		return; // TODO: add a pending request
+
+	requestMessages(topicList, minRequest);
+	emit requestSent();
+}
+
+void MailserverCycle::addChannelTopic(Topic t)
+{
+	QMutexLocker locker(&m_mutex);
+
+	QVector<Topic> topics = getMailserverTopics();
+	bool found = false;
+	for(int i = 0; i < topics.size(); ++i)
+	{
+		if(topics.at(i).topic == t.topic)
+		{
+			found = true;
+			if(!topics.at(i).chatIds.contains(t.chatIds[0]))
+			{
+				// Topic exist but chat Id is not contained in topic
+				auto existingTopic = topics[i];
+				existingTopic.chatIds << t.chatIds[0];
+				addMailserverTopic(existingTopic);
+			}
+			break;
+		}
+	}
+
+	if(!found)
+	{
+		// Topic does not exist
+		addMailserverTopic(t);
+	}
+
+	QVector<QString> topicList;
+	topicList << t.topic;
+
+	if(!isMailserverAvailable())
+		return; // TODO: add a pending request
+
+	requestMessages(topicList);
+	emit requestSent();
+}
+
+bool MailserverCycle::isMailserverAvailable()
+{
+	return m_activeMailserver != "" && nodes.contains(m_activeMailserver) && nodes[m_activeMailserver] == MailserverStatus::Trusted;
 }

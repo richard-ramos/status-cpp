@@ -230,33 +230,6 @@ StackLayout {
             height: chatInput.height
             Layout.preferredHeight: height
             color: "transparent"
-            
-            Connections {
-                target: chatsModel
-                onLoadingMessagesChanged:
-                    if(value){
-                        loadingMessagesIndicator.active = true
-                    } else {
-                         timer.setTimeout(function(){ 
-                            loadingMessagesIndicator.active = false;
-                        }, 5000);
-                    }
-            }
-
-            Loader {
-                id: loadingMessagesIndicator
-                active: false // chatsModel.loadingMessages // TODO:
-                sourceComponent: loadingIndicator
-                anchors.right: parent.right
-                anchors.bottom: chatInput.top
-                anchors.rightMargin: Style.current.padding
-                anchors.bottomMargin: Style.current.padding
-            }
-
-            Component {
-                id: loadingIndicator
-                LoadingAnimation {}
-            }
 
             StatusChatInput {
                 id: chatInput

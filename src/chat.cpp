@@ -16,6 +16,7 @@
 #include <QVariant>
 #include <QtConcurrent>
 #include <stdexcept>
+#include "mailserver-cycle.hpp"
 
 Chat::Chat(QString id,
 		   ChatType chatType,
@@ -168,6 +169,15 @@ void Chat::loadFilter()
 			if(value["chatId"].toString() == m_id)
 			{
 				m_filterId = value["filterId"].toString();
+
+				Topic t;
+				t.topic = value["topic"].toString();
+				t.discovery = value["discovery"].toBool();
+				t.negotiated = value["negotiated"].toBool();
+				t.chatIds << value["chatId"].toString();
+				t.lastRequest = 1;
+
+				emit topicCreated(t);
 				break;
 			}
 		}

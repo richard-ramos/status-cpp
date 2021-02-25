@@ -36,6 +36,7 @@
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
 #include "settings.hpp"
+#include "mailserver-cycle.hpp"
 #include "status.hpp"
 
 int main(int argc, char* argv[])
@@ -108,6 +109,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
 
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
+	qRegisterMetaType<Topic>("Topic");
 
 	qRegisterMetaType<ChatType>("ChatType");
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");

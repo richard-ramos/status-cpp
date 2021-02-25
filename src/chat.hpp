@@ -12,6 +12,7 @@
 #include <QVector>
 #include "message.hpp"
 #include <QMutex>
+#include "mailserver-cycle.hpp"
 
 class Chat : public QObject
 {
@@ -62,6 +63,8 @@ signals:
 	void sendingMessage();
 	void sendingMessageFailed();
 	void messagesLoaded();
+	void topicCreated(Topic t);
+
 
 private:
 	QMutex m_mutex;

@@ -11,5 +11,6 @@ Timer {
             timer.triggered.disconnect(release); // This is important as well
         });
         timer.start();
+        return timer;
     }
 }

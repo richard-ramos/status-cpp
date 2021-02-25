@@ -32,7 +32,7 @@ Settings::Settings(QObject* parent)
 	QObject::connect(this, &Settings::initialized, this, &Settings::startMailserverCycle);
 	QObject::connect(Status::instance(), &Status::logout, timer, &QTimer::stop);
 	QObject::connect(Status::instance(), &Status::discoverySummary, &mailserverCycle, &MailserverCycle::peerSummaryChange);
-
+	QObject::connect(&mailserverCycle, &MailserverCycle::requestSent, this, &Settings::mailserverRequestSent);
 }
 
 void Settings::startMailserverCycle()
