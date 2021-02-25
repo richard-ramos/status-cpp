@@ -32,7 +32,6 @@ void ChatsModel::init()
 {
 	loadChats();
 	startMessenger();
-	Settings::instance()->mailserverCycle.initialMailserverRequest();
 }
 
 void ChatsModel::setupMessageModel()

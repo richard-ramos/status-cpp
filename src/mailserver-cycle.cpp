@@ -28,12 +28,14 @@
 
 MailserverCycle::MailserverCycle(QObject* parent)
 	: QThread(parent)
-{ }
+{
+	QObject::connect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
+}
 
 MailserverCycle::~MailserverCycle()
 {
 	wait();
-	qDebug() << "Stopping mailserver cycle thread";
+	qDebug() << "MailserverCycle::~MailserverCycle - Stopping mailserver cycle thread";
 }
 
 void MailserverCycle::work()
@@ -57,13 +59,13 @@ void MailserverCycle::updateMailserver(QString enode)
 
 void MailserverCycle::connect(QString enode)
 {
-	qDebug() << "Connecting to mailserver: " << enode;
+	qDebug() << "MailserverCycle::connect - " << enode;
 
 	bool mailserverTrusted = false;
 
 	if(!getMailservers().contains(enode))
 	{
-		qWarning() << "Mailserver not known";
+		qWarning() << "MailserverCycle::connect - Mailserver not known";
 		return;
 	}
 
@@ -97,7 +99,7 @@ void MailserverCycle::connect(QString enode)
 
 	if(mailserverTrusted)
 	{
-		qDebug() << "Mailserver Available!";
+		qDebug() << "MailserverCycle::connect - Mailserver Available!";
 		emit mailserverAvailable();
 	}
 }
@@ -108,7 +110,7 @@ void MailserverCycle::timeoutConnection(QString enode)
 	if(nodes[enode] != MailserverStatus::Connecting)
 		return;
 
-	qDebug() << "Mailserver connection attempt failed due to timeout";
+	qDebug() << "MailserverCycle::timeoutConnection - Connection attempt failed due to timeout";
 	nodes[enode] == MailserverStatus::Disconnected;
 	if(get_activeMailserver() == enode)
 		update_activeMailserver("");
@@ -132,7 +134,7 @@ QVector<QString> MailserverCycle::getMailservers()
 
 void MailserverCycle::findNewMailserver()
 {
-	qDebug() << "Finding a new mailserver...";
+	qDebug() << "MailserverCycle::findNewMailserver";
 
 	const auto pingResponse =
 		Status::instance()
@@ -150,7 +152,7 @@ void MailserverCycle::findNewMailserver()
 
 	if(availableMailservers.count() == 0)
 	{
-		qWarning() << "No mailservers available";
+		qWarning() << "MailserverCycle::findNewMailserver - No mailservers available";
 		return;
 	}
 
@@ -168,7 +170,7 @@ void MailserverCycle::findNewMailserver()
 
 void MailserverCycle::disconnectActiveMailserver()
 {
-	qDebug() << "Disconnecting active mailserver: " << get_activeMailserver();
+	qDebug() << "MailserverCycle::disconnectActiveMailserver - " << get_activeMailserver();
 	nodes[get_activeMailserver()] = MailserverStatus::Disconnected;
 	const auto pingResponse =
 		Status::instance()->callPrivateRPC("admin_removePeer", QJsonArray{get_activeMailserver()}.toVariantList()).toJsonObject();
@@ -183,11 +185,11 @@ void MailserverCycle::run()
 
 	if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Trusted)
 	{
-		qDebug() << "Mailserver is already connected and trusted. Skipping iteration";
+		qDebug() << "MailserverCycle::run - Mailserver is already connected and trusted. Skipping iteration";
 		return;
 	}
 
-	qDebug() << "Automatically switching mailserver";
+	qDebug() << "MailserverCycle::run - Automatically switching mailserver";
 
 	if(get_activeMailserver() != "")
 		disconnectActiveMailserver();
@@ -215,7 +217,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 			nodes[it.key()] = MailserverStatus::Disconnected;
 			if(get_activeMailserver() == it.key())
 			{
-				qWarning() << "Active mailserver disconnected! " << it.key();
+				qWarning() << "MailserverCycle::peerSummaryChange - Active mailserver disconnected! " << it.key();
 				update_activeMailserver("");
 			}
 		}
@@ -242,7 +244,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 
 	if(available)
 	{
-		qDebug() << "Mailserver available!";
+		qDebug() << "MailserverCycle::peerSummaryChange - Mailserver available!";
 		emit mailserverAvailable();
 	}
 }
@@ -287,7 +289,7 @@ QString MailserverCycle::generateSymKeyFromPassword()
 
 void MailserverCycle::requestMessages(QVector<QString> topicList, qint64 fromValue, qint64 toValue, bool force)
 {
-	qDebug() << "Requesting messages from: " << get_activeMailserver();
+	qDebug() << "MailserverCycle::requestMessages - " << get_activeMailserver();
 	QString generatedSymKey = generateSymKeyFromPassword();
 	requestMessagesCall(topicList, generatedSymKey, get_activeMailserver(), 1000, fromValue, toValue, force);
 }
@@ -329,7 +331,9 @@ void MailserverCycle::requestMessagesCall(
 
 void MailserverCycle::initialMailserverRequest()
 {
-	QMutexLocker locker(&m_mutex);
+	qDebug() << "MailserverCycle::initialMailserverRequest";
+
+	QObject::disconnect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
 
 	QVector<Topic> mailserverTopics = getMailserverTopics();
 
