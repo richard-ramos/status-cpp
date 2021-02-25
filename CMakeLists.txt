@@ -104,41 +104,27 @@ add_definitions(-DUSE_INSTALL_TARGET)
 # End: Qt
 ################################################################################
 
-set(SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/status.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/settings.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/onboarding-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/login-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/chats-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/chat.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/chat-type.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/messages-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/message.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/message-type.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/content-type.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/constants.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/contact.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/contacts-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/mailserver-cycle.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/ens-utils.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/message-format.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/custom-networks-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/ens-model.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
-#    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
-
-)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib-qt-qml-tricks/include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/
-
 )
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/contacts)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/chat)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/ens)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/login)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/profile)
+
+set(SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
+
+)
 
 add_executable(status-cpp 
     ${SOURCES}
@@ -154,27 +140,22 @@ target_include_directories(status-cpp PUBLIC include)
 
 target_link_libraries(status-cpp
     PRIVATE
-        OpenSSL::OpenSSL
-        std::filesystem
-        status
-        qrcodegen
         Qt5::Core
         Qt5::Widgets
-        Qt5::Gui
         Qt5::Quick
-        Qt5::Qml
-        Qt5::Concurrent
+        chat
+        contacts
+        core
+        ens
+        login
+        profile
+        OpenSSL::OpenSSL
+        # std::filesystem
+        status
+        qrcodegen
 )
 
 target_compile_features(status-cpp
     PRIVATE
         cxx_std_17
-)
- 
-
-# Build constants
-file (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/resources/infura_key" INFURA_KEY)
-target_compile_definitions(status-cpp
-    PRIVATE
-        INFURA_KEY="${INFURA_KEY}"
 )
