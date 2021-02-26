@@ -5,9 +5,10 @@ import "../../../imports"
 import "../../../shared"
 import "../Profile/Sections"
 import "."
+import im.status.desktop 1.0
 
 Rectangle {
-    visible: !profileModel.mnemonic.isBackedUp
+    visible: !StatusSettings.isMnemonicBackedUp
     height: visible ? 32 : 0
     Layout.fillWidth: true
     color: Style.current.red

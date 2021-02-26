@@ -69,6 +69,7 @@ void Settings::init()
 	m_fleet = settings[settingsMap[SettingTypes::Fleet]].toString();
 	m_networks = settings[settingsMap[SettingTypes::Networks_Networks]].toArray();
 	m_walletRootAddress = settings[settingsMap[SettingTypes::WalletRootAddress]].toString();
+	m_signingPhrase = settings[settingsMap[SettingTypes::SigningPhrase]].toString();
 
 	if(!settings[settingsMap[SettingTypes::Usernames]].isUndefined())
 	{
@@ -460,6 +461,19 @@ QString Settings::walletRootAddress()
 		return QString();
 	}
 	QString result(m_walletRootAddress);
+	lock.unlock();
+	return result;
+}
+
+QString Settings::signingPhrase()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QString();
+	}
+	QString result(m_signingPhrase);
 	lock.unlock();
 	return result;
 }

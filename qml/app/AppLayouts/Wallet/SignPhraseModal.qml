@@ -5,6 +5,7 @@ import "../../../imports"
 import "../../../shared"
 import "../../../shared/status"
 import "."
+import im.status.desktop 1.0
 
 ModalPopup {
     id: signPhrasePopup
@@ -47,7 +48,7 @@ ModalPopup {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 15
-                text: walletModel.signingPhrase
+                text: StatusSettings.SigningPhrase
             }
         }
 

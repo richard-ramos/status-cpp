@@ -20,6 +20,7 @@ class Settings : public QObject
 	Q_PROPERTY(int Appearance READ appearance WRITE setAppearance NOTIFY appearanceChanged)
 	Q_PROPERTY(QString CurrentNetwork READ currentNetwork WRITE setCurrentNetwork NOTIFY currentNetworkChanged)
 	Q_PROPERTY(QString Fleet READ fleet WRITE setFleet NOTIFY fleetChanged)
+	Q_PROPERTY(QString SigningPhrase READ signingPhrase CONSTANT)
 
 public:
 	static Settings* instance();
@@ -118,6 +119,8 @@ public:
 
 	QJsonObject getNodeConfig();
 
+	QString signingPhrase();
+
 
 signals:
 	void initialized();
@@ -145,6 +148,7 @@ private:
 	QString m_fleet;
 	QString m_walletRootAddress;
 	QJsonArray m_networks;
+	QString m_signingPhrase;
 	QVector<QString> m_usernames;
 
 	int m_appearance;
