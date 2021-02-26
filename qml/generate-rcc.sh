@@ -1,5 +1,5 @@
 #!/bin/sh
-cd ./ui/
+
 QRC=./resources.qrc
 echo '<!DOCTYPE RCC>' > $QRC
 echo '<RCC version="1.0">' >> $QRC

@@ -852,8 +852,12 @@
       <file>./imports/Backpressure/README.md</file>
       <file>./imports/Backpressure/Backpressure.qml</file>
       <file>./imports/qmldir</file>
+      <file>./imports/CID/cid.min.js</file>
+      <file>./imports/UserIdentity.qml</file>
       <file>./imports/Utils.qml</file>
       <file>./imports/Theme.qml</file>
+      <file>./imports/RPC/IdentityImage.qml</file>
+      <file>./imports/RPC/RpcClient.qml</file>
       <file>./imports/twemoji/twemoji.js</file>
       <file>./imports/twemoji/26x26/1f469-1f3fb-200d-1f91d-200d-1f469-1f3fe.png</file>
       <file>./imports/twemoji/26x26/1f625.png</file>

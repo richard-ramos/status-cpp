@@ -236,9 +236,12 @@ void Contact::update(Contact* newContact)
 	update_tributeToTalk(newContact->get_tributeToTalk());
 	update_localNickname(newContact->get_localNickname());
 
-	// TODO: test this when syncing
 	m_images = newContact->getImages();
 	m_systemTags = newContact->getSystemTags();
-	
-	imageChanged(m_id);
+
+
+	// TODO: find a way to trigger these signals if values are different
+	emit contactToggled(m_id);
+	emit blockedToggled(m_id);
+	emit imageChanged(m_id);
 }

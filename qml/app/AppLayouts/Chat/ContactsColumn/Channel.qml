@@ -14,6 +14,7 @@ Rectangle {
     property string unviewedMessagesCount: "2"
     property string identicon: ""
     property string chatColor: ""
+    property var contact
     property bool hasMentions: false
     property int chatType: ChatType.Public
     property string searchStr: ""
@@ -23,20 +24,7 @@ Rectangle {
     property bool hovered: false
     property bool enableMouseArea: true
 
-    property string profileImage: chatType === ChatType.OneToOne ? appMain.getProfileImage(chatId) || ""  : ""
-
-    /*
-    TODO:
-    Connections {
-        enabled: chatType === Constants.chatTypeOneToOne
-        target: profileModel.contacts.list
-        onContactChanged: {
-            if (pubkey === wrapper.chatId) {
-                wrapper.profileImage = appMain.getProfileImage(wrapper.chatId)
-            }
-        }
-    }
-    */
+    property string profileImage: chatType == ChatType.OneToOne ? appMain.getProfileImage(contact) || ""  : ""
 
     id: wrapper
     color: {
@@ -64,7 +52,9 @@ Rectangle {
         chatColor: wrapper.chatColor
         chatName: wrapper.name
         chatType: wrapper.chatType
-        identicon: wrapper.profileImage || wrapper.identicon
+        identicon: {
+            return wrapper.profileImage || wrapper.identicon
+        }
         anchors.left: parent.left
         anchors.leftMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.verticalCenter: parent.verticalCenter
@@ -75,7 +65,7 @@ Rectangle {
         width: 16
         height: 16
         fillMode: Image.PreserveAspectFit
-        source: "../../../img/channel-icon-" + (wrapper.chatType === Constants.chatTypePublic ? "public-chat.svg" : "group.svg")
+        source: "../../../img/channel-icon-" + (wrapper.chatType == ChatType.Public ? "public-chat.svg" : "group.svg")
         anchors.left: contactImage.right
         anchors.leftMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.top: !isCompact ? parent.top : undefined
@@ -86,8 +76,8 @@ Rectangle {
 
     StyledText {
         id: contactInfo
-        text: wrapper.chatType !== Constants.chatTypePublic ?
-                  Emoji.parse(Utils.removeStatusEns(Utils.filterXSS(wrapper.name))) :
+        text: wrapper.chatType != ChatType.Public ?
+                  Emoji.parse(Utils.getUsernameLabel(wrapper.contact)) :
                   "#" + Utils.filterXSS(wrapper.name)
         anchors.right: contactTime.left
         anchors.rightMargin: Style.current.smallPadding

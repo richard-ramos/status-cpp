@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import "../../../../../shared"
 import "../../../../../imports"
+import im.status.desktop 1.0
 
 Column {
     property string authorCurrentMsg: "authorCurrentMsg"
@@ -21,28 +22,28 @@ Column {
         width: 120
         height: 120
         radius: 120
-        border.width: chat.chatType === Constants.chatTypeOneToOne ? 2 : 0
+        border.width: chat.chatType == ChatType.OneToOne ? 2 : 0
         border.color: Style.current.border
         color: {
-            if (chat.chatType === Constants.chatTypeOneToOne) {
+            if (chat.chatType == ChatType.OneToOne) {
                 return Style.current.transparent
             }
             return chat.color
         }
 
         RoundedImage {
-            visible: chat.chatType === Constants.chatTypeOneToOne
+            visible: chat.chatType == ChatType.OneToOne
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             width: 120
             height: 120
-            source: channelIdentifier.profileImage || chatsModel.activeChannel.identicon
+            source: chat.chatType == ChatType.OneToOne ? appMain.getProfileImage(chat.contact, true) : ""
             smooth: false
             antialiasing: true
         }
 
         StyledText {
-            visible: chat.chatType !== Constants.chatTypeOneToOne
+            visible: chat.chatType != ChatType.OneToOne
             text: Utils.removeStatusEns((chat.name.charAt(0) === "#" ? chat.name.charAt(1) : chat.name.charAt(0)).toUpperCase())
             opacity: 0.7
             font.weight: Font.Bold
@@ -71,7 +72,6 @@ Column {
 
     Item {
         id: channelDescription
-        visible: descText.visible
         width: visible ? 330 : 0
         height: visible ? childrenRect.height : 0
         anchors.horizontalCenter: parent.horizontalCenter
@@ -84,7 +84,7 @@ Column {
                     //% "Welcome to the beginning of the <span style='color: %1'>%2</span> group!"
                     case Constants.chatTypePrivateGroupChat: return qsTrId("welcome-to-the-beginning-of-the--span-style--color---1---2--span--group-").arg(Style.current.textColor).arg(chatsModel.activeChannel.name);
                     //% "Any messages you send here are encrypted and can only be read by you and <span style='color: %1'>%2</span>"
-                    case Constants.chatTypeOneToOne: return qsTrId("any-messages-you-send-here-are-encrypted-and-can-only-be-read-by-you-and--span-style--color---1---2--span-").arg(Style.current.textColor).arg(Utils.removeStatusEns(chatsModel.activeChannel.name))
+                    case ChatType.OneToOne: return qsTrId("any-messages-you-send-here-are-encrypted-and-can-only-be-read-by-you-and--span-style--color---1---2--span-").arg(Style.current.textColor).arg(Utils.getUsernameLabel(chat.contact));
                     default: return "";
                 }
             }
@@ -98,7 +98,7 @@ Column {
     }
 
     Item {
-        visible: chat.chatType === Constants.chatTypePrivateGroupChat && !chat.isMember
+        visible: chat.chatType == Constants.chatTypePrivateGroupChat && !chat.isMember
         anchors.horizontalCenter: parent.horizontalCenter
         width: joinChat.width
         height: visible ? 100 : 10

@@ -46,6 +46,7 @@ Item {
             searchStr: channelListContent.searchStr
             chatColor: model.color
             chatId: model.chatId
+            contact: model.contact
         }
     }
 

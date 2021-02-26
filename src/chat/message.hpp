@@ -37,6 +37,7 @@ public:
 	QML_READONLY_PROPERTY(QString, chatId)
 	QML_READONLY_PROPERTY(QString, clock)
 	// commandParameters: null
+	QML_READONLY_PROPERTY(QString, outgoingStatus);
 	QML_READONLY_PROPERTY(ContentType, contentType)
 	QML_READONLY_PROPERTY(QString, ensName)
 	QML_READONLY_PROPERTY(QString, from)

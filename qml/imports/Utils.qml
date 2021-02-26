@@ -344,9 +344,9 @@ QtObject {
         }
 
         if(contact.ensVerified && contact.name !== ""){
-            return removeStatusEns(contact.name)
+            return removeStatusEns(filterXSS(contact.name))
         } else if (contact.localNickname !== "") {
-            return contact.localNickname;
+            return filterXSS(contact.localNickname);
         } else {
             return contact.alias
         }

@@ -89,9 +89,8 @@ ModalPopup {
         doJoin(pk, ensName)
     }
     function doJoin(pk, ensName) {
-        // TODO: 
-        if(Utils.isChatKey(pk)){
-            chatsModel.joinChat(pk, Constants.chatTypeOneToOne);
+        if(Utils.isChatKey(ensName)){
+            chatsModel.join(ChatType.OneToOne, pk);
         } else {
             chatsModel.joinChatWithENS(pk, ensName);
         }

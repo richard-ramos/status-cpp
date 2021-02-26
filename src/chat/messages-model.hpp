@@ -28,8 +28,8 @@ public:
 		ParsedText = Qt::UserRole + 9,
 		Sticker = Qt::UserRole + 10,
 		ResponseTo = Qt::UserRole + 11,
-		LinkUrls = Qt::UserRole + 12
-		// OutgoingStatus
+		LinkUrls = Qt::UserRole + 12,
+		OutgoingStatus = Qt::UserRole + 13
 		// ResponseTo
 		// Index?
 		// Image

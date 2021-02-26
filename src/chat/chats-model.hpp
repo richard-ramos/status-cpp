@@ -28,7 +28,8 @@ public:
 		UnreadMessages = Qt::UserRole + 10,
 		HasMentions = Qt::UserRole + 11,
 		Description = Qt::UserRole + 12,
-		Messages = Qt::UserRole + 13
+		Messages = Qt::UserRole + 13,
+		Contact = Qt::UserRole + 14
 	};
 
 	explicit ChatsModel(QObject* parent = nullptr);

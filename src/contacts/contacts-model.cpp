@@ -1,5 +1,7 @@
 #include "contacts-model.hpp"
 #include "contact.hpp"
+#include "chat.hpp"
+#include "chat-type.hpp"
 #include "message.hpp"
 #include "status.hpp"
 #include "utils.hpp"
@@ -152,6 +154,23 @@ Contact* ContactsModel::upsert(Message* msg)
 	{
 		Contact* newContact = new Contact(msg->get_from(), msg->get_ensName());
 		msg->update_contact(newContact);
+		insert(newContact);
+		return newContact;
+	}
+}
+
+
+Contact* ContactsModel::upsert(Chat* chat)
+{
+	if(m_contactsMap.contains(chat->get_id()))
+	{
+		chat->update_contact(m_contactsMap[chat->get_id()]);
+		return m_contactsMap[chat->get_id()];
+	}
+	else
+	{
+		Contact* newContact = new Contact(chat->get_id());
+		chat->update_contact(newContact);
 		insert(newContact);
 		return newContact;
 	}

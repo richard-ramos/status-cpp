@@ -37,7 +37,7 @@ PopupMenu {
     Action {
         enabled: channelContextMenu.contextChannel.chatType != ChatType.Public
         text: {
-            if (channelContextMenu.contextChannel.chatType == Constants.chatTypeOneToOne) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
                 //% "View Profile"
                 return qsTrId("view-profile")
             }
@@ -52,15 +52,10 @@ PopupMenu {
         icon.width: 16
         icon.height: 16
         onTriggered: {
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
-                const userProfileImage = appMain.getProfileImage(channelContextMenu.contextChannel.id)
-                return openProfilePopup(
-                  channelContextMenu.contextChannel.name,
-                  channelContextMenu.contextChannel.id,
-                  userProfileImage || channelContextMenu.contextChannel.identicon
-                )
+            if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
+                openProfilePopup(true, contactsModel.get_or_create(channelContextMenu.contextChannel.id))
             }
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypePrivateGroupChat) {
+            if (channelContextMenu.contextChannel.chatType == Constants.chatTypePrivateGroupChat) {
                 return groupInfoPopup.openMenu(channelContextMenu.contextChannel)
             }
         }

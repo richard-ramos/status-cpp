@@ -39,6 +39,7 @@ Message::Message(const QJsonValue data, QObject* parent)
 	, m_whisperTimestamp(data["whisperTimestamp"].toString())
 	, m_parsedText(data["parsedText"].toArray())
 	, m_responseTo(data["responseTo"].toString())
+	, m_outgoingStatus(data["outgoingStatus"].toString())
 
 {
 	int contentType = data["contentType"].toInt();

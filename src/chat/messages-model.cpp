@@ -49,7 +49,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[Sticker] = "sticker";
 	roles[ResponseTo] = "responseTo";
 	roles[LinkUrls] = "linkUrls";
-
+	roles[OutgoingStatus] = "outgoingStatus";
 	return roles;
 }
 
@@ -95,6 +95,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case ParsedText: return QVariant(Messages::Format::renderBlock(msg, m_contacts));
 	case Sticker: return QVariant(Messages::Format::decodeSticker(msg));
 	case LinkUrls: return QVariant(Messages::Format::linkUrls(msg));
+	case OutgoingStatus: return QVariant(msg->get_outgoingStatus());
 	}
 
 	return QVariant();

@@ -17,27 +17,19 @@ Item {
     property int identiconSize: 40
     property bool isCompact: false
     property bool muted: false
+    property var contact
 
-    property string profileImage: chatType === ChatType.OneToOne ? appMain.getProfileImage(chatId) || ""  : ""
+    property string profileImage: chatType == ChatType.OneToOne ? appMain.getProfileImage(contact, true) || ""  : ""
 
     height: 48
     width: nameAndInfo.width + chatIdenticon.width + Style.current.smallPadding
-
-    Connections {
-        enabled: chatType === ChatType.OneToOne
-        target: profileModel.contacts.list
-        onContactChanged: {
-            if (pubkey === root.chatId) {
-                root.profileImage = appMain.getProfileImage(root.chatId)
-            }
-        }
-    }
 
     StatusIdenticon {
         id: chatIdenticon
         chatType: root.chatType
         chatName: root.chatName
-        identicon: root.profileImage || root.identicon
+        chatColor: root.chatColor
+        identicon: root.profileImage
         width: root.isCompact ? 20 : root.identiconSize
         height: root.isCompact ? 20 : root.identiconSize
         anchors.verticalCenter: parent.verticalCenter
@@ -56,7 +48,7 @@ Item {
             text: {
                 switch(root.chatType) {
                     case ChatType.Public: return "#" + root.chatName;
-                    case ChatType.OneToOne: return Utils.removeStatusEns(root.chatName)
+                    case ChatType.OneToOne: return Utils.getUsernameLabel(contact)
                     default: return root.chatName
                 }
             }
@@ -95,18 +87,6 @@ Item {
             }
         }
 
-        Connections {
-            target: profileModel.contacts
-            onContactChanged: {
-                if(root.chatId === publicKey){
-                    // Hack warning: Triggering reload to avoid changing the current text binding
-                    var tmp = chatId;
-                    chatId = "";
-                    chatId = tmp;
-                }
-            }
-        }
-
         StyledText {
             id: chatInfo
             color: Style.current.darkGrey
@@ -114,7 +94,7 @@ Item {
                 switch(root.chatType){
                     //% "Public chat"
                     case ChatType.Public: return qsTrId("public-chat")
-                    case ChatType.OneToOne: return (profileModel.contacts.isAdded(root.chatId) ?
+                    case ChatType.OneToOne: return (contact.isAdded ?
                     //% "Contact"
                     qsTrId("chat-is-a-contact") :
                     //% "Not a contact"

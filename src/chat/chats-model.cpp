@@ -15,6 +15,7 @@
 #include <QQmlApplicationEngine>
 #include <algorithm>
 #include <array>
+#include "contact.hpp"
 
 using namespace Messages;
 
@@ -40,6 +41,7 @@ void ChatsModel::setupMessageModel()
 	{
 		chat->get_messages()->set_contacts(m_contacts);
 		chat->get_messages()->loadMessages();
+		m_contacts->upsert(chat);
 	}
 }
 
@@ -58,6 +60,7 @@ QHash<int, QByteArray> ChatsModel::roleNames() const
 	roles[Timestamp] = "timestamp";
 	roles[Messages] = "messages";
 	roles[LastMessage] = "lastMessage";
+	roles[Contact] = "contact";
 
 	return roles;
 }
@@ -88,6 +91,8 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case Timestamp: return QVariant(chat->get_timestamp());
 	case LastMessage: return QVariant(Messages::Format::renderSimpleText(chat->get_lastMessage(), m_contacts));
 	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
+	case Contact: return QVariant(chat->get_chatType() == ChatType::OneToOne ? QVariant::fromValue(m_contacts->upsert(chat)) : "");
+
 	}
 	// TODO: case HasMentions: return QVariant(chat->get_hasMentions());
 	//TODO: case ContentType: return QVariant(chat->get_contentType());
@@ -112,6 +117,8 @@ void ChatsModel::join(ChatType chatType, QString id)
 		{
 			Chat* c = new Chat(id, chatType);
 			c->save();
+
+			m_contacts->upsert(c);
 
 			QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
 
@@ -225,12 +232,14 @@ void ChatsModel::update(QJsonValue updates)
 		{
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			Chat* newChat = new Chat(chatJson);
+			m_contacts->upsert(newChat);
 			insert(newChat);
 			emit added(newChat->get_chatType(), newChat->get_id(), m_chats.count() - 1);
 			endInsertRows();
 		}
 		// TODO: tell @cammellos that the messages are not returning the ens name
 		m_contacts->upsert(m_chatMap[chatId]->get_lastMessage());
+		m_contacts->upsert(m_chatMap[chatId]);
 	}
 
 	// Messages

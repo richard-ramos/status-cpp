@@ -18,7 +18,7 @@ Rectangle {
     border.width: 1
 
     Loader {
-      property bool isGroupChatOrOneToOne: chat.chatType === ChatType.PrivateGroupChat || chat.chatType === ChatType.OneToOne
+      property bool isGroupChatOrOneToOne: chat.chatType == ChatType.PrivateGroupChat || chat.chatType == ChatType.OneToOne
       anchors.left: parent.left
       anchors.leftMargin: this.isGroupChatOrOneToOne ? Style.current.padding : Style.current.padding + 4
       anchors.top: parent.top
@@ -29,11 +29,12 @@ Rectangle {
     Component {
         id: chatInfoButton
         StatusChatInfoButton {
-            chatId: chat.id
-            chatColor: chat.color;
+            chatId: chat.chatId
+            chatColor: chat.color
             chatName: chat.name
+            contact: chat.contact
             chatType: chat.chatType
-            identicon: chatsModel.activeChannel.identicon
+            identicon: chat.identicon
             muted: chat.muted
             identiconSize: 36
 
@@ -43,8 +44,7 @@ Rectangle {
                         groupInfoPopup.open()
                         break;
                     case ChatType.OneToOne:
-                        const profileImage = appMain.getProfileImage(chatsModel.activeChannel.id)
-                        openProfilePopup(chatsModel.activeChannel.name, chatsModel.activeChannel.id, profileImage || chatsModel.activeChannel.identicon)
+                        openProfilePopup(true, contactsModel.get_or_create(chat.chatId))
                         break;
                 }
             }

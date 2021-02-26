@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chat-type.hpp"
+#include "contact.hpp"
 #include "messages-model.hpp"
 #include <QDebug>
 #include <QJsonObject>
@@ -57,6 +58,7 @@ public:
 	// ensName
 
 	QML_READONLY_PROPERTY(MessagesModel*, messages)
+	QML_READONLY_PROPERTY(Contact*, contact)
 
 signals:
 	void left(QString chatId);

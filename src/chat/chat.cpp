@@ -77,6 +77,7 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	, m_deletedAtClockValue(data["deletedAtClockValue"].toString())
 	, m_unviewedMessagesCount(data["unviewedMessagesCount"].toInt())
 	, m_muted(data["muted"].toBool())
+	, m_identicon(data["identicon"].toString())
 {
 	int chatType = data["chatType"].toInt();
 	if(chatType < ChatType::Unknown || chatType > ChatType::ComunityChat)

@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtGraphicalEffects 1.13
 import "../imports"
 import "../shared/status"
+import im.status.desktop 1.0
 
 Rectangle {
     id: copyToClipboardButton

@@ -6,7 +6,10 @@
 #include <QHash>
 #include <QVector>
 
+class Chat;
+
 using namespace Messages;
+
 class ContactsModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -37,6 +40,7 @@ public:
 	Q_INVOKABLE void push(Contact* contact);
 
 	Contact* upsert(Message* msg);
+	Contact* upsert(Chat* chat);
 
 signals:
 	void updated(QString contactId);

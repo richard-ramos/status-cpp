@@ -122,7 +122,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
-#    "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc"
+   # "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc" # This results in a very slow compilation time. We must split up the resource.qrc file to have one per folder to speed up the process
 
 )
 
