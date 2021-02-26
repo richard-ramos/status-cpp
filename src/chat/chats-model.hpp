@@ -55,6 +55,7 @@ signals:
 	void joinError(QString message);
 	void joined(ChatType chatType, QString id, int index);
 	void added(ChatType chatType, QString id, int index);
+	void left(int index);
 
 private:
 	void startMessenger();

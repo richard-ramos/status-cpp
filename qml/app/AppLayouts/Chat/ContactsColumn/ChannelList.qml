@@ -47,20 +47,6 @@ Item {
             chatColor: model.color
             chatId: model.chatId
         }
-        onCountChanged: {
-            if (count > 0 && chatsModel.activeChannelIndex > -1) {
-                // If a chat is added or removed, we set the current index to the first value
-                chatsModel.activeChannelIndex = 0;
-                currentIndex = 0;
-            } else {
-                if (chatsModel.activeChannelIndex > -1) {
-                    chatGroupsListView.currentIndex = 0;
-                } else {
-                    // Initial state. No chat has been selected yet
-                    chatGroupsListView.currentIndex = -1;
-                }
-            }
-        }
     }
 
     Rectangle {

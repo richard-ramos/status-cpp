@@ -127,6 +127,11 @@ void ChatsModel::join(ChatType chatType, QString id)
 			emit joinError(e.what());
 		}
 		qDebug() << "ChatsModel::join - Chat saved";
+	} else {
+		// Channel already joined
+		int chatIndex = m_chats.indexOf(m_chatMap[id]);
+		emit joined(chatType, id, chatIndex);
+
 	}
 }
 
@@ -183,6 +188,7 @@ void ChatsModel::remove(int row)
 	delete m_chats[row];
 	m_chats.remove(row);
 	endRemoveRows();
+	left(row);
 }
 
 void ChatsModel::markAllMessagesAsRead(int row)

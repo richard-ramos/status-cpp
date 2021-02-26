@@ -93,6 +93,19 @@ SplitView {
             }
         }
     }
+
+    Connections {
+        target: chatsModel
+        onJoined: {
+            contactColumnLoader.item.list.currentIndex = index;
+            chatMsgStackLayout.currentIndex = index + 1;
+        }
+        onLeft: {
+            // Use `index` if you want to show a different channel
+            contactColumnLoader.item.list.currentIndex = 0;
+            chatMsgStackLayout.currentIndex = 0;
+        }
+    }
    
 
     function openProfilePopup(showFooter, contact, parentPopup){
