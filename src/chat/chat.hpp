@@ -75,6 +75,9 @@ public:
 	Q_INVOKABLE void sendMessage(QString message, QString replyTo, bool isEmoji);
 	Q_INVOKABLE void leave();
 	Q_INVOKABLE void loadMoreMessages();
+	Q_INVOKABLE void deleteChatHistory();
+	Q_INVOKABLE void markAllMessagesAsRead();
+
 
 	bool operator==(const Chat &c);
 
@@ -82,6 +85,5 @@ public:
 	void loadFilter();
 	void removeFilter();
 	void setFilterId(QString filterId);
-	void deleteChatHistory();
 
 };

@@ -1,10 +1,11 @@
 #include "chats-model.hpp"
 #include "chat-type.hpp"
 #include "chat.hpp"
+#include "mailserver-cycle.hpp"
 #include "message-format.hpp"
 #include "message.hpp"
-#include "status.hpp"
 #include "settings.hpp"
+#include "status.hpp"
 #include "utils.hpp"
 #include <QAbstractListModel>
 #include <QDebug>
@@ -14,7 +15,6 @@
 #include <QQmlApplicationEngine>
 #include <algorithm>
 #include <array>
-#include "mailserver-cycle.hpp"
 
 using namespace Messages;
 
@@ -170,7 +170,8 @@ void ChatsModel::loadChats()
 
 Chat* ChatsModel::get(int row) const
 {
-	if(row < 0) return nullptr;
+	if(row < 0)
+		return nullptr;
 	return m_chats[row];
 }
 
@@ -182,6 +183,20 @@ void ChatsModel::remove(int row)
 	delete m_chats[row];
 	m_chats.remove(row);
 	endRemoveRows();
+}
+
+void ChatsModel::markAllMessagesAsRead(int row)
+{
+	m_chats[row]->markAllMessagesAsRead();
+	QModelIndex idx = createIndex(row, 0);
+	dataChanged(idx, idx);
+}
+
+void ChatsModel::deleteChatHistory(int row)
+{
+	m_chats[row]->deleteChatHistory();
+	QModelIndex idx = createIndex(row, 0);
+	dataChanged(idx, idx);
 }
 
 void ChatsModel::update(QJsonValue updates)

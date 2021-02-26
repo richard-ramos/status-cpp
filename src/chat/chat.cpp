@@ -1,6 +1,7 @@
 #include "chat.hpp"
 #include "chat-type.hpp"
 #include "content-type.hpp"
+#include "mailserver-cycle.hpp"
 #include "messages-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
@@ -16,7 +17,6 @@
 #include <QVariant>
 #include <QtConcurrent>
 #include <stdexcept>
-#include "mailserver-cycle.hpp"
 
 Chat::Chat(QString id,
 		   ChatType chatType,
@@ -199,12 +199,31 @@ void Chat::removeFilter()
 void Chat::deleteChatHistory()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_deleteMessagesByChatID", QJsonArray{m_id}.toVariantList()).toJsonObject();
-
-	qDebug() << response;
 	if(!response["error"].isUndefined())
 	{
 		throw std::domain_error(response["error"]["message"].toString().toUtf8());
 	}
+
+
+	auto msg = new Message(QJsonValue{});
+	msg->setParent(this);
+	QQmlApplicationEngine::setObjectOwnership(msg, QQmlApplicationEngine::CppOwnership);
+
+	update_lastMessage(msg);
+	update_unviewedMessagesCount(0);
+	m_messages->clear();
+}
+
+void Chat::markAllMessagesAsRead()
+{
+	const auto response = Status::instance()->callPrivateRPC("wakuext_markAllRead", QJsonArray{m_id}.toVariantList()).toJsonObject();
+	if(!response["error"].isUndefined())
+	{
+		throw std::domain_error(response["error"]["message"].toString().toUtf8());
+	}
+
+	update_unviewedMessagesCount(0);
+	save();
 }
 
 void Chat::loadMoreMessages()
@@ -235,7 +254,7 @@ void Chat::save()
 					 {"name", m_name},
 					 {"lastClockValue", m_lastClockValue},
 					 {"color", m_color},
-					 {"lastMessage", QJsonValue()},
+					 {"lastMessage", QJsonValue()}, // TODO: serialize last message
 					 {"active", m_active},
 					 {"profile", m_profile},
 					 {"unviewedMessagesCount", m_unviewedMessagesCount},

@@ -166,3 +166,11 @@ void MessagesModel::addFakeMessages()
 	m_messages << chatIdentifier;
 	endInsertRows();
 }
+
+void MessagesModel::clear()
+{
+	beginResetModel();
+	m_messages.clear();
+	addFakeMessages();
+	endResetModel();
+}

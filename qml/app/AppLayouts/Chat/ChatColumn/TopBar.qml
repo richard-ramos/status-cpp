@@ -109,7 +109,7 @@ Rectangle {
                 if (isPrivateGroupChat) {
                     menu.popup(moreActionsBtn.x, moreActionsBtn.height)
                 } else {
-                    menu.openMenu(chatsModel.activeChannel, chatsModel.getActiveChannelIdx())
+                    menu.openMenu(index)
                 }
             }
             cursorShape: Qt.PointingHandCursor

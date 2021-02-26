@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "./"
 import "../../../../shared"
 import "../../../../imports"
+import im.status.desktop 1.0
 
 PopupMenu {
     property int channelIndex
@@ -25,22 +26,22 @@ PopupMenu {
         }
     ]
 
-    function openMenu(channel, index) {
-        channelContextMenu.contextChannel = channel
-        if (index !== undefined) {
-            channelContextMenu.channelIndex = index
+    function openMenu(index) {
+        if (index !== undefined && index > -1) {
+            channelContextMenu.channelIndex = index;
+            channelContextMenu.contextChannel = chatsModel.get(index);
         }
         channelContextMenu.popup()
     }
 
     Action {
-        enabled: channelContextMenu.contextChannel.chatType !== Constants.chatTypePublic
+        enabled: channelContextMenu.contextChannel.chatType != ChatType.Public
         text: {
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
+            if (channelContextMenu.contextChannel.chatType == Constants.chatTypeOneToOne) {
                 //% "View Profile"
                 return qsTrId("view-profile")
             }
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypePrivateGroupChat) {
+            if (channelContextMenu.contextChannel.chatType == Constants.chatTypePrivateGroupChat) {
                 //% "View Group"
                 return qsTrId("view-group")
             }
@@ -91,9 +92,7 @@ PopupMenu {
         icon.source: "../../../img/check-circle.svg"
         icon.width: 16
         icon.height: 16
-        onTriggered: {
-            chatsModel.markAllChannelMessagesReadByIndex(channelContextMenu.channelIndex)
-        }
+        onTriggered:  chatsModel.markAllMessagesAsRead(channelContextMenu.channelIndex)
     }
     FetchMoreMessages {}
     Action {
@@ -102,7 +101,7 @@ PopupMenu {
         icon.source: "../../../img/close.svg"
         icon.width: 16
         icon.height: 16
-        onTriggered: chatsModel.clearChatHistoryByIndex(channelContextMenu.channelIndex)
+        onTriggered: chatsModel.deleteChatHistory(channelContextMenu.channelIndex)
     }
 
     Separator {}

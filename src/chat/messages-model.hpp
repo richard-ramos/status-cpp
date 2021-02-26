@@ -56,6 +56,7 @@ public:
 
 public:
 	void loadMessages(bool initialLoad = true);
+	void clear();
 	
 
 signals:
