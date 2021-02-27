@@ -118,7 +118,7 @@ void MailserverCycle::timeoutConnection(QString enode)
 
 int poolSize(int fleetSize)
 {
-	return static_cast<int>(std::ceil(fleetSize / 4));
+	return static_cast<int>(std::ceil(fleetSize / 4.0));
 }
 
 QVector<QString> MailserverCycle::getMailservers()
@@ -163,6 +163,7 @@ void MailserverCycle::findNewMailserver()
 	// Picks a random mailserver amongs the ones with the lowest latency
 	// The pool size is 1/4 of the mailservers were pinged successfully
 	int poolN = poolSize(availableMailservers.count());
+	qDebug() << "Mailserver pool: " << poolN << " - Available mailservers: " << availableMailservers.count();
 	QString mailServer = std::get<0>(availableMailservers[QRandomGenerator::global()->bounded(poolN)]);
 
 	connect(mailServer);
