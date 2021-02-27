@@ -344,7 +344,7 @@ QtObject {
         }
 
         if(contact.ensVerified && contact.name !== ""){
-            return removeStatusEns(filterXSS(contact.name))
+            return "@" + removeStatusEns(filterXSS(contact.name))
         } else if (contact.localNickname !== "") {
             return filterXSS(contact.localNickname);
         } else {

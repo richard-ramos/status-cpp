@@ -99,9 +99,9 @@ Rectangle {
         text: {
             switch(contentType){
                 //% "Image"
-                case Constants.imageType: return qsTrId("image");
+                case ContentType.Image: return qsTrId("image");
                 //% "Sticker"
-                case Constants.stickerType: return qsTrId("sticker");
+                case ContentType.Sticker: return qsTrId("sticker");
                 //% "No messages"
                 default: 
                     return lastMessage ? Emoji.parse(Utils.filterXSS(lastMessage)).replace(/\n|\r/g, ' ') : qsTrId("no-messages")
