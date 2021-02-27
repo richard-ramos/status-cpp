@@ -8,8 +8,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_BUILD_TYPE Debug)
-
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif() 
 
 # Dependencies
 # If dependencies are managed with conan, we set the CMake module path (where
@@ -122,8 +123,6 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
-   # "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc" # This results in a very slow compilation time. We must split up the resource.qrc file to have one per folder to speed up the process
-
 )
 
 add_executable(status-cpp 
@@ -159,3 +158,9 @@ target_compile_features(status-cpp
     PRIVATE
         cxx_std_17
 )
+
+
+qt5_add_binary_resources(static-resources "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/static-resources.rcc")
+
+add_dependencies(status-cpp static-resources)
+

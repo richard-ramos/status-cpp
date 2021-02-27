@@ -33,11 +33,12 @@
 #include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
+#include "mailserver-cycle.hpp"
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
 #include "settings.hpp"
-#include "mailserver-cycle.hpp"
 #include "status.hpp"
+#include <QResource>
 
 int main(int argc, char* argv[])
 {
@@ -120,8 +121,11 @@ int main(int argc, char* argv[])
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "EnsUtils", ensUtils.get());
 
-	engine.load(QUrl(QStringLiteral("../qml/main.qml")));
-	// engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+	
+	// TODO: check windows path
+	QResource::registerResource("./static-resources.rcc");
+
+	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
 	return app.exec();
 }
