@@ -22,8 +22,8 @@ class Chat : public QObject
 public:
 	explicit Chat(QString id,
 				  ChatType chatType,
-				  QObject* parent = nullptr,
 				  QString name = "",
+				  QObject* parent = nullptr,
 				  QString profile = "",
 				  QString color = "",
 				  bool active = true,

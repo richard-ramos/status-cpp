@@ -92,7 +92,7 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case LastMessage: return QVariant(Messages::Format::renderSimpleText(chat->get_lastMessage(), m_contacts));
 	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
 	case Contact: return QVariant(chat->get_chatType() == ChatType::OneToOne ? QVariant::fromValue(m_contacts->upsert(chat)) : "");
-
+	case ContentType: return QVariant(chat->get_lastMessage()->get_contentType());
 	}
 	// TODO: case HasMentions: return QVariant(chat->get_hasMentions());
 	//TODO: case ContentType: return QVariant(chat->get_contentType());
@@ -108,14 +108,14 @@ void ChatsModel::insert(Chat* chat)
 	m_chatMap[chat->get_id()] = chat;
 }
 
-void ChatsModel::join(ChatType chatType, QString id)
+void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 {
 	if(!m_chatMap.contains(id))
 	{
 		qDebug() << "ChatsModel::join - Chat does not exist. Creating chat: " << id;
 		try
 		{
-			Chat* c = new Chat(id, chatType);
+			Chat* c = new Chat(id, chatType, ensName);
 			c->save();
 
 			m_contacts->upsert(c);

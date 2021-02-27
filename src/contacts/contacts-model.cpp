@@ -169,7 +169,7 @@ Contact* ContactsModel::upsert(Chat* chat)
 	}
 	else
 	{
-		Contact* newContact = new Contact(chat->get_id());
+		Contact* newContact = new Contact(chat->get_id(), chat->get_name());
 		chat->update_contact(newContact);
 		insert(newContact);
 		return newContact;

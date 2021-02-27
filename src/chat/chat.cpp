@@ -25,8 +25,8 @@
 
 Chat::Chat(QString id,
 		   ChatType chatType,
-		   QObject* parent,
 		   QString name,
+		   QObject* parent,
 		   QString profile,
 		   QString color,
 		   bool active,

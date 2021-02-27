@@ -39,7 +39,8 @@ public:
 	virtual QVariant data(const QModelIndex& index, int role) const;
 
 	Q_INVOKABLE void init();
-	Q_INVOKABLE void join(ChatType chatType, QString id);
+	Q_INVOKABLE void join(ChatType chatType, QString id, QString ensName = "");
+
 	Q_INVOKABLE Chat* get(int row) const;
 	Q_INVOKABLE void remove(int row);
 	Q_INVOKABLE void markAllMessagesAsRead(int row);
