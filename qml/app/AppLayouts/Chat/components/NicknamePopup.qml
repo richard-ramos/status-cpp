@@ -11,7 +11,7 @@ ModalPopup {
     property int nicknameLength: nicknameInput.textField.text.length
     readonly property int maxNicknameLength: 32
     property bool nicknameTooLong: nicknameLength > maxNicknameLength
-    property var contact
+    property var contact: null
 
     id: popup
     width: 400
@@ -40,9 +40,9 @@ ModalPopup {
         }
 
         StyledText {
-            text: contact.isEnsVerified ? contact.alias : contact.id
+            text: contact ? (contact.isEnsVerified ? contact.alias : contact.id) : ""
             width: 160
-            elide: !contact.isEnsVerified ? Text.ElideMiddle : Text.ElideNone
+            elide: contact && !contact.isEnsVerified ? Text.ElideMiddle : Text.ElideNone
             anchors.left: nicknameTitle.left
             anchors.bottom: parent.bottom
             anchors.bottomMargin: Style.current.padding
@@ -73,7 +73,7 @@ ModalPopup {
         id: nicknameInput
         //% "Nickname"
         placeholderText: qsTrId("nickname")
-        text: contact.localNickname
+        text: contact ? contact.localNickname : ""
         anchors.top: descriptionText.bottom
         anchors.topMargin: Style.current.padding
         //% "Your nickname is too long"

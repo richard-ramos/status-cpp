@@ -14,9 +14,9 @@ ModalPopup {
     property Popup parentPopup
 
 
-    property var contact
+    property var contact: null
 
-    property bool isCurrentUser: contact.id == StatusSettings.PublicKey
+    property bool isCurrentUser: contact && contact.id == StatusSettings.PublicKey
 
     readonly property int innerMargin: 20
     
@@ -62,8 +62,8 @@ ModalPopup {
         }
 
         StyledText {
-            text: ((contact.ensVerified && contact.name !== "") || contact.localNickname) ? contact.alias : contact.id
-            elide: ((contact.ensVerified && contact.name !== "") || contact.localNickname)  ? Text.ElideNone : Text.ElideMiddle
+            text: contact ? (((contact.ensVerified && contact.name !== "") || contact.localNickname) ? contact.alias : contact.id) : ""
+            elide: contact && ((contact.ensVerified && contact.name !== "") || contact.localNickname)  ? Text.ElideNone : Text.ElideMiddle
             anchors.left: profilePic.right
             anchors.leftMargin: Style.current.smallPadding
             anchors.bottom: parent.bottom
@@ -102,7 +102,7 @@ ModalPopup {
             Image {
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
-                source: Status.generateQRCode(contact.id)
+                source: contact ? Status.generateQRCode(contact.id) : ""
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: 212
                 width: 212
@@ -119,11 +119,11 @@ ModalPopup {
             id: ensText
             //% "ENS username"
             label: qsTrId("ens-username")
-            text: contact.name
+            text: contact ? contact.name : ""
             anchors.top: parent.top
-            visible: contact.ensVerified
+            visible: contact && contact.ensVerified
             height: visible ? implicitHeight : 0
-            textToCopy: contact.name
+            textToCopy: text
         }
 
         StyledText {
@@ -139,7 +139,7 @@ ModalPopup {
 
         Address {
             id: valueChatKey
-            text: contact.id
+            text: contact ? contact.id : ""
             width: 160
             maxWidth: parent.width - (3 * Style.current.smallPadding) - copyBtn.width
             color: Style.current.textColor
@@ -152,7 +152,7 @@ ModalPopup {
             id: copyBtn
             anchors.top: labelChatKey.bottom
             anchors.left: valueChatKey.right
-            textToCopy: contact.id
+            textToCopy: contact ? contact.id : ""
         }
 
         Separator {
@@ -169,11 +169,11 @@ ModalPopup {
             id: valueShareURL
             //% "Share Profile URL"
             label: qsTrId("share-profile-url")
-            text: "https://join.status.im/u/" + contact.id.substr(
-                      0, 4) + "..." + contact.id.substr(contact.id.length - 5)
+            text: "https://join.status.im/u/" + (contact ? (contact.id.substr(
+                      0, 4) + "..." + contact.id.substr(contact.id.length - 5)) : "")
             anchors.top: separator.top
             anchors.topMargin: popup.innerMargin
-            textToCopy: "https://join.status.im/u/" + contact.id
+            textToCopy: "https://join.status.im/u/" + (contact ? contact.id : "")
         }
 
         Separator {
@@ -219,7 +219,7 @@ ModalPopup {
         StyledText {
             id: nicknameText
             //% "None"
-            text: contact.localNickname ? Utils.filterXSS(contact.localNickname) : qsTrId("none")
+            text: contact && contact.localNickname ? Utils.filterXSS(contact.localNickname) : qsTrId("none")
             anchors.right: nicknameCaret.left
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: nicknameCaret.verticalCenter
@@ -260,7 +260,7 @@ ModalPopup {
             bgColor: "transparent"
             borderColor: Style.current.border
             hoveredBorderColor: Style.current.transparent
-            text: contact.isBlocked ?
+            text: contact && contact.isBlocked ?
                       //% "Unblock User"
                       qsTrId("unblock-user") :
                       //% "Block User"
@@ -275,7 +275,7 @@ ModalPopup {
         }
 
         StatusButton {
-            property bool isAdded: contact.isAdded
+            property bool isAdded: contact && contact.isAdded
 
             id: addToContactsButton
             anchors.right: sendMessageBtn.left
@@ -291,7 +291,7 @@ ModalPopup {
             borderColor: Style.current.border
             bgColor: isAdded ? "transparent" : Style.current.buttonBackgroundColor
             hoveredBorderColor: Style.current.transparent
-            visible: !contact.isBlocked
+            visible: contact && !contact.isBlocked
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (contact.isAdded) {
@@ -311,7 +311,7 @@ ModalPopup {
             anchors.bottom: parent.bottom
             //% "Send Message"
             text: qsTrId("send-message")
-            visible: !contact.isBlocked && chatsModel.activeChannel.id !== contact.id // TODO:
+            visible: contact && !contact.isBlocked && chatsModel.activeChannel.id !== contact.id // TODO:
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (tabBar.currentIndex !== 0)

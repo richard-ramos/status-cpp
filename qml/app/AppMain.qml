@@ -22,6 +22,7 @@ RowLayout {
     property alias appSettings: appSettings
 
     function getProfileImage(contact, useLargeImage) {
+        if(!contact) return "";
         const isCurrentUser = contact.id == StatusSettings.PublicKey;
         if (isCurrentUser) {
             return useLargeImage ? identityImage.defaultLargeImage : identityImage.defaultThumbnail;

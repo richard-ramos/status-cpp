@@ -32,9 +32,6 @@ StackLayout {
         chatInput.textInput.forceActiveFocus(Qt.MouseFocusReason)
     }
 
-    property bool isBlocked: profileModel.contacts.isContactBlocked(chatsModel.activeChannel.id)
-
-
     Component.onCompleted: {
         chatInput.textInput.forceActiveFocus(Qt.MouseFocusReason)
     }
@@ -114,13 +111,6 @@ StackLayout {
         txModalLoader.close()
     }
 
-    Connections {
-        target: profileModel.contacts
-        onContactListChanged: {
-            isBlocked = profileModel.contacts.isContactBlocked(chatsModel.activeChannel.id);
-        }
-    }
-    
     ColumnLayout {
         spacing: 0
 
@@ -243,8 +233,8 @@ StackLayout {
                     }
                     return chatsModel.activeChannel.isMember
                 }
-                enabled: !isBlocked
-                chatInputPlaceholder: isBlocked ?
+                enabled: chat.contact && !chat.contact.isBlocked
+                chatInputPlaceholder: (!chatInput.enabled) ?
                         //% "This user has been blocked."
                         qsTrId("this-user-has-been-blocked-") :
                         //% "Type a message."

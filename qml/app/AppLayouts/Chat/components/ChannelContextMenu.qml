@@ -35,8 +35,9 @@ PopupMenu {
     }
 
     Action {
-        enabled: channelContextMenu.contextChannel.chatType != ChatType.Public
+        enabled: channelContextMenu.contextChannel && channelContextMenu.contextChannel.chatType != ChatType.Public
         text: {
+            if(!channelContextMenu.contextChannel) return "";
             if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
                 //% "View Profile"
                 return qsTrId("view-profile")
@@ -64,7 +65,7 @@ PopupMenu {
     Separator {}
 
     Action {
-        text: channelContextMenu.contextChannel.muted ?
+        text: channelContextMenu.contextChannel && channelContextMenu.contextChannel.muted ?
                   //% "Unmute chat"
                   qsTrId("unmute-chat") :
                   //% "Mute chat"
@@ -103,6 +104,7 @@ PopupMenu {
 
     Action {
         text: {
+            if(!channelContextMenu.contextChannel) return "";
             if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
                 //% "Delete chat"
                 return qsTrId("delete-chat")
@@ -115,6 +117,7 @@ PopupMenu {
             return qsTrId("leave-chat")
         }
         icon.source: {
+            if(!channelContextMenu.contextChannel) return "";
             if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
                 return "../../../img/delete.svg"
             }

@@ -688,8 +688,7 @@ Rectangle {
                 font.family: Style.current.fontRegular.name
                 wrapMode: TextArea.Wrap
                 height: parent.height
-                //% "Type a message"
-                placeholderText: qsTrId("type-a-message")
+                placeholderText: chatInputPlaceholder
                 placeholderTextColor: Style.current.secondaryText
                 selectByMouse: true
                 color: Style.current.textColor

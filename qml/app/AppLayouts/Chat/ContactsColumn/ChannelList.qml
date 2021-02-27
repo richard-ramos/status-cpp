@@ -73,6 +73,7 @@ Item {
         id: channelContextMenu
     }
 
+    /* TODO:
     Connections {
         target: chatsModel.chats
         onDataChanged: {
@@ -83,6 +84,7 @@ Item {
             }
         }
     }
+    */
 
     Connections {
         target: chatsModel
