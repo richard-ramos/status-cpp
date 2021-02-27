@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: aboutContainer
@@ -30,7 +31,7 @@ Item {
         StatusSectionDescItem {
             //% "Node version "
             name: qsTrId("node-version-")
-            description: profileModel.nodeVersion()
+            description: Status.NodeVersion
         }
 
         StyledText {

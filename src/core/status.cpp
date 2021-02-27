@@ -103,7 +103,13 @@ void Status::processSignal(QString ev)
 
 	signalType = signalMap[signalEvent["type"].toString()];
 
-	qDebug() << "Signal received: " << signalType;
+	qDebug() << "======================== \nSignal received: " << signalType;
+	if(signalType == Message){
+		qDebug() << signalEvent;
+	}
+	if(signalType == EnvelopeSent){
+		qDebug() << signalEvent;
+	}
 
 	switch(signalType)
 	{
@@ -214,6 +220,12 @@ void Status::copyToClipboard(const QString& value)
 QString Status::plainText(const QString& value)
 {
 	return QTextDocumentFragment::fromHtml(value).toPlainText();
+}
+
+QString Status::getNodeVersion()
+{
+	const auto response = Status::instance()->callPrivateRPC("web3_clientVersion", QJsonArray{}.toVariantList()).toJsonObject();
+	return QString(response["result"].toString());
 }
 
 bool Status::isOnline()
