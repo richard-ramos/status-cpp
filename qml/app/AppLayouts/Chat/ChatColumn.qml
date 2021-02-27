@@ -14,7 +14,7 @@ import im.status.desktop 1.0
 StackLayout {
     id: root
 
-    property var chat  // TODO: should be the data type of model
+    property var chat
 
     property alias chatMessages: chatMessages
 
@@ -43,7 +43,7 @@ StackLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: 300
 
-    currentIndex: 0 // TODO:  chatsModel.activeChannelIndex > -1 && chatGroupsListViewCount > 0 ? 0 : 1
+    currentIndex: 0
 
     property var idMap: {}
 
@@ -270,7 +270,7 @@ StackLayout {
                 }
                 onSendMessage: {
                     if (chatInput.fileUrls.length > 0){
-                        chatsModel.sendImage(chatInput.fileUrls[0], false);
+                        chatsModel.get(index).sendImage(chatInput.fileUrls[0].replace("file://", ""));
                     }
                     var msg = Status.plainText(Emoji.deparse(chatInput.textInput.text))
                     if (msg.length > 0){

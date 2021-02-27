@@ -427,7 +427,7 @@ Rectangle {
         folder: shortcuts.pictures
         nameFilters: [
             //% "Image files (*.jpg *.jpeg *.png)"
-            qsTrId("image-files----jpg---jpeg---png-")
+            qsTrId("Image files (*.jpg *.jpeg *.png)") // TODO:
         ]
         onAccepted: {
             imageBtn.highlighted = false

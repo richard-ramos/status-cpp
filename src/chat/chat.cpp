@@ -2,6 +2,7 @@
 #include "chat-type.hpp"
 #include "content-type.hpp"
 #include "mailserver-cycle.hpp"
+#include "constants.hpp"
 #include "messages-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
@@ -17,6 +18,10 @@
 #include <QVariant>
 #include <QtConcurrent>
 #include <stdexcept>
+#include <QImage>
+#include <QPixmap>
+#include <QFileInfo>
+#include <QColorSpace>
 
 Chat::Chat(QString id,
 		   ChatType chatType,
@@ -141,6 +146,56 @@ void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 		Status::instance()->emitMessageSignal(response["result"].toObject());
 	});
 }
+
+
+void Chat::sendImage(QString imagePath)
+{
+	QString preferredUsername = Settings::instance()->preferredName();
+	emit sendingMessage();
+
+	qDebug() << imagePath;
+
+ 	QImage img(imagePath);
+    img.setColorSpace(QColorSpace::SRgb);
+    int w = img.width();
+    int h = img.height();
+
+    QPixmap pixmap;
+    pixmap = pixmap.fromImage(img.scaled(Constants::MaxImageSize < w ? Constants::MaxImageSize : w, Constants::MaxImageSize < h ? Constants::MaxImageSize : h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    auto newFilePath = Constants::tmpPath("/" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".jpg");
+
+    QFile file(newFilePath);
+    file.open(QIODevice::WriteOnly);
+    pixmap.save(&file, "jpeg", 75);
+    file.close();
+
+
+	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+		QJsonObject obj{
+			{"chatId", m_id},
+			{"text", "Update to latest version to see a nice image here!"},
+			{"imagePath", QFileInfo(newFilePath).absoluteFilePath()},
+			{"ensName", preferredUsername},
+			{"sticker", QJsonValue()},
+			{"contentType", ContentType::Image}
+			// TODO: {"communityId", communityId}
+		};
+
+		qDebug() << obj;
+		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
+		if(!response["error"].isUndefined())
+		{
+			emit sendingMessageFailed();
+			throw std::domain_error(response["error"]["message"].toString().toUtf8());
+		}
+		Status::instance()->emitMessageSignal(response["result"].toObject());
+	});
+}
+
+
+
 
 void Chat::leave()
 {

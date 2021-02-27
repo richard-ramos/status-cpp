@@ -75,6 +75,7 @@ private:
 public:
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void sendMessage(QString message, QString replyTo, bool isEmoji);
+	Q_INVOKABLE void sendImage(QString imagePath);
 	Q_INVOKABLE void leave();
 	Q_INVOKABLE void loadMoreMessages();
 	Q_INVOKABLE void deleteChatHistory();

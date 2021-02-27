@@ -246,7 +246,7 @@ void ChatsModel::update(QJsonValue updates)
 	foreach(QJsonValue msgJson, updates["messages"].toArray())
 	{
 		Message* message = new Message(msgJson);
-		m_chatMap[message->get_chatId()]->get_messages()->push(message);
+		m_chatMap[message->get_localChatId()]->get_messages()->push(message);
 
 		// Create a contact if necessary
 		m_contacts->upsert(message);

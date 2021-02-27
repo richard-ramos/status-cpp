@@ -17,7 +17,11 @@ const QString ZeroAddress("0x0000000000000000000000000000000000000000");
 
 const QString StatusDomain(".stateofus.eth");
 
+const int MaxImageSize = 2000;
+
+
 QString applicationPath(QString path = "");
+QString tmpPath(QString path = "");
 QString settingsPath();
 
 } // namespace Constants

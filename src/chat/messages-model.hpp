@@ -29,10 +29,10 @@ public:
 		Sticker = Qt::UserRole + 10,
 		ResponseTo = Qt::UserRole + 11,
 		LinkUrls = Qt::UserRole + 12,
-		OutgoingStatus = Qt::UserRole + 13
-		// ResponseTo
+		OutgoingStatus = Qt::UserRole + 13,
+		Image = Qt::UserRole + 14
+
 		// Index?
-		// Image
 		// Audio
 		// AUdioDurationMs
 		// EmojiReactions
