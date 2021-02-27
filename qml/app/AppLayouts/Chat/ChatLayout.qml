@@ -82,7 +82,7 @@ SplitView {
 
     StackLayout {
         id: chatMsgStackLayout
-        currentIndex: contactColumnLoader.item.list.count == 0 ? 0 : contactColumnLoader.item.list.currentIndex + 1
+        currentIndex: contactColumnLoader.item.list.count <= 0 ? 0 : contactColumnLoader.item.list.currentIndex + 1
         EmptyChat {}
         Repeater {
             model: chatsModel
@@ -98,12 +98,10 @@ SplitView {
         target: chatsModel
         onJoined: {
             contactColumnLoader.item.list.currentIndex = index;
-            chatMsgStackLayout.currentIndex = index + 1;
         }
         onLeft: {
             // Use `index` if you want to show a different channel
-            contactColumnLoader.item.list.currentIndex = 0;
-            chatMsgStackLayout.currentIndex = 0;
+            contactColumnLoader.item.list.currentIndex = -1;
         }
     }
    

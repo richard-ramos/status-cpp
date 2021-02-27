@@ -90,18 +90,6 @@ Item {
         }
     }
 
-    // TODO:
-    /*
-    Connections {
-        enabled: !placeholderMessage
-        target: profileModel.contacts.list
-        onContactChanged: {
-            if (pubkey === fromAuthor) {
-                profileImageSource = appMain.getProfileImage(userPubKey, isCurrentUser, useLargeImage)
-            }
-        }
-    }*/
-
     Component {
         id: messageContextMenuComponent
         MessageContextMenu {

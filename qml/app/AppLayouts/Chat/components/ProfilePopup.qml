@@ -219,7 +219,7 @@ ModalPopup {
         StyledText {
             id: nicknameText
             //% "None"
-            text: contact.localNickname ? contact.localNickname : qsTrId("none")
+            text: contact.localNickname ? Utils.filterXSS(contact.localNickname) : qsTrId("none")
             anchors.right: nicknameCaret.left
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: nicknameCaret.verticalCenter

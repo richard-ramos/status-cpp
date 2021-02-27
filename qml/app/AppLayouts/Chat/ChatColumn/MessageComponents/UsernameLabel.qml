@@ -8,7 +8,7 @@ Item {
     height: childrenRect.height
     width: chatName.width + (ensOrAlias.visible ? ensOrAlias.width + ensOrAlias.anchors.leftMargin : 0)
     property alias label: chatName
-    visible: true // TODO: isMessage && authorCurrentMsg != authorPrevMsg
+    visible: isMessage && authorCurrentMsg != authorPrevMsg
 
     StyledTextEdit {
         id: chatName

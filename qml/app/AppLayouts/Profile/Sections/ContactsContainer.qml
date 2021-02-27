@@ -70,7 +70,7 @@ Item {
             anchors.top: addNewContact.bottom
             anchors.topMargin: Style.current.bigPadding
             width: blockButton.width + blockButtonLabel.width + Style.current.padding
-            visible: true // TODO: blockedContactsListView.count > 0
+            visible: blockedContactsListView.count > 0
             height: addButton.height
 
             StatusRoundButton {
