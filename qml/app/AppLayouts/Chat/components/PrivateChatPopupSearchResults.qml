@@ -131,7 +131,7 @@ Item {
             anchors.right: parent.right
             anchors.rightMargin: Style.current.smallPadding * 2
             anchors.verticalCenter: parent.verticalCenter
-            visible: foundContact.hovered && (!contact || !contact.isAdded)
+            visible: foundContact.hovered && contact && contact.isAdded
         }
     }
 

@@ -27,7 +27,7 @@ Item {
             spacing: 0
             clip: true
             id: contactListView
-            model: root.model
+            model: contactsModel
             delegate: Contact {
                 showCheckbox: false
                 contactId: model.contactId

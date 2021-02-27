@@ -51,6 +51,8 @@ ModalPopup {
                     userAlias = userAlias.length > 20 ? userAlias.substring(0, 19) + "..." : userAlias
                     searchResults.userAlias =  userAlias + " • " + Utils.compactAddress(resolvedPubKey, 4)
                     searchResults.pubKey = pubKey = resolvedPubKey;
+                    popup.ensUsername = ensName;
+                    popup.pubKey = resolvedPubKey;
                 }
                 searchResults.showProfileNotFoundMessage = false
             }
@@ -89,12 +91,7 @@ ModalPopup {
         doJoin(pk, ensName)
     }
     function doJoin(pk, ensName) {
-        if(Utils.isChatKey(ensName)){
-            chatsModel.join(ChatType.OneToOne, pk);
-        } else {
-            chatsModel.joinChatWithENS(pk, ensName);
-        }
-            
+        chatsModel.join(ChatType.OneToOne, pk, Utils.isChatKey(ensName) ? "" : ensName);
         popup.close();
     }
 
@@ -179,10 +176,11 @@ ModalPopup {
         id: existingContacts
         anchors.topMargin: this.height > 0 ? Style.current.xlPadding : 0
         anchors.top: chatKey.bottom
+        model: addedContacts
         filterText: chatKey.text
         onContactClicked: function (contact) {
-            // TODO
-            doJoin(contact.pubKey, profileModel.contacts.addedContacts.userName(contact.pubKey, contact.name))
+            chatsModel.join(ChatType.OneToOne, contact.contactId);
+            popup.close();
         }
         expanded: !searchResults.loading && popup.pubKey === "" && !searchResults.showProfileNotFoundMessage
     }
@@ -194,8 +192,10 @@ ModalPopup {
         hasExistingContacts: existingContacts.visible
         loading: false
         onResultClicked: validateAndJoin(popup.pubKey, chatKey.text)
-        // TODO:
-        onAddToContactsButtonClicked: contactsModel.add(popup.pubKey)
+        onAddToContactsButtonClicked: {
+            chatsModel.join(ChatType.OneToOne, popup.pubKey, popup.ensUsername);
+            popup.close();
+        }
     }
 
     NoFriendsRectangle {
