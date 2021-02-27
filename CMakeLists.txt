@@ -107,7 +107,6 @@ add_definitions(-DUSE_INSTALL_TARGET)
 
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib-qt-qml-tricks/include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/
 )
@@ -134,8 +133,6 @@ target_compile_features(status-cpp
     PRIVATE
         cxx_std_17
 )
-
-target_include_directories(status-cpp PUBLIC include)
 
 target_link_libraries(status-cpp
     PRIVATE
@@ -164,3 +161,12 @@ qt5_add_binary_resources(static-resources "${CMAKE_CURRENT_SOURCE_DIR}/qml/resou
 
 add_dependencies(status-cpp static-resources)
 
+
+# Ninja run!
+add_custom_target(run
+    COMMENT
+    DEPENDS static-resources
+    COMMAND  "./status-cpp"
+    VERBATIM
+    USES_TERMINAL
+)
