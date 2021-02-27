@@ -59,8 +59,8 @@ Column {
         wrapMode: Text.Wrap
         text: {
             switch(chat.chatType) {
-                case Constants.chatTypePublic: return "#" + chat.name;
-                case Constants.chatTypeOneToOne: return Utils.removeStatusEns(chatsModel.activeChannel.name)
+                case ChatType.Public: return "#" + chat.name;
+                case ChatType.OneToOne: return Utils.getUsernameLabel(chat.contact)
                 default: return chats.name
             }
         }
