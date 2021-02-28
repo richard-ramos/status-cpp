@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "./Data/locales.js" as Locales_JSON
+import im.status.desktop 1.0
 
 Item {
     id: languageContainer
@@ -61,7 +62,7 @@ Item {
                     padding: 10
                     onTriggered: function () {
                         const locale = Locales_JSON.locales[index]
-                        profileModel.changeLocale(locale)
+                        StatusSettings.changeLocale(locale)
                         appSettings.locale = locale
                     }
 

@@ -172,3 +172,12 @@ add_custom_target(run
     VERBATIM
     USES_TERMINAL
 )
+
+# Ninja run debug
+add_custom_target(run-debug
+    COMMENT
+    DEPENDS static-resources
+    COMMAND  ./status-cpp -qmljsdebugger=port:1234
+    VERBATIM
+    USES_TERMINAL
+)

@@ -126,9 +126,6 @@ RowLayout {
     Connections {
         target: profileModel
         onProfileSettingsFileChanged: {
-            if (appSettings.locale !== "en") {
-                profileModel.changeLocale(appSettings.locale)
-            }
             const whitelist = profileModel.getLinkPreviewWhitelist()
             try {
                 const whiteListedSites = JSON.parse(whitelist)
@@ -163,6 +160,7 @@ RowLayout {
     }*/
 
     Component.onCompleted: {
+        StatusSettings.changeLocale(appSettings.locale);
         if(removeMnemonicAfterLogin){
             StatusSettings.removeMnemonic();
         }

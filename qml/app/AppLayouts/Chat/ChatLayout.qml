@@ -93,7 +93,7 @@ SplitView {
         id: chatMsgStackLayout
         currentIndex: contactColumnLoader.item.list.count <= 0 ? 0 : contactColumnLoader.item.list.currentIndex + 1
         onCurrentIndexChanged: {
-            if(currentIndex > 0 && !this.children[currentIndex].activr){
+            if(currentIndex > 0 && !this.children[currentIndex].active){
                 this.children[currentIndex].active = true;
             }
         }

@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QReadWriteLock>
 #include <QTimer>
+#include <QTranslator>
 
 Settings* Settings::theInstance;
 
@@ -24,6 +25,9 @@ Settings::Settings(QObject* parent)
 	: QObject(parent)
 {
 	m_initialized = false;
+
+	m_translator = new QTranslator();
+
 	// TODO: can login signal have an error?
 	QObject::connect(Status::instance(), &Status::login, this, &Settings::init);
 	QObject::connect(Status::instance(), &Status::logout, this, &Settings::terminate);
@@ -51,7 +55,8 @@ Settings::~Settings()
 
 void Settings::init(QString loginError)
 {
-	if(loginError != "") return;
+	if(loginError != "")
+		return;
 
 	// TODO: extract to callPrivateRPC helper function
 	lock.lockForWrite();
@@ -478,4 +483,23 @@ QString Settings::signingPhrase()
 	QString result(m_signingPhrase);
 	lock.unlock();
 	return result;
+}
+
+void Settings::changeLocale(QString locale)
+{
+	if(!m_translator->isEmpty())
+	{
+		QCoreApplication::removeTranslator(m_translator);
+	}
+
+	QString translationPackage = ":/i18n/qml_" + locale + ".qm";
+	if(m_translator->load(translationPackage))
+	{
+		bool success = QCoreApplication::installTranslator(m_translator);
+		emit localeChanged();
+	}
+	else
+	{
+		qWarning() << "Failed to load translation file: " << translationPackage;
+	}
 }

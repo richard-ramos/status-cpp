@@ -7,6 +7,7 @@
 #include <QReadWriteLock>
 #include <QTimer>
 #include <map>
+#include <QTranslator>
 
 class Settings : public QObject
 {
@@ -30,11 +31,13 @@ public:
 	Q_INVOKABLE void terminate();
 	Q_INVOKABLE void removeMnemonic();
 	Q_INVOKABLE QString getLinkPreviewWhitelist();
+	Q_INVOKABLE void changeLocale(QString locale);
 
 	// TODO: move this to mailserver model
 	MailserverCycle mailserverCycle;
 signals:
 	void mailserverRequestSent();
+	void localeChanged();
 
 public:
 	enum SettingTypes
@@ -165,6 +168,7 @@ private:
 
 	QTimer* timer;
 
+	QTranslator* m_translator;
 
 public:
 	Q_INVOKABLE void startMailserverCycle();

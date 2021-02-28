@@ -45,7 +45,7 @@
 // Enable QML debugging only on Debug builds
 #include <QQmlDebuggingEnabler>
 QQmlDebuggingEnabler enabler;
-#endif NDEBUG
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -131,6 +131,9 @@ int main(int argc, char* argv[])
 	
 	// TODO: check windows path
 	QResource::registerResource("./static-resources.rcc");
+
+
+	QObject::connect(Settings::instance(), &Settings::localeChanged, &engine, &QQmlApplicationEngine::retranslate);
 
 	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
