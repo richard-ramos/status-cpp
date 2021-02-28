@@ -268,8 +268,8 @@ StackLayout {
                         chatsModel.get(index).sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg), false);
                         chatInput.textInput.textFormat = TextEdit.PlainText;
                         if(event) event.accepted = true
-                        chatInput.messageSound.stop()
-                        Qt.callLater(chatInput.messageSound.play);
+                        sendMessageSound.stop();
+                        sendMessageSound.play();
 
                         Qt.callLater(function(){
                             chatInput.textInput.clear();

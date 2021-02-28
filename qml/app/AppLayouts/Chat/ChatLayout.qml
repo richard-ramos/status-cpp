@@ -1,5 +1,6 @@
 import QtQuick.Layouts 1.14
 import QtQuick 2.13
+import QtMultimedia 5.13
 import QtQuick.Controls 2.13
 import Qt.labs.settings 1.0
 import "../../../imports"
@@ -80,17 +81,34 @@ SplitView {
         CommunityColumn {}
     }
 
+    Audio {
+        id: sendMessageSound
+        audioRole: Audio.NotificationRole
+        source: "../../../../sounds/send_message.wav"
+        volume: appSettings.volume
+        muted: !appSettings.notificationSoundsEnabled
+    }
+
     StackLayout {
         id: chatMsgStackLayout
         currentIndex: contactColumnLoader.item.list.count <= 0 ? 0 : contactColumnLoader.item.list.currentIndex + 1
+        onCurrentIndexChanged: {
+            if(currentIndex > 0 && !this.children[currentIndex].activr){
+                this.children[currentIndex].active = true;
+            }
+        }
         EmptyChat {}
         Repeater {
             model: chatsModel
-            ChatColumn {
-                id: chatColumn
-                chat: model
-                chatGroupsListViewCount: contactColumnLoader.item.chatGroupsListViewCount
+            Loader {
+                active: false
+                sourceComponent: ChatColumn {
+                    id: chatColumn
+                    chat: model
+                    chatGroupsListViewCount: contactColumnLoader.item.chatGroupsListViewCount
+                }
             }
+            
         }
     }
 

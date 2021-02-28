@@ -114,14 +114,6 @@ RowLayout {
     }
 
     Audio {
-        id: sendMessageSound
-        audioRole: Audio.NotificationRole
-        source: "../../../../sounds/send_message.wav"
-        volume: appSettings.volume
-        muted: !appSettings.notificationSoundsEnabled
-    }
-
-    Audio {
         id: notificationSound
         audioRole: Audio.NotificationRole
         source: "../../../../sounds/notification.wav"
@@ -477,6 +469,7 @@ RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillHeight: true
         }
+
 
         WalletLayout {
             id: walletLayoutContainer
