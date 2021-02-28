@@ -143,7 +143,7 @@ PopupMenu {
         onTriggered: {
             if (messageContextMenu.isProfile) {
                 appMain.changeAppSection(Constants.chat)
-                chatsModel.joinChat(fromAuthor, Constants.chatTypeOneToOne)
+                chatsModel.join(ChatType.OneToOne, contact.id, contact.name);
             } else {
               showReplyArea()
             }

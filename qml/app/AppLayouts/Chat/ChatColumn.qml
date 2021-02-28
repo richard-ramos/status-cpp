@@ -16,6 +16,8 @@ StackLayout {
 
     property var chat
 
+    property string chatId: chat.chatId
+
     property alias chatMessages: chatMessages
 
     property int chatGroupsListViewCount: 0

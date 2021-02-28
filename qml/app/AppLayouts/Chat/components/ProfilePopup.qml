@@ -311,12 +311,12 @@ ModalPopup {
             anchors.bottom: parent.bottom
             //% "Send Message"
             text: qsTrId("send-message")
-            visible: contact && !contact.isBlocked && chatsModel.activeChannel.id !== contact.id // TODO:
+            visible: contact && !contact.isBlocked && chatLayoutContainer.activeChatId !== contact.id
             width: visible ? implicitWidth : 0
             onClicked: {
                 if (tabBar.currentIndex !== 0)
                     tabBar.currentIndex = 0
-                chatsModel.joinChat(fromAuthor, Constants.chatTypeOneToOne)
+                chatsModel.join(ChatType.OneToOne, contact.id, contact.name);
                 popup.close()
             }
         }
