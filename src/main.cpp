@@ -40,6 +40,13 @@
 #include "status.hpp"
 #include <QResource>
 
+
+#ifndef NDEBUG
+// Enable QML debugging only on Debug builds
+#include <QQmlDebuggingEnabler>
+QQmlDebuggingEnabler enabler;
+#endif NDEBUG
+
 int main(int argc, char* argv[])
 {
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
