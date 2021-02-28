@@ -1,14 +1,15 @@
 #pragma once
 
+#include "contacts-model.hpp"
 #include "message.hpp"
 #include <QAbstractListModel>
 #include <QDebug>
-#include <QVector>
 #include <QHash>
-#include "contacts-model.hpp"
+#include <QMutex>
+#include <QQmlHelpers>
+#include <QVector>
 
 using namespace Messages;
-
 
 class MessagesModel : public QAbstractListModel
 {
@@ -30,12 +31,10 @@ public:
 		ResponseTo = Qt::UserRole + 11,
 		LinkUrls = Qt::UserRole + 12,
 		OutgoingStatus = Qt::UserRole + 13,
-		Image = Qt::UserRole + 14
-
-		// Index?
+		Image = Qt::UserRole + 14,
+		EmojiReactions = Qt::UserRole + 15
 		// Audio
 		// AUdioDurationMs
-		// EmojiReactions
 		// CommandParameters
 		// CommunityId
 	};
@@ -46,29 +45,34 @@ public:
 	virtual int rowCount(const QModelIndex&) const;
 	virtual QVariant data(const QModelIndex& index, int role) const;
 	void push(Message* message);
+	void push(QString messageId, QJsonObject reaction);
+
 	Q_INVOKABLE Message* get(QString messageId) const;
 	Q_INVOKABLE Message* get(int row) const;
+	Q_INVOKABLE void toggleReaction(QString messageId, int emojiId);
 
-	
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
 	QString renderBlock(Message* message) const;
 
 public:
 	void loadMessages(bool initialLoad = true);
+	void loadReactions(bool initialLoad = true);
 	void clear();
-	
 
 signals:
 	void messageLoaded(Message* message);
+	void reactionLoaded(QString messageId, QJsonObject reaction);
 
 private:
 	QVector<Message*> m_messages;
 	QHash<QString, Message*> m_messageMap;
+	QHash<QString, QJsonArray> m_emojiReactions;
 	QString m_chatId;
 
 	QString m_cursor;
+	QString m_reactionsCursor;
+	QMutex m_mutex;
 
 	void addFakeMessages();
-
 };

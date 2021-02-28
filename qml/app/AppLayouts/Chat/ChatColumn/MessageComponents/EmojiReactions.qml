@@ -174,8 +174,7 @@ Item {
                         emojiContainer.isHovered = false
                     }
                     onClicked: {
-                        chatsModel.toggleReaction(messageId, modelData.emojiId)
-
+                        chat.messages.toggleReaction(messageId, modelData.emojiId)
                     }
                 }
             }

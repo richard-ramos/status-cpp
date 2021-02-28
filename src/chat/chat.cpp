@@ -285,6 +285,8 @@ void Chat::markAllMessagesAsRead()
 void Chat::loadMoreMessages()
 {
 	m_messages->loadMessages(false);
+	m_messages->loadReactions(false);
+
 	emit messagesLoaded();
 }
 

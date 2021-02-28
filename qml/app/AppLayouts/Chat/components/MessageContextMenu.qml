@@ -12,6 +12,7 @@ PopupMenu {
     property bool isProfile: false
     property bool isSticker: false
     property bool emojiOnly: false
+    property string messageId: ""
     property alias emojiContainer: emojiContainer
 
     id: messageContextMenu
@@ -19,18 +20,16 @@ PopupMenu {
 
 
     property var contact
+    property var emojiReactionsReactedByUser: []
+    subMenuIcons: [
+        {
+            source: Qt.resolvedUrl("../../../../shared/img/copy-to-clipboard-icon"),
+            width: 16,
+            height: 16
+        }
+    ]
 
-    // TODO:
-    function show() {
-        popup();
-    }
-
-    /*function show(userNameParam, fromAuthorParam, identiconParam, textParam, nicknameParam, emojiReactionsModel) {
-        userName = userNameParam || ""
-        nickname = nicknameParam || ""
-        fromAuthor = fromAuthorParam || ""
-        identicon = identiconParam || ""
-        text = textParam || ""
+    function show(emojiReactionsModel) {
         let newEmojiReactions = []
         if (!!emojiReactionsModel) {
             emojiReactionsModel.forEach(function (emojiReaction) {
@@ -40,7 +39,7 @@ PopupMenu {
         emojiReactionsReactedByUser = newEmojiReactions
 
         popup();
-    }*/
+    }
 
     Item {
         id: emojiContainer
@@ -59,6 +58,7 @@ PopupMenu {
                 model: reactionModel
                 delegate: EmojiReaction {
                     source: "../../../img/" + filename
+                    messageId: messageContextMenu.messageId
                     emojiId: model.emojiId
                     reactedByUser: !!messageContextMenu.emojiReactionsReactedByUser[model.emojiId]
                     closeModal: function () {

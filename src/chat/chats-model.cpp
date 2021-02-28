@@ -1,6 +1,7 @@
 #include "chats-model.hpp"
 #include "chat-type.hpp"
 #include "chat.hpp"
+#include "contact.hpp"
 #include "mailserver-cycle.hpp"
 #include "message-format.hpp"
 #include "message.hpp"
@@ -15,7 +16,6 @@
 #include <QQmlApplicationEngine>
 #include <algorithm>
 #include <array>
-#include "contact.hpp"
 
 using namespace Messages;
 
@@ -41,6 +41,8 @@ void ChatsModel::setupMessageModel()
 	{
 		chat->get_messages()->set_contacts(m_contacts);
 		chat->get_messages()->loadMessages();
+		chat->get_messages()->loadReactions();
+
 		m_contacts->upsert(chat);
 	}
 }
@@ -134,11 +136,12 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 			emit joinError(e.what());
 		}
 		qDebug() << "ChatsModel::join - Chat saved";
-	} else {
+	}
+	else
+	{
 		// Channel already joined
 		int chatIndex = m_chats.indexOf(m_chatMap[id]);
 		emit joined(chatType, id, chatIndex);
-
 	}
 }
 
@@ -252,5 +255,15 @@ void ChatsModel::update(QJsonValue updates)
 		m_contacts->upsert(message);
 	}
 
-	// Emoji reactions*/
+	// Emoji reactions
+	if(!updates["emojiReactions"].isUndefined())
+	{
+		foreach(QJsonValue reaction, updates["emojiReactions"].toArray())
+		{
+			QJsonObject r = reaction.toObject();
+			QString chatId = r["localChatId"].toString();
+			QString messageId = r["messageId"].toString();
+			m_chatMap[chatId]->get_messages()->push(messageId, r);
+		}
+	}
 }

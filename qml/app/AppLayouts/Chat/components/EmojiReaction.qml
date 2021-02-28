@@ -6,6 +6,7 @@ Rectangle {
     property alias source: reactionImage.source
     property var closeModal: function () {}
     property int emojiId
+    property string messageId: ""
     property bool reactedByUser: false
     property bool isHovered: false
 
@@ -32,7 +33,7 @@ Rectangle {
         onEntered: root.isHovered = true
         onExited: root.isHovered = false
         onClicked: {
-            chatsModel.toggleReaction(SelectedMessage.messageId, emojiId)
+            chat.messages.toggleReaction(messageId, emojiId)
             root.closeModal()
         }
     }

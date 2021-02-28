@@ -3,6 +3,7 @@
 #include "content-type.hpp"
 #include "message-format.hpp"
 #include "message.hpp"
+#include "settings.hpp"
 #include "status.hpp"
 #include "utils.hpp"
 #include <QApplication>
@@ -19,6 +20,7 @@
 #include <QStringBuilder>
 #include <QUuid>
 #include <QtConcurrent/QtConcurrent>
+#include <QtGlobal>
 #include <algorithm>
 #include <array>
 
@@ -29,7 +31,8 @@ MessagesModel::MessagesModel(QString chatId, QObject* parent)
 	, QAbstractListModel(parent)
 {
 	qDebug() << "MessagesModel::constructor for chatId: " << m_chatId;
-	QObject::connect(this, &MessagesModel::messageLoaded, this, &MessagesModel::push); // TODO: replace added
+	QObject::connect(this, &MessagesModel::messageLoaded, this, QOverload<Message*>::of(&MessagesModel::push));
+	QObject::connect(this, &MessagesModel::reactionLoaded, this, QOverload<QString, QJsonObject>::of(&MessagesModel::push));
 
 	addFakeMessages();
 }
@@ -50,7 +53,8 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[ResponseTo] = "responseTo";
 	roles[LinkUrls] = "linkUrls";
 	roles[OutgoingStatus] = "outgoingStatus";
-	roles[Image]= "image";
+	roles[Image] = "image";
+	roles[EmojiReactions] = "emojiReactions";
 	return roles;
 }
 
@@ -98,6 +102,10 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case LinkUrls: return QVariant(Messages::Format::linkUrls(msg));
 	case OutgoingStatus: return QVariant(msg->get_outgoingStatus());
 	case Image: return QVariant(msg->get_image());
+	case EmojiReactions: {
+		QJsonArray emojiReactions = m_emojiReactions[msg->get_id()];
+		return m_emojiReactions.contains(msg->get_id()) ? QVariant(Utils::jsonToStr(emojiReactions)) : QVariant("[]");
+	}
 	}
 
 	return QVariant();
@@ -141,12 +149,55 @@ void MessagesModel::push(Message* msg)
 	endInsertRows();
 }
 
+void MessagesModel::push(QString messageId, QJsonObject newReaction)
+{
+	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+		if(m_emojiReactions.contains(messageId))
+		{
+			bool found = false;
+			uint i = -1;
+			bool retraction = false;
+			foreach(const QJsonValue& oldReaction, m_emojiReactions[messageId])
+			{
+				i++;
+				QJsonObject oldReactionObj = oldReaction.toObject();
+				if(oldReactionObj["id"].toString() == newReaction["id"].toString())
+				{
+					found = true;
+					if(newReaction["retracted"].toBool() == true)
+					{
+						retraction = true;
+					}
+					break;
+				}
+			}
+			if(!found)
+			{
+				if(newReaction["retracted"].toBool())
+					return;
+				m_emojiReactions[messageId] << newReaction;
+			}
+			else if(retraction)
+			{
+				m_emojiReactions[messageId].removeAt(i);
+			}
+		}
+		else
+		{
+			m_emojiReactions[messageId] << newReaction;
+		}
+	});
+}
+
 void MessagesModel::loadMessages(bool initialLoad)
 {
 	if(!initialLoad && m_cursor == "")
 		return;
 
 	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+
 		const auto response =
 			Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
 		m_cursor = response["result"]["cursor"].toString();
@@ -159,6 +210,70 @@ void MessagesModel::loadMessages(bool initialLoad)
 			emit messageLoaded(message);
 		}
 	});
+}
+
+void MessagesModel::loadReactions(bool initialLoad)
+{
+	if(!initialLoad && m_reactionsCursor == "")
+		return;
+
+	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+
+		const auto response = Status::instance()
+								  ->callPrivateRPC("wakuext_emojiReactionsByChatID", QJsonArray{m_chatId, m_reactionsCursor, 20}.toVariantList())
+								  .toJsonObject();
+		m_reactionsCursor = response["result"]["cursor"].toString();
+
+		QJsonArray reactions = response["result"].toArray();
+		if(reactions.count() > 0)
+		{
+			foreach(const QJsonValue& reaction, reactions)
+			{
+				const QJsonObject r = reaction.toObject();
+				emit reactionLoaded(r["messageId"].toString(), r);
+			}
+		}
+	});
+}
+
+void MessagesModel::toggleReaction(QString messageId, int emojiId)
+{
+	if(!m_emojiReactions.contains(messageId))
+	{
+		const auto response =
+			Status::instance()->callPrivateRPC("wakuext_sendEmojiReaction", QJsonArray{m_chatId, messageId, emojiId}.toVariantList()).toJsonObject();
+		Status::instance()->emitMessageSignal(response["result"].toObject());
+		return;
+	}
+
+	bool exists = false;
+	int i = -1;
+	QString reactionId("");
+	foreach(const QJsonValue& reaction, m_emojiReactions[messageId])
+	{
+		i++;
+		const QJsonObject r = reaction.toObject();
+		if(r["emojiId"].toInt() == emojiId && r["from"] == Settings::instance()->publicKey())
+		{
+			exists = true;
+			reactionId = r["id"].toString();
+			break;
+		}
+	}
+	if(exists)
+	{
+		m_emojiReactions[messageId].removeAt(i);
+		const auto response =
+			Status::instance()->callPrivateRPC("wakuext_sendEmojiReactionRetraction", QJsonArray{reactionId}.toVariantList()).toJsonObject();
+		Status::instance()->emitMessageSignal(response["result"].toObject());
+	}
+	else
+	{
+		const auto response =
+			Status::instance()->callPrivateRPC("wakuext_sendEmojiReaction", QJsonArray{m_chatId, messageId, emojiId}.toVariantList()).toJsonObject();
+		Status::instance()->emitMessageSignal(response["result"].toObject());
+	}
 }
 
 void MessagesModel::addFakeMessages()

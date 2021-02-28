@@ -233,7 +233,7 @@ StackLayout {
                     }
                     return chatsModel.activeChannel.isMember
                 }
-                enabled: chat.contact && !chat.contact.isBlocked
+                enabled: !chat.contact || !chat.contact.isBlocked
                 chatInputPlaceholder: (!chatInput.enabled) ?
                         //% "This user has been blocked."
                         qsTrId("this-user-has-been-blocked-") :

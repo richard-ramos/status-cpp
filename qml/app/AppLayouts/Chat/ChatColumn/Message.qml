@@ -68,6 +68,7 @@ Item {
             var allReactions = Object.values(JSON.parse(emojiReactions))
             var byEmoji = {}
             allReactions.forEach(function (reaction) {
+                if(reaction.retracted) return;
                 if (!byEmoji[reaction.emojiId]) {
                     byEmoji[reaction.emojiId] = {
                         emojiId: reaction.emojiId,
@@ -77,14 +78,15 @@ Item {
                     }
                 }
                 byEmoji[reaction.emojiId].count++;
-                byEmoji[reaction.emojiId].fromAccounts.push(chatsModel.userNameOrAlias(reaction.from));
-                if (!byEmoji[reaction.emojiId].currentUserReacted && reaction.from === profileModel.profile.pubKey) {
+                byEmoji[reaction.emojiId].fromAccounts.push(Utils.getUsernameLabel(contactsModel.get_or_create(reaction.from), isCurrentUser));
+                if (!byEmoji[reaction.emojiId].currentUserReacted && reaction.from === StatusSettings.PublicKey) {
                     byEmoji[reaction.emojiId].currentUserReacted = true
                 }
 
             })
             return Object.values(byEmoji)
         } catch (e) {
+            console.log(e);
             console.error('Error parsing emoji reactions', e)
             return []
         }
@@ -124,7 +126,8 @@ Item {
         messageContextMenu.isProfile = !!isProfileClick
         messageContextMenu.isSticker = isSticker
         messageContextMenu.emojiOnly = emojiOnly
-        messageContextMenu.show()
+        messageContextMenu.messageId = root.messageId;
+        messageContextMenu.show(JSON.parse(root.emojiReactions))
         // Position the center of the menu where the mouse is
         messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2
     }
