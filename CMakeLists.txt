@@ -155,6 +155,8 @@ target_compile_features(status-cpp
     PRIVATE
         cxx_std_17
 )
+TARGET_COMPILE_DEFINITIONS(status-cpp
+  PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 
 
 qt5_add_binary_resources(static-resources "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/static-resources.rcc")
