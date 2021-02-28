@@ -26,7 +26,7 @@ public:
 	static Settings* instance();
 	~Settings();
 
-	Q_INVOKABLE void init();
+	Q_INVOKABLE void init(QString loginError);
 	Q_INVOKABLE void terminate();
 	Q_INVOKABLE void removeMnemonic();
 	Q_INVOKABLE QString getLinkPreviewWhitelist();

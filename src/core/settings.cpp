@@ -49,8 +49,10 @@ Settings::~Settings()
 	terminate();
 }
 
-void Settings::init()
+void Settings::init(QString loginError)
 {
+	if(loginError != "") return;
+
 	// TODO: extract to callPrivateRPC helper function
 	lock.lockForWrite();
 	QJsonObject obj{{"method", "settings_getSettings"}, {"params", QJsonArray{}}};
