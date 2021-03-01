@@ -49,7 +49,7 @@ Item {
                 switch(root.chatType) {
                     case ChatType.Public: return "#" + root.chatName;
                     case ChatType.OneToOne: return Utils.getUsernameLabel(contact)
-                    default: return root.chatName
+                    default: return Emoji.parse(Utils.filterXSS(root.chatName))
                 }
             }
 

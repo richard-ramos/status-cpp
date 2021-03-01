@@ -76,9 +76,16 @@ Rectangle {
 
     StyledText {
         id: contactInfo
-        text: wrapper.chatType != ChatType.Public ?
-                  Emoji.parse(Utils.getUsernameLabel(wrapper.contact)) :
-                  "#" + Utils.filterXSS(wrapper.name)
+        text: {
+            switch(wrapper.chatType){
+                case ChatType.OneToOne:
+                    return Utils.getUsernameLabel(wrapper.contact);
+                case ChatType.PrivateGroupChat:
+                    return Emoji.parse(Utils.filterXSS(wrapper.name))
+                default:
+                    return "#" + Utils.filterXSS(wrapper.name);
+            }   
+        }
         anchors.right: contactTime.left
         anchors.rightMargin: Style.current.smallPadding
         elide: Text.ElideRight
@@ -104,7 +111,7 @@ Rectangle {
                 case ContentType.Sticker: return qsTrId("sticker");
                 //% "No messages"
                 default: 
-                    return lastMessage ? Emoji.parse(Utils.filterXSS(lastMessage)).replace(/\n|\r/g, ' ') : qsTrId("no-messages")
+                    return lastMessage ? Emoji.parse(Utils.filterXSS(replaceUsernamesOnMessageMentions(lastMessage))).replace(/\n|\r/g, ' ') : qsTrId("no-messages")
             }
         }
         textFormat: Text.RichText

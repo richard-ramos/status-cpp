@@ -19,40 +19,6 @@
 using namespace Messages;
 using namespace Messages::Format;
 
-QString mention(QString pubKey, ContactsModel* contactsModel)
-{
-	Contact* contact(contactsModel->get(pubKey));
-	if(contact != nullptr)
-	{
-		if(contact->get_ensVerified() && contact->get_name() != "")
-		{
-			if(contact->get_name().endsWith(Constants::StatusDomain))
-			{
-				return contact->get_name().left(contact->get_name().length() - 14);
-			}
-			else
-			{
-				return contact->get_name();
-			}
-		}
-		else if(contact->get_localNickname() != "")
-		{
-			return contact->get_localNickname();
-		}
-		else
-		{
-			return contact->get_alias();
-		}
-	}
-	else
-	{
-		if(Settings::instance()->publicKey() == pubKey)
-		{
-			// TODO: check if ens name
-		}
-		return Utils::generateAlias(pubKey);
-	}
-}
 
 QHash<QString, RenderInlineTypes> renderInlineMap{
 	{"", Empty},
@@ -83,7 +49,7 @@ QString renderInline(const QJsonObject& elem, ContactsModel* contactsModel)
 	case Strong: return "<strong>" % value % "</strong>";
 	case StrongEmph: return "<strong><em>" % value % "</em></strong>";
 	case Link: return elem["destination"].toString();
-	case Mention: return "<a href=\"//" % value % "\" class=\"mention\">" % mention(value, contactsModel) % "</a>";
+	case Mention: return "<a href=\"//" % value % "\" class=\"mention\">" % value % "</a>";
 	case StatusTag: return "<a href=\"#" % value % "\" class=\"status-tag\">#" % value % "</a>";
 	case Del: return "<del>" % value % "</del>";
 	}
@@ -131,7 +97,7 @@ QString renderSimplifiedInline(const QJsonObject& elem, ContactsModel* contactsM
 	switch(renderInlineMap[textType])
 	{
 	case Link: return elem["destination"].toString();
-	case Mention: return mention(value, contactsModel);
+	case Mention: return value;
 	case StatusTag: return "#" % value;
 	default: return " " % QTextDocumentFragment::fromHtml(value).toPlainText() % " ";
 	}

@@ -50,6 +50,7 @@ ModalPopup {
 
         StyledTextEdit {
             id: profileName
+            textFormat: Text.RichText
             text: Utils.getUsernameLabel(contact)
             anchors.top: parent.top
             anchors.topMargin: Style.current.padding
@@ -62,6 +63,7 @@ ModalPopup {
         }
 
         StyledText {
+            textFormat: Text.RichText
             text: contact ? (((contact.ensVerified && contact.name !== "") || contact.localNickname) ? contact.alias : contact.id) : ""
             elide: contact && ((contact.ensVerified && contact.name !== "") || contact.localNickname)  ? Text.ElideNone : Text.ElideMiddle
             anchors.left: profilePic.right
@@ -218,8 +220,9 @@ ModalPopup {
 
         StyledText {
             id: nicknameText
+            textFormat: Text.RichText
             //% "None"
-            text: contact && contact.localNickname ? Utils.filterXSS(contact.localNickname) : qsTrId("none")
+            text: contact && contact.localNickname ? Emoji.parse(Utils.filterXSS(contact.localNickname)) : qsTrId("none")
             anchors.right: nicknameCaret.left
             anchors.rightMargin: Style.current.padding
             anchors.verticalCenter: nicknameCaret.verticalCenter

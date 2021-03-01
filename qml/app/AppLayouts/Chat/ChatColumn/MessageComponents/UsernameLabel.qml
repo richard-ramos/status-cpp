@@ -12,6 +12,7 @@ Item {
 
     StyledTextEdit {
         id: chatName
+        textFormat: Text.RichText
         text: Utils.getUsernameLabel(contact, isCurrentUser)
         color: text.startsWith("@") || isCurrentUser || (contact.ensVerified && contact.name !== "") || contact.localNickname !== "" ? Style.current.blue : Style.current.secondaryText
         font.weight: Font.Medium

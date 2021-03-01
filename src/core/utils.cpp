@@ -10,11 +10,13 @@
 
 QString Utils::generateAlias(QString publicKey)
 {
+	if(publicKey.isEmpty()) return "";
 	return QString(GenerateAlias(publicKey.toUtf8().data()));
 }
 
 QString Utils::generateIdenticon(QString publicKey)
 {
+	if(publicKey.isEmpty()) return "";
 	return QString(Identicon(publicKey.toUtf8().data()));
 }
 
