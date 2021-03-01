@@ -103,7 +103,7 @@ Item {
                                 `vertical-align: bottom;` +
                             `}` +
                         `</style>` +
-                        `${Emoji.parse(msg)}`
+                        `${Emoji.parse(replaceUsernamesOnMessageMentions(msg))}`
             }
         }
     }

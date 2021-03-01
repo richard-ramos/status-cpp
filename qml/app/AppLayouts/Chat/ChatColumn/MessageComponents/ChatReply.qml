@@ -71,7 +71,7 @@ Loader {
                         `</style>`+
                     `</head>`+
                     `<body>`+
-                        `${Emoji.parse(Utils.linkifyAndXSS(replyMessage.text), "26x26")}`+
+                        `${Emoji.parse(Utils.linkifyAndXSS(replaceUsernamesOnMessageMentions(replyMessage.text)), "26x26")}`+
                     `</body>`+
                 `</html>`
                 textFormat: Text.RichText

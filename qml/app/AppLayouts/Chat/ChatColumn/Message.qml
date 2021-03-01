@@ -231,7 +231,7 @@ Item {
                     `</style>`+
                 `</head>`+
                 `<body>`+
-                    `${message}`+
+                    `${Emoji.parse(replaceUsernamesOnMessageMentions(message))}`+
                 `</body>`+
             `</html>`;
             }
