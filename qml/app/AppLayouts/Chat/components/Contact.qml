@@ -82,7 +82,7 @@ Rectangle {
     }
 
     MouseArea {
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         anchors.fill: parent
         enabled: root.clickable || root.showCheckbox
         hoverEnabled: root.clickable || root.showCheckbox

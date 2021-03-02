@@ -183,7 +183,6 @@ void Chat::sendImage(QString imagePath)
 			// TODO: {"communityId", communityId}
 		};
 
-		qDebug() << obj;
 		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
 		if(!response["error"].isUndefined())
 		{

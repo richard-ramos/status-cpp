@@ -33,10 +33,9 @@ ScrollView {
             showCheckbox: root.selectMode
             pubKey: model.pubKey
             isContact: !!model.isContact
+            clickable: root.selectMode
             isUser: model.isUser
-            name: !model.name.endsWith(".eth") && !!model.localNickname ?
-                      model.localNickname : Utils.removeStatusEns(model.name)
-            address: model.address
+            name: Utils.getUsernameLabel(contactsModel.get(model.pubKey))
             identicon: model.thumbnailImage || model.identicon
             onItemChecked: function (pubKey, itemChecked) {
                 root.onItemChecked(pubKey, itemChecked)

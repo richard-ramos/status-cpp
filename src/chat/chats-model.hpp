@@ -8,6 +8,7 @@
 #include <QHash>
 #include <QQmlHelpers>
 #include <QVector>
+#include <QVariantList>
 
 class ChatsModel : public QAbstractListModel
 {
@@ -40,6 +41,7 @@ public:
 
 	Q_INVOKABLE void init();
 	Q_INVOKABLE void join(ChatType chatType, QString id, QString ensName = "");
+	Q_INVOKABLE void createGroup(QString groupName,  QVariantList members);
 
 	Q_INVOKABLE Chat* get(int row) const;
 	Q_INVOKABLE void remove(int row);

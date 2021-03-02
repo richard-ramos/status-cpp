@@ -6,6 +6,8 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
+import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 ModalPopup {
     id: popup
@@ -25,18 +27,17 @@ ModalPopup {
 
         contactList.membersData.clear();
 
-        chatView.getContactListObject(contactList.membersData)
+        chatView.getContactListObject(contactList.membersData, addedContacts)
 
         contactList.membersData.append({
             //% "(You)"
-            name: profileModel.profile.username + " " + qsTrId("(you)"),
-            pubKey: profileModel.profile.pubKey,
-            address: "",
-            identicon: profileModel.profile.identicon,
-            thumbnailImage: profileModel.profile.thumbnailImage,
+            name: Utils.getUsernameLabel(UserIdentity) + " " + qsTrId("(you)"),
+            pubKey: StatusSettings.PublicKey,
+            identicon: identityImage.identicon,
+            thumbnailImage: identityImage.defaultThumbnail,
             isUser: true
         });
-        noContactsRect.visible = !profileModel.contacts.list.hasAddedContacts();
+        noContactsRect.visible = addedContacts.count == 0;
         contactList.visible = !noContactsRect.visible;
         if (!contactList.visible) {
             memberCount = 0;
@@ -64,7 +65,8 @@ ModalPopup {
         if (pubKeys.length === 0) {
             return;
         }
-        chatsModel.groups.create(Utils.filterXSS(groupName.text), JSON.stringify(pubKeys));
+        console.log(JSON.stringify(pubKeys))
+        chatsModel.createGroup(Utils.filterXSS(groupName.text), pubKeys);
         popup.close();
     }
 
@@ -104,6 +106,26 @@ ModalPopup {
         fontPixelSize: 15
     }
 
+    Item {
+        SortFilterProxyModel {
+            id: addedContacts
+            sourceModel: contactsModel
+            filters: [
+                ValueFilter {
+                    enabled: true
+                    roleName: "isAdded"
+                    value: true
+                },
+                ValueFilter {
+                    enabled: true
+                    roleName: "isBlocked"
+                    value: false
+                }
+            ]
+            sorters: StringSorter { roleName: "name" }
+        }
+    }
+
     Input {
         id: groupName
         //% "Group name"
@@ -130,6 +152,7 @@ ModalPopup {
         anchors.topMargin: 50
         anchors.top: searchBox.bottom
         onItemChecked: function(pubKey, itemChecked){
+            if(!selectChatMembers) return;
             var idx = pubKeys.indexOf(pubKey)
             if(itemChecked){
                 if(idx === -1){

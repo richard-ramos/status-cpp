@@ -16,6 +16,7 @@
 #include <QQmlApplicationEngine>
 #include <algorithm>
 #include <array>
+#include <QVariantList>
 
 using namespace Messages;
 
@@ -143,6 +144,12 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 		int chatIndex = m_chats.indexOf(m_chatMap[id]);
 		emit joined(chatType, id, chatIndex);
 	}
+}
+
+void ChatsModel::createGroup(QString groupName, QVariantList members){
+	const auto response = Status::instance()->callPrivateRPC("wakuext_createGroupChatWithMembers", QJsonArray{QJsonValue(), groupName, QJsonArray::fromVariantList(members)}.toVariantList()).toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
 }
 
 void ChatsModel::startMessenger()
