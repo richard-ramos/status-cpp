@@ -60,7 +60,7 @@ RowLayout {
     }
 
     function replaceUsernamesOnMessageMentions(message){
-        return message.replace(/(0x[A-Fa-f0-9]{130})/g, (match, p1) => Utils.getUsernameLabel(contactsModel.get_or_create(p1), p1 === StatusSettings.PublicKey));
+        return message.replace(/(0x[A-Fa-f0-9]{130})/g, (match, p1) => Utils.getUsernameLabel(contactsModel.get_or_create(p1)));
     }
 
     signal settingsLoaded()

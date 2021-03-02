@@ -78,7 +78,7 @@ Item {
                     }
                 }
                 byEmoji[reaction.emojiId].count++;
-                byEmoji[reaction.emojiId].fromAccounts.push(Utils.getUsernameLabel(contactsModel.get_or_create(reaction.from), isCurrentUser));
+                byEmoji[reaction.emojiId].fromAccounts.push(Utils.getUsernameLabel(contactsModel.get_or_create(reaction.from), reaction.from === StatusSettings.PublicKey));
                 if (!byEmoji[reaction.emojiId].currentUserReacted && reaction.from === StatusSettings.PublicKey) {
                     byEmoji[reaction.emojiId].currentUserReacted = true
                 }

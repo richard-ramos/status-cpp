@@ -29,22 +29,20 @@ SplitView {
         return popup
     }
 
-    function getContactListObject(dataModel) {
-        const nbContacts = profileModel.contacts.list.rowCount()
+    function getContactListObject(dataModel, sourceModel) {
+        const nbContacts = sourceModel.count;
         const contacts = []
         let contact
         for (let i = 0; i < nbContacts; i++) {
             contact = {
-                name: profileModel.contacts.list.rowData(i, "name"),
-                localNickname: profileModel.contacts.list.rowData(i, "localNickname"),
-                pubKey: profileModel.contacts.list.rowData(i, "pubKey"),
-                address: profileModel.contacts.list.rowData(i, "address"),
-                identicon: profileModel.contacts.list.rowData(i, "identicon"),
-                thumbnailImage: profileModel.contacts.list.rowData(i, "thumbnailImage"),
+                name: sourceModel.get(i).name,
+                localNickname:  sourceModel.get(i).localNickname,
+                pubKey: sourceModel.get(i).contactId,
+                identicon: sourceModel.get(i).identicon,
+                thumbnailImage: sourceModel.get(i).image,
                 isUser: false,
-                isContact: profileModel.contacts.list.rowData(i, "isContact") !== "false"
+                isContact: sourceModel.get(i).isAdded
             }
-
             contacts.push(contact)
             if (dataModel) {
                 dataModel.append(contact);
