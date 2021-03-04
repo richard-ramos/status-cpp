@@ -24,7 +24,7 @@ Contact::Contact(QString id, QObject* parent)
 	, m_alias(Utils::generateAlias(id))
 	, m_identicon(Utils::generateIdenticon(id))
 {
-	qDebug() << "Contact::Contact - Contact does not exist.";
+	qDebug() << "Contact does not exist.";
 }
 
 Contact::Contact(QString id, QString ensName, QObject* parent)
@@ -34,7 +34,7 @@ Contact::Contact(QString id, QString ensName, QObject* parent)
 	, m_identicon(Utils::generateIdenticon(id))
 	, m_name(ensName)
 {
-	qDebug() << "Contact::Contact - Contact does not exist.";
+	qDebug() << "Contact does not exist.";
 }
 
 Contact::~Contact()

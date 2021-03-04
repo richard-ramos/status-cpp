@@ -115,7 +115,7 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 {
 	if(!m_chatMap.contains(id))
 	{
-		qDebug() << "ChatsModel::join - Chat does not exist. Creating chat: " << id;
+		qDebug() << "Chat does not exist. Creating chat: " << id;
 		try
 		{
 			Chat* c = new Chat(id, chatType, ensName);
@@ -133,10 +133,10 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 		}
 		catch(const std::exception& e)
 		{
-			qWarning() << "ChatsModel::join - Error saving chat: " << e.what();
+			qWarning() << "Error saving chat: " << e.what();
 			emit joinError(e.what());
 		}
-		qDebug() << "ChatsModel::join - Chat saved";
+		qDebug() << "Chat saved";
 	}
 	else
 	{
@@ -156,7 +156,7 @@ void ChatsModel::createGroup(QString groupName, QStringList members)
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 
 	// TO
-	emit joined(ChatType::PrivateGroupChat, m_chats[m_chats.count() - 1].get_id(), m_chats.count() - 1);
+	emit joined(ChatType::PrivateGroupChat, m_chats[m_chats.count() - 1]->get_id(), m_chats.count() - 1);
 }
 
 void ChatsModel::startMessenger()

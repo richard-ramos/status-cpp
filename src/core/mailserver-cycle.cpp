@@ -35,7 +35,7 @@ MailserverCycle::MailserverCycle(QObject* parent)
 MailserverCycle::~MailserverCycle()
 {
 	wait();
-	qDebug() << "MailserverCycle::~MailserverCycle - Stopping mailserver cycle thread";
+	qDebug() << "Stopping mailserver cycle thread";
 }
 
 void MailserverCycle::work()
@@ -59,13 +59,13 @@ void MailserverCycle::updateMailserver(QString enode)
 
 void MailserverCycle::connect(QString enode)
 {
-	qDebug() << "MailserverCycle::connect - " << enode;
+	qDebug() << "Connecting to " << enode;
 
 	bool mailserverTrusted = false;
 
 	if(!getMailservers().contains(enode))
 	{
-		qWarning() << "MailserverCycle::connect - Mailserver not known";
+		qWarning() << "Mailserver not known";
 		return;
 	}
 
@@ -99,7 +99,7 @@ void MailserverCycle::connect(QString enode)
 
 	if(mailserverTrusted)
 	{
-		qDebug() << "MailserverCycle::connect - Mailserver Available!";
+		qDebug() << "Mailserver Available!";
 		emit mailserverAvailable();
 	}
 }
@@ -110,7 +110,7 @@ void MailserverCycle::timeoutConnection(QString enode)
 	if(nodes[enode] != MailserverStatus::Connecting)
 		return;
 
-	qDebug() << "MailserverCycle::timeoutConnection - Connection attempt failed due to timeout";
+	qDebug() << "Connection attempt failed due to timeout";
 	nodes[enode] == MailserverStatus::Disconnected;
 	if(get_activeMailserver() == enode)
 		update_activeMailserver("");
@@ -134,7 +134,7 @@ QVector<QString> MailserverCycle::getMailservers()
 
 void MailserverCycle::findNewMailserver()
 {
-	qDebug() << "MailserverCycle::findNewMailserver";
+	qDebug() << "Finding a new mailserver";
 
 	const auto pingResponse =
 		Status::instance()
@@ -152,7 +152,7 @@ void MailserverCycle::findNewMailserver()
 
 	if(availableMailservers.count() == 0)
 	{
-		qWarning() << "MailserverCycle::findNewMailserver - No mailservers available";
+		qWarning() << "No mailservers available";
 		return;
 	}
 
@@ -171,7 +171,7 @@ void MailserverCycle::findNewMailserver()
 
 void MailserverCycle::disconnectActiveMailserver()
 {
-	qDebug() << "MailserverCycle::disconnectActiveMailserver - " << get_activeMailserver();
+	qDebug() << "Disconnecting active mailserver: " << get_activeMailserver();
 	nodes[get_activeMailserver()] = MailserverStatus::Disconnected;
 	const auto pingResponse =
 		Status::instance()->callPrivateRPC("admin_removePeer", QJsonArray{get_activeMailserver()}.toVariantList()).toJsonObject();
@@ -186,11 +186,11 @@ void MailserverCycle::run()
 
 	if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Trusted)
 	{
-		qDebug() << "MailserverCycle::run - Mailserver is already connected and trusted. Skipping iteration";
+		qDebug() << "Mailserver is already connected and trusted. Skipping iteration";
 		return;
 	}
 
-	qDebug() << "MailserverCycle::run - Automatically switching mailserver";
+	qDebug() << "Automatically switching mailserver";
 
 	if(get_activeMailserver() != "")
 		disconnectActiveMailserver();
@@ -218,7 +218,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 			nodes[it.key()] = MailserverStatus::Disconnected;
 			if(get_activeMailserver() == it.key())
 			{
-				qWarning() << "MailserverCycle::peerSummaryChange - Active mailserver disconnected! " << it.key();
+				qWarning() << "Active mailserver disconnected! " << it.key();
 				update_activeMailserver("");
 			}
 		}
@@ -245,7 +245,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 
 	if(available)
 	{
-		qDebug() << "MailserverCycle::peerSummaryChange - Mailserver available!";
+		qDebug() << "PeerSummaryChange - Mailserver available!";
 		emit mailserverAvailable();
 	}
 }
@@ -290,7 +290,7 @@ QString MailserverCycle::generateSymKeyFromPassword()
 
 void MailserverCycle::requestMessages(QVector<QString> topicList, qint64 fromValue, qint64 toValue, bool force)
 {
-	qDebug() << "MailserverCycle::requestMessages - " << get_activeMailserver();
+	qDebug() << "Requesting messages to " << get_activeMailserver();
 	QString generatedSymKey = generateSymKeyFromPassword();
 	requestMessagesCall(topicList, generatedSymKey, get_activeMailserver(), 1000, fromValue, toValue, force);
 }
@@ -326,13 +326,12 @@ void MailserverCycle::requestMessagesCall(
 													   .toVariantList())
 								  .toJsonObject();
 
-		qDebug() << response;
 	});
 }
 
 void MailserverCycle::initialMailserverRequest()
 {
-	qDebug() << "MailserverCycle::initialMailserverRequest";
+	qDebug() << "Initial request";
 
 	QObject::disconnect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
 

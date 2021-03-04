@@ -30,7 +30,7 @@ MessagesModel::MessagesModel(QString chatId, QObject* parent)
 	: m_chatId(chatId)
 	, QAbstractListModel(parent)
 {
-	qDebug() << "MessagesModel::constructor for chatId: " << m_chatId;
+	qDebug() << "Creating MessageModel for chatId: " << m_chatId;
 	QObject::connect(this, &MessagesModel::messageLoaded, this, QOverload<Message*>::of(&MessagesModel::push));
 	QObject::connect(this, &MessagesModel::reactionLoaded, this, QOverload<QString, QJsonObject>::of(&MessagesModel::push));
 

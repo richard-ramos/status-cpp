@@ -104,14 +104,6 @@ void Status::processSignal(QString ev)
 
 	signalType = signalMap[signalEvent["type"].toString()];
 
-	qDebug() << "======================== \nSignal received: " << signalType;
-	if(signalType == Message){
-		qDebug() << signalEvent;
-	}
-	if(signalType == EnvelopeSent){
-		qDebug() << signalEvent;
-	}
-
 	switch(signalType)
 	{
 	case NodeLogin: emit instance()->login(signalEvent["event"]["error"].toString()); break;
@@ -177,7 +169,7 @@ QString Status::generateQRCode(QString publicKey)
 
 QVariant Status::callPrivateRPC(QString method, QVariantList params)
 {
-	qDebug() << "CallPrivateRPC - method:" << method;
+	qDebug() << method;
 	QJsonObject payload{{"jsonrpc", "2.0"}, {"method", method}, {"params", QJsonValue::fromVariant(params)}};
 	QString payloadStr = Utils::jsonToStr(payload);
 

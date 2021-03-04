@@ -38,11 +38,37 @@
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
+#include <QDateTime>
 #include <QResource>
 
+void logFormatter(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+	QByteArray localMsg = msg.toLocal8Bit();
+	const char* file = context.file ? context.file : "";
+	const char* function = context.function ? context.function : "";
+
+	switch(type)
+	{
+	case QtDebugMsg: fprintf(stderr, "\033[0;90mDBG"); break;
+	case QtInfoMsg: fprintf(stderr, "\033[0;36mINF"); break;
+	case QtWarningMsg: fprintf(stderr, "\033[0;33mWRN"); break;
+	case QtCriticalMsg: fprintf(stderr, "\033[0;91mCRT"); break;
+	case QtFatalMsg: fprintf(stderr, "\031[0;31mFAT"); break;
+	}
+
+	fprintf(stderr,
+			" \033[0m%s \033[1m%s \033[0mfile=\033[94m%s:%u \033[0mfunction=\033[94m%s\n",
+			QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz").toStdString().c_str(),
+			localMsg.constData(),
+			file,
+			context.line,
+			function);
+}
 
 int main(int argc, char* argv[])
 {
+	qInstallMessageHandler(logFormatter);
+
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
@@ -123,10 +149,8 @@ int main(int argc, char* argv[])
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "EnsUtils", ensUtils.get());
 
-	
 	// TODO: check windows path
 	QResource::registerResource("./static-resources.rcc");
-
 
 	QObject::connect(Settings::instance(), &Settings::localeChanged, &engine, &QQmlApplicationEngine::retranslate);
 
