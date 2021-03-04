@@ -120,6 +120,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/profile)
 
 set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/logs.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
 )
