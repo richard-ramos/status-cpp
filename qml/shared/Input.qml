@@ -151,7 +151,7 @@ Item {
                         showBorder: true
                         onClicked: {
                             if (inputBox.copyToClipboard) {
-                                Status.copyToClipboard(inputValue.text)
+                                StatusUtils.copyToClipboard(inputValue.text)
                             } else {
                                 if (inputValue.canPaste) {
                                     inputValue.paste()

@@ -1,6 +1,5 @@
 
 #include "status.hpp"
-#include "QrCode.hpp"
 #include "constants.hpp"
 #include "libstatus.h"
 #include "settings.hpp"
@@ -17,6 +16,7 @@
 #include <QTextDocumentFragment>
 #include <QVariant>
 #include <QtConcurrent/QtConcurrent>
+#include "QrCode.hpp"
 
 std::map<QString, Status::SignalType> Status::signalMap;
 Status* Status::theInstance;
@@ -132,41 +132,6 @@ void Status::closeSession()
 	});
 }
 
-QString Status::generateAlias(QString publicKey)
-{
-	return Utils::generateAlias(publicKey);
-}
-
-QString Status::generateIdenticon(QString publicKey)
-{
-	return Utils::generateIdenticon(publicKey);
-}
-
-QString Status::generateQRCode(QString publicKey)
-{
-	using namespace qrcodegen;
-	// Create the QR Code object
-	QStringList svg;
-	QrCode qr = QrCode::encodeText(publicKey.toUtf8().data(), QrCode::Ecc::MEDIUM);
-	qint32 sz = qr.getSize();
-	int border = 2;
-	svg << QString("data:image/svg+xml;utf8,");
-	svg << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD "
-				   "SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">");
-	svg << QString("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 %1 %2\" "
-				   "stroke=\"none\"><rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/><path d=\"")
-			   .arg(sz + border * 2)
-			   .arg(sz + border * 2);
-	for(int y = 0; y < sz; y++)
-		for(int x = 0; x < sz; x++)
-			if(qr.getModule(x, y))
-				svg << QString("M%1,%2h1v1h-1z").arg(x + border).arg(y + border);
-
-	svg << QString("\" fill=\"#000000\"/></svg>");
-
-	return svg.join("");
-}
-
 QVariant Status::callPrivateRPC(QString method, QVariantList params)
 {
 	qDebug() << method;
@@ -204,16 +169,6 @@ void Status::callPrivateRPC(QString method, QVariantList params, const QJSValue&
 		watcher->deleteLater();
 	});
 	watcher->setFuture(QtConcurrent::run(this, &Status::callPrivateRPC, method, params));
-}
-
-void Status::copyToClipboard(const QString& value)
-{
-	return Utils::copyToClipboard(value);
-}
-
-QString Status::plainText(const QString& value)
-{
-	return QTextDocumentFragment::fromHtml(value).toPlainText();
 }
 
 QString Status::getNodeVersion()

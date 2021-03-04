@@ -1,27 +1,3 @@
-#include "status.hpp"
-#include <chrono>
-#include <cstring>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <openssl/ssl.h>
-#include <string>
-#include "logs.hpp"
-
-#include <QApplication>
-#include <QDebug>
-#include <QDir>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QLockFile>
-#include <QMessageBox>
-#include <QObject>
-#include <QQmlContext>
-#include <QScopedPointer>
-
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-
 #include "chat-type.hpp"
 #include "chat.hpp"
 #include "chats-model.hpp"
@@ -34,14 +10,34 @@
 #include "ens-utils.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
+#include "logs.hpp"
 #include "mailserver-cycle.hpp"
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
+#include "utils.hpp"
+#include <QApplication>
 #include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QGuiApplication>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLockFile>
+#include <QMessageBox>
+#include <QObject>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QResource>
-
+#include <QScopedPointer>
+#include <chrono>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <openssl/ssl.h>
+#include <string>
 
 int main(int argc, char* argv[])
 {
@@ -122,6 +118,8 @@ int main(int argc, char* argv[])
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
 	qRegisterMetaType<ContentType>("ContentType");
 	qmlRegisterUncreatableType<ContentTypeClass>("im.status.desktop", 1, 0, "ContentType", "Not creatable as it is an enum type");
+
+	qmlRegisterSingletonType<Utils>("im.status.desktop", 1, 0, "StatusUtils", utilsProvider);
 
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "Status", status.get());
 	qmlRegisterSingletonInstance("im.status.desktop", 1, 0, "StatusSettings", settings.get());

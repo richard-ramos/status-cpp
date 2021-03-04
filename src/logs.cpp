@@ -7,7 +7,7 @@ void logFormatter(QtMsgType type, const QMessageLogContext& context, const QStri
 	QByteArray localMsg = msg.toLocal8Bit();
 	const char* file = context.file ? context.file : "";
 	const char* function =
-		context.function ? QString(QStringLiteral("\033[0;33mfunction=\033[94m") + QString(context.function)).toLocal8Bit().constData() : "";
+		context.function ? (QString(QStringLiteral("\033[0;33mfunction=\033[94m") + QString(context.function)).toLocal8Bit().constData()) : "";
 	QByteArray timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz").toLocal8Bit();
 
 	const char* log;

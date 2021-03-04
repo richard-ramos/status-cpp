@@ -82,7 +82,7 @@ Column {
             text: {
                 switch(chat.chatType) {
                     //% "Welcome to the beginning of the <span style='color: %1'>%2</span> group!"
-                    case Constants.chatTypePrivateGroupChat: return qsTrId("welcome-to-the-beginning-of-the--span-style--color---1---2--span--group-").arg(Style.current.textColor).arg(chatsModel.activeChannel.name);
+                    case ChatType.PrivateGroupChat: return qsTrId("welcome-to-the-beginning-of-the--span-style--color---1---2--span--group-").arg(Style.current.textColor).arg(chat.name);
                     //% "Any messages you send here are encrypted and can only be read by you and <span style='color: %1'>%2</span>"
                     case ChatType.OneToOne: return qsTrId("any-messages-you-send-here-are-encrypted-and-can-only-be-read-by-you-and--span-style--color---1---2--span-").arg(Style.current.textColor).arg(Utils.getUsernameLabel(chat.contact));
                     default: return "";
@@ -98,7 +98,7 @@ Column {
     }
 
     Item {
-        visible: chat.chatType == ChatType.PrivateGroupChat && chatsModel.get(index).chatMembers.filter(x => x.id === StatusSettings.PublicKey && x.joined == true).length === 0;
+        visible: chat.chatType == ChatType.PrivateGroupChat && chat.chatMembers.filter(x => x.id === StatusSettings.PublicKey && x.joined == true).length === 0;
         anchors.horizontalCenter: parent.horizontalCenter
         width: joinChat.width
         height: visible ? 100 : 10

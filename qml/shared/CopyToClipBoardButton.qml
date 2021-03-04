@@ -52,7 +52,7 @@ Rectangle {
         }
         onClicked: {
             if (textToCopy) {
-                Status.copyToClipboard(textToCopy)
+                StatusUtils.copyToClipboard(textToCopy)
             }
             onClick()
         }

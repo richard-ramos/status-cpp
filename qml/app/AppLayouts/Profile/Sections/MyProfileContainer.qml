@@ -16,7 +16,7 @@ Item {
     Layout.fillWidth: true
 
     Component.onCompleted: {
-        username = Status.generateAlias(StatusSettings.PublicKey);
+        username = StatusUtils.generateAlias(StatusSettings.PublicKey);
         pubkey = StatusSettings.PublicKey;
     }
 
@@ -124,7 +124,7 @@ Item {
         Image {
             asynchronous: true
             fillMode: Image.PreserveAspectFit
-            source: Status.generateQRCode(pubkey)
+            source: StatusUtils.generateQRCode(pubkey)
             anchors.verticalCenterOffset: 20
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter

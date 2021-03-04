@@ -48,7 +48,7 @@ PopupMenu {
                 //% "View Profile"
                 return qsTrId("view-profile")
             }
-            if (channelContextMenu.contextChannel.chatType == Constants.chatTypePrivateGroupChat) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.PrivateGroupChat) {
                 //% "View Group"
                 return qsTrId("view-group")
             }
@@ -62,7 +62,7 @@ PopupMenu {
             if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
                 openProfilePopup(true, contactsModel.get_or_create(channelContextMenu.contextChannel.id))
             }
-            if (channelContextMenu.contextChannel.chatType == Constants.chatTypePrivateGroupChat) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.PrivateGroupChat) {
                 openPopup(groupInfoPopupComponent, {channel: chatsModel.get(index)});
             }
         }

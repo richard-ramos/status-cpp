@@ -100,7 +100,7 @@ Item {
             StyledText {
                 id: element1Subtitle
                 //% "An ENS name can replace your random 3-word name in chat. Be @yourname instead of %1."
-                text: qsTrId("an-ens-name-can-replace-your-random-3-word-name-in-chat--be--yourname-instead-of--1-").arg(Status.generateAlias(StatusSettings.PublicKey))
+                text: qsTrId("an-ens-name-can-replace-your-random-3-word-name-in-chat--be--yourname-instead-of--1-").arg(StatusUtils.generateAlias(StatusSettings.PublicKey))
                 anchors.left: element1Number.right
                 anchors.leftMargin: 24
                 anchors.top: element1Title.bottom

@@ -25,7 +25,7 @@ QtObject {
     Component.onCompleted: {
         const result = RpcClient.call("multiaccounts_getIdentityImages", [StatusSettings.KeyUID]);
         parseResponse(result);
-        identicon = Status.generateIdenticon(StatusSettings.PublicKey);
+        identicon = StatusUtils.generateIdenticon(StatusSettings.PublicKey);
     }
 
     function upload(imagePath, aX, aY, bX, bY){

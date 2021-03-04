@@ -64,6 +64,7 @@ QHash<int, QByteArray> ChatsModel::roleNames() const
 	roles[Messages] = "messages";
 	roles[LastMessage] = "lastMessage";
 	roles[Contact] = "contact";
+	roles[ChatMembers] = "chatMembers";
 
 	return roles;
 }
@@ -96,6 +97,7 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
 	case Contact: return QVariant(chat->get_chatType() == ChatType::OneToOne ? QVariant::fromValue(m_contacts->upsert(chat)) : "");
 	case ContentType: return QVariant(chat->get_lastMessage()->get_contentType());
+	case ChatMembers: return QVariant(QVariant::fromValue(chat->getChatMembers()));
 	}
 	// TODO: case HasMentions: return QVariant(chat->get_hasMentions());
 	//TODO: case ContentType: return QVariant(chat->get_contentType());

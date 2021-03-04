@@ -264,7 +264,7 @@ StackLayout {
                     if (chatInput.fileUrls.length > 0){
                         chatsModel.get(index).sendImage(chatInput.fileUrls[0]);
                     }
-                    var msg = Status.plainText(Emoji.deparse(chatInput.textInput.text))
+                    var msg = StatusUtils.plainText(Emoji.deparse(chatInput.textInput.text))
                     if (msg.length > 0){
                         msg = chatInput.interpretMessage(msg)
                         chatsModel.get(index).sendMessage(msg, chatInput.isReply ? SelectedMessage.messageId : "", Utils.isOnlyEmoji(msg), false);

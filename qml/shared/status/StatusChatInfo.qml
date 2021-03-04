@@ -100,7 +100,7 @@ Item {
                     //% "Not a contact"
                     qsTrId("chat-is-not-a-contact"))
                     case ChatType.PrivateGroupChat: 
-                        let cnt = chatsModel.get(index).chatMembers.length;
+                        let cnt = chat.chatMembers.length;
                         //% "%1 members"
                         if(cnt > 1) return qsTrId("%1-members").arg(cnt);
                         //% "1 member"

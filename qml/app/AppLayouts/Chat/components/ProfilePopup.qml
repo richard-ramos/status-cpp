@@ -104,7 +104,7 @@ ModalPopup {
             Image {
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
-                source: contact ? Status.generateQRCode(contact.id) : ""
+                source: contact ? StatusUtils.generateQRCode(contact.id) : ""
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: 212
                 width: 212

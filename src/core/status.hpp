@@ -38,18 +38,9 @@ public:
 
 	Q_ENUM(SignalType)
 
-	Q_INVOKABLE QString generateAlias(QString publicKey);
-	Q_INVOKABLE QString generateIdenticon(QString publicKey);
-	Q_INVOKABLE QString generateQRCode(QString publicKey);
 
-
-	// TODO: extract to utils singleton
-	Q_INVOKABLE void copyToClipboard(const QString& value); 
-	Q_INVOKABLE QString plainText(const QString& value);
 	Q_INVOKABLE QString getNodeVersion();
 	Q_PROPERTY(QString NodeVersion READ getNodeVersion CONSTANT)
-
-
 
 	Q_INVOKABLE QVariant callPrivateRPC(QString method, QVariantList params);
 	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);

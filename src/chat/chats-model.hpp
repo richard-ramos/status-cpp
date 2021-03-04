@@ -30,7 +30,8 @@ public:
 		HasMentions = Qt::UserRole + 11,
 		Description = Qt::UserRole + 12,
 		Messages = Qt::UserRole + 13,
-		Contact = Qt::UserRole + 14
+		Contact = Qt::UserRole + 14,
+		ChatMembers = Qt::UserRole + 15
 	};
 
 	explicit ChatsModel(QObject* parent = nullptr);

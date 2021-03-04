@@ -47,7 +47,7 @@ ModalPopup {
                     popup.validationError = qsTrId("can-t-chat-with-yourself");
                 } else {
                     searchResults.username = EnsUtils.formatUsername(chatKey.text);
-                    let userAlias = Status.generateAlias(resolvedPubKey)
+                    let userAlias = StatusUtils.generateAlias(resolvedPubKey)
                     userAlias = userAlias.length > 20 ? userAlias.substring(0, 19) + "..." : userAlias
                     searchResults.userAlias =  userAlias + " • " + Utils.compactAddress(resolvedPubKey, 4)
                     searchResults.pubKey = pubKey = resolvedPubKey;
@@ -75,7 +75,7 @@ ModalPopup {
             pubKey = chatKey.text;
             const contact = contactsModel.get(pubKey);
             if (!contact || !contact.isAdded) {
-                searchResults.username = Status.generateAlias(pubKey)
+                searchResults.username = StatusUtils.generateAlias(pubKey)
                 searchResults.userAlias = Utils.compactAddress(pubKey, 4)
                 searchResults.pubKey = pubKey
             }

@@ -346,9 +346,9 @@ QtObject {
         if(!contact) return "-";
 
         if(contact.ensVerified && contact.name !== ""){
-            return "@" + Emoji.parse(Status.plainText(removeStatusEns(filterXSS(contact.name))))
+            return "@" + Emoji.parse(StatusUtils.plainText(removeStatusEns(filterXSS(contact.name))))
         } else if (contact.localNickname !== "") {
-            return Emoji.parse(Status.plainText(filterXSS(contact.localNickname)));
+            return Emoji.parse(StatusUtils.plainText(filterXSS(contact.localNickname)));
         } else {
             return contact.alias
         }

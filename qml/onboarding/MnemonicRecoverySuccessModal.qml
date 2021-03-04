@@ -32,7 +32,7 @@ ModalPopup {
 
     StatusImageIdenticon {
         id: identicon
-        source: Status.generateIdenticon(onboardingModel.get(0).publicKey)
+        source: StatusUtils.generateIdenticon(onboardingModel.get(0).publicKey)
         anchors.top: info.bottom
         anchors.topMargin: Style.current.bigPadding
         anchors.horizontalCenter: parent.horizontalCenter
@@ -45,7 +45,7 @@ ModalPopup {
         anchors.top: identicon.bottom
         anchors.topMargin: Style.current.padding
         anchors.horizontalCenter: identicon.horizontalCenter
-        text: Status.generateAlias(onboardingModel.get(0).publicKey)
+        text: StatusUtils.generateAlias(onboardingModel.get(0).publicKey)
         font.weight: Font.Bold
         font.pixelSize: 15
     }

@@ -61,7 +61,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.leftMargin: Style.current.padding
-            source: Status.generateIdenticon(root.pubKey)
+            source: StatusUtils.generateIdenticon(root.pubKey)
         }
 
         StyledText {

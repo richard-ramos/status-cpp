@@ -11,8 +11,8 @@ QtObject {
     readonly property string ensVerifiedAt: "0" // TODO
     readonly property string lastENSClockValue: "0" // TODO
     readonly property string ensVerificationRetries: "0"
-    readonly property string alias: Status.generateAlias(StatusSettings.PublicKey)
-    readonly property string identicon: Status.generateIdenticon(StatusSettings.PublicKey)
+    readonly property string alias: StatusUtils.generateAlias(StatusSettings.PublicKey)
+    readonly property string identicon: StatusUtils.generateIdenticon(StatusSettings.PublicKey)
     readonly property string lastUpdated: "0"
     readonly property string localNickname: ""
     property string image: identicon
