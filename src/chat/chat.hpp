@@ -111,11 +111,13 @@ public:
 	Q_INVOKABLE void deleteChatHistory();
 	Q_INVOKABLE void markAllMessagesAsRead();
 
+	Q_INVOKABLE void join();
+
 	Q_INVOKABLE void renameGroup(QString newName);
 	Q_INVOKABLE void makeAdmin(QString memberId);
 	Q_INVOKABLE void removeFromGroup(QString memberId);
 	Q_INVOKABLE void addMembers(QStringList members);
-
+	
 	bool operator==(const Chat& c);
 
 	void update(const QJsonValue data);

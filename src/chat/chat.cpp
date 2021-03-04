@@ -425,3 +425,14 @@ void Chat::addMembers(QStringList members)
 
 	emit groupDataChanged();
 }
+
+
+void Chat::join()
+{
+	const auto response = Status::instance()
+							  ->callPrivateRPC("wakuext_confirmJoiningGroup", QJsonArray{m_id}.toVariantList())
+							  .toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
+	emit groupDataChanged();
+}

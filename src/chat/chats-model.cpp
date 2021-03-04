@@ -154,6 +154,9 @@ void ChatsModel::createGroup(QString groupName, QStringList members)
 							  .toJsonObject();
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
+
+	// TO
+	emit joined(ChatType::PrivateGroupChat, m_chats[m_chats.count() - 1].get_id(), m_chats.count() - 1);
 }
 
 void ChatsModel::startMessenger()

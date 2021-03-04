@@ -98,7 +98,7 @@ Column {
     }
 
     Item {
-        visible: chat.chatType == Constants.chatTypePrivateGroupChat && !chat.isMember
+        visible: chat.chatType == ChatType.PrivateGroupChat && chatsModel.get(index).chatMembers.filter(x => x.id === StatusSettings.PublicKey && x.joined == true).length === 0;
         anchors.horizontalCenter: parent.horizontalCenter
         width: joinChat.width
         height: visible ? 100 : 10
@@ -116,7 +116,7 @@ Column {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
-                    chatsModel.groups.join()
+                    chatsModel.get(index).join();
                     joinOrDecline.visible = false;
                 }
             }
