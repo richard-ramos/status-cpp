@@ -50,7 +50,7 @@ ListView {
     BlockContactConfirmationDialog {
         id: blockContactConfirmationDialog
         onBlockButtonClicked: {
-            profileModel.contacts.blockContact(blockContactConfirmationDialog.contactAddress)
+            contactsModel.get(blockContactConfirmationDialog.contactAddress).toggleBlock();
             blockContactConfirmationDialog.close()
         }
     }

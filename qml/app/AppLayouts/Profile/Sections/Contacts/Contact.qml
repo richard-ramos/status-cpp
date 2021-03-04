@@ -5,6 +5,7 @@ import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
 import "../../../Chat/components"
+import im.status.desktop 1.0
 
 Rectangle {
     property string name: "Jotaro Kujo"
@@ -69,8 +70,8 @@ Rectangle {
                 contactContextMenu.popup()
                 return
             }
-            chatsModel.joinChat(container.address, Constants.chatTypeOneToOne)
             changeAppSection(Constants.chat)
+            chatsModel.join(ChatType.OneToOne, contactId);
         }
     }
 
@@ -135,8 +136,8 @@ Rectangle {
                     //% "Send message"
                     text: qsTrId("send-message")
                     onTriggered: {
-                      changeAppSection(Constants.chat)
-                      chatsModel.joinChat(address, Constants.chatTypeOneToOne)
+                        changeAppSection(Constants.chat)
+                        chatsModel.join(ChatType.OneToOne, contactId);
                     }
                     enabled: !container.isBlocked
                 }
@@ -148,7 +149,7 @@ Rectangle {
                     text: qsTrId("block-user")
                     enabled: !container.isBlocked
                     onTriggered: {
-                      container.blockContactActionTriggered(name, address)
+                      container.blockContactActionTriggered(name, contactId)
                     }
                 }
                 Action {
@@ -159,7 +160,7 @@ Rectangle {
                     text: qsTrId("remove-contact")
                     enabled: container.isContact
                     onTriggered: {
-                      container.removeContactActionTriggered(address)
+                      container.removeContactActionTriggered(contactId)
                     }
                 }
                 Action {
@@ -171,7 +172,7 @@ Rectangle {
                     text: qsTrId("unblock-user")
                     enabled: container.isBlocked
                     onTriggered: {
-                      profileModel.contacts.unblockContact(address)
+                      contactsModel.get(contactId).toggleBlock();
                       contactContextMenu.close()
                     }
                 }

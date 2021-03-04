@@ -19,7 +19,6 @@ SplitView {
     property string activeChatId: contactColumnLoader.item.list.count > 0 ? chatMsgStackLayout.children[chatMsgStackLayout.currentIndex].item.chatId : ""
 
     property var onActivated: function () {
-        chatsModel.restorePreviousActiveChannel()
         chatColumn.onActivated()
     }
 
