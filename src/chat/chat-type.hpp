@@ -5,6 +5,7 @@
 class ChatTypeClass
 {
 	Q_GADGET
+
 public:
 	explicit ChatTypeClass();
 
@@ -23,3 +24,5 @@ public:
 };
 
 typedef ChatTypeClass::Value ChatType;
+
+Q_DECLARE_METATYPE(ChatType)

@@ -61,7 +61,7 @@ Column {
             switch(chat.chatType) {
                 case ChatType.Public: return "#" + chat.name;
                 case ChatType.OneToOne: return Utils.getUsernameLabel(chat.contact)
-                default: return chats.name
+                default: return chat.name
             }
         }
         font.weight: Font.Bold

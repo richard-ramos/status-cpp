@@ -2,18 +2,48 @@
 
 #include "chat-type.hpp"
 #include "contact.hpp"
+#include "mailserver-cycle.hpp"
+#include "message.hpp"
 #include "messages-model.hpp"
 #include <QDebug>
 #include <QJsonObject>
+#include <QMutex>
 #include <QObject>
 #include <QQmlHelpers>
 #include <QSet>
 #include <QString>
 #include <QVariant>
 #include <QVector>
-#include "message.hpp"
-#include <QMutex>
-#include "mailserver-cycle.hpp"
+
+struct ChatMember
+{
+	bool admin;
+	QString id;
+	bool joined;
+
+	Q_PROPERTY(bool admin MEMBER admin)
+	Q_PROPERTY(QString id MEMBER id)
+	Q_PROPERTY(bool joined MEMBER joined)
+
+	bool operator==(const ChatMember& a) const
+	{
+		return (id == a.id);
+	}
+	
+	Q_GADGET
+};
+Q_DECLARE_METATYPE(ChatMember)
+
+struct ChatMembershipEvent
+{
+	QString chatId;
+	QString clockValue;
+	QString from;
+	QString name;
+	QString rawPayload;
+	QString signature;
+	int type;
+};
 
 class Chat : public QObject
 {
@@ -31,11 +61,10 @@ public:
 				  QString lastClockValue = "0",
 				  QString deletedAtClockValue = "0",
 				  int unviewedMessagesCount = 0,
-				  bool muted = false
-				  );
+				  bool muted = false);
 	explicit Chat(const QJsonValue data, QObject* parent = nullptr);
 	virtual ~Chat();
-	
+
 	QML_READONLY_PROPERTY(QString, id)
 	QML_READONLY_PROPERTY(QString, name)
 	QML_READONLY_PROPERTY(QString, profile)
@@ -50,15 +79,14 @@ public:
 	QML_READONLY_PROPERTY(QString, deletedAtClockValue)
 	QML_READONLY_PROPERTY(int, unviewedMessagesCount)
 	QML_READONLY_PROPERTY(Message*, lastMessage)
-	//QSet<ChatMember> m_members;
-	//QVector<ChatMembershipEvent> m_membershipUpdateEvents;
 	QML_READONLY_PROPERTY(bool, muted)
-
 	// hasMentions
 	// ensName
 
 	QML_READONLY_PROPERTY(MessagesModel*, messages)
 	QML_READONLY_PROPERTY(Contact*, contact)
+
+	Q_PROPERTY(QSet<ChatMember> chatMembers READ getChatMembers NOTIFY groupDataChanged)
 
 signals:
 	void left(QString chatId);
@@ -66,11 +94,13 @@ signals:
 	void sendingMessageFailed();
 	void messagesLoaded();
 	void topicCreated(Topic t);
-
+	void groupDataChanged();
 
 private:
 	QMutex m_mutex;
 	QString m_filterId;
+	QSet<ChatMember> m_members;
+	QVector<ChatMembershipEvent> m_membershipUpdateEvents;
 
 public:
 	Q_INVOKABLE void save();
@@ -81,12 +111,17 @@ public:
 	Q_INVOKABLE void deleteChatHistory();
 	Q_INVOKABLE void markAllMessagesAsRead();
 
+	Q_INVOKABLE void renameGroup(QString newName);
+	Q_INVOKABLE void makeAdmin(QString memberId);
+	Q_INVOKABLE void removeFromGroup(QString memberId);
+	Q_INVOKABLE void addMembers(QStringList members);
 
-	bool operator==(const Chat &c);
+	bool operator==(const Chat& c);
 
 	void update(const QJsonValue data);
 	void loadFilter();
 	void removeFilter();
 	void setFilterId(QString filterId);
 
+	QSet<ChatMember> getChatMembers();
 };

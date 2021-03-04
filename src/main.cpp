@@ -112,6 +112,7 @@ int main(int argc, char* argv[])
 
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
 	qRegisterMetaType<Topic>("Topic");
+	qRegisterMetaType<ChatMember>("ChatMember");
 
 	qRegisterMetaType<ChatType>("ChatType");
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");

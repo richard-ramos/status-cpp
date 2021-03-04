@@ -262,7 +262,7 @@ StackLayout {
                 }
                 onSendMessage: {
                     if (chatInput.fileUrls.length > 0){
-                        chatsModel.get(index).sendImage(chatInput.fileUrls[0].replace("file://", ""));
+                        chatsModel.get(index).sendImage(chatInput.fileUrls[0]);
                     }
                     var msg = Status.plainText(Emoji.deparse(chatInput.textInput.text))
                     if (msg.length > 0){

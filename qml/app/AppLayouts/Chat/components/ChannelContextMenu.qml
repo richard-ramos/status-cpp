@@ -9,7 +9,6 @@ import im.status.desktop 1.0
 PopupMenu {
     property int channelIndex
     property var contextChannel
-    property var groupInfoPopup
 
     id: channelContextMenu
     width: 175
@@ -32,6 +31,13 @@ PopupMenu {
             channelContextMenu.contextChannel = chatsModel.get(index);
         }
         channelContextMenu.popup()
+    }
+
+    Component {
+        id: groupInfoPopupComponent
+        GroupInfoPopup {
+            id: groupInfoPopup
+        }
     }
 
     Action {
@@ -57,7 +63,7 @@ PopupMenu {
                 openProfilePopup(true, contactsModel.get_or_create(channelContextMenu.contextChannel.id))
             }
             if (channelContextMenu.contextChannel.chatType == Constants.chatTypePrivateGroupChat) {
-                return groupInfoPopup.openMenu(channelContextMenu.contextChannel)
+                openPopup(groupInfoPopupComponent, {channel: chatsModel.get(index)});
             }
         }
     }
@@ -105,11 +111,11 @@ PopupMenu {
     Action {
         text: {
             if(!channelContextMenu.contextChannel) return "";
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
                 //% "Delete chat"
                 return qsTrId("delete-chat")
             }
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypePrivateGroupChat) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.PrivateGroupChat) {
                 //% "Leave group"
                 return qsTrId("leave-group")
             }
@@ -118,7 +124,7 @@ PopupMenu {
         }
         icon.source: {
             if(!channelContextMenu.contextChannel) return "";
-            if (channelContextMenu.contextChannel.chatType === Constants.chatTypeOneToOne) {
+            if (channelContextMenu.contextChannel.chatType == ChatType.OneToOne) {
                 return "../../../img/delete.svg"
             }
             return "../../../img/leave_chat.svg"

@@ -59,6 +59,7 @@ void uint64ToStrReplacements(QString& input)
 	input.replace(QRegularExpression(QStringLiteral("\"timestamp\":(\\d+)")), QStringLiteral("\"timestamp\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":(\\d+)")), QStringLiteral("\"deletedAtClockValue\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"clock\":(\\d+)")), QStringLiteral("\"clock\":\"\\1\""));
+	input.replace(QRegularExpression(QStringLiteral("\"clockValue\":(\\d+)")), QStringLiteral("\"clockValue\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":(\\d+)")), QStringLiteral("\"whisperTimestamp\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":(\\d+)")), QStringLiteral("\"ensVerifiedAt\":\"\\1\""));
 	input.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":(\\d+)")), QStringLiteral("\"lastENSClockValue\":\"\\1\""));
@@ -185,6 +186,7 @@ QVariant Status::callPrivateRPC(QString method, QVariantList params)
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"timestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"timestamp\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"deletedAtClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"deletedAtClockValue\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"clock\":\\s\"(\\d+?)\"")), QStringLiteral("\"clock\":\\1"));
+	payloadStr.replace(QRegularExpression(QStringLiteral("\"clockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"clockValue\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"whisperTimestamp\":\\s\"(\\d+?)\"")), QStringLiteral("\"whisperTimestamp\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"ensVerifiedAt\":\\s\"(\\d+?)\"")), QStringLiteral("\"ensVerifiedAt\":\\1"));
 	payloadStr.replace(QRegularExpression(QStringLiteral("\"lastENSClockValue\":\\s\"(\\d+?)\"")), QStringLiteral("\"lastENSClockValue\":\\1"));

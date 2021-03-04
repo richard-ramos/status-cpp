@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import "../../../imports"
 import "../../../shared"
+import im.status.desktop 1.0
 
 Item {
     id: nodeView
@@ -30,7 +31,7 @@ Item {
             StyledText {
                 id: test
                 color: Style.current.lightBlueText
-                text: nodeModel.lastMessage
+                text: ""
                 Layout.rightMargin: Style.current.padding
                 Layout.leftMargin: Style.current.padding
                 Layout.fillWidth: true
@@ -44,7 +45,7 @@ Item {
             Layout.fillHeight: true
             Layout.rightMargin: Style.current.padding
             Layout.leftMargin: Style.current.padding
-            TextArea { id: callResult; Layout.fillWidth: true; text: nodeModel.callResult; readOnly: true }
+            TextArea { id: callResult; Layout.fillWidth: true; text: ""; readOnly: true }
         }
 
         RowLayout {
@@ -80,7 +81,11 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: 16
                         onClicked: {
-                            nodeModel.onSend(txtData.text)
+                            const request = JSON.parse(txtData.text);
+                            Status.callPrivateRPC(request.method, request.params || [], function(result){
+                                callResult.text = JSON.stringify(result);
+                                console.log(callResult.text)
+                            });
                             txtData.text = ""
                         }
                         enabled: txtData.text !== ""
@@ -105,11 +110,20 @@ Item {
                         anchors.left: parent.left
                         anchors.leftMargin: 24
                         Keys.onEnterPressed: {
-                            nodeModel.onSend(txtData.text)
+                            const request = JSON.parse(txtData.text);
+                            Status.callPrivateRPC(request.method, request.params || [], function(result){
+                                callResult.text = JSON.stringify(result);
+                                console.log(callResult.text)
+                            });
+                            
                             txtData.text = ""
                         }
                         Keys.onReturnPressed: {
-                            nodeModel.onSend(txtData.text)
+                            const request = JSON.parse(txtData.text);
+                            Status.callPrivateRPC(request.method, request.params || [], function(result){
+                                callResult.text = JSON.stringify(result);
+                                console.log(callResult.text)
+                            });
                             txtData.text = ""
                         }
                         background: Rectangle {

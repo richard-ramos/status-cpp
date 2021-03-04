@@ -5,6 +5,8 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "./"
+import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 ModalPopup {
     id: popup
@@ -18,19 +20,14 @@ ModalPopup {
 
     function resetSelectedMembers(){
         pubKeys = [];
-        memberCount = channel.members.rowCount();
+        memberCount = channel.chatMembers.length;
         currMemberCount = memberCount;
         contactList.membersData.clear();
-
-        const contacts = chatView.getContactListObject()
-
+        const contacts = chatView.getContactListObject(null, addedContacts)
         contacts.forEach(function (contact) {
-            if(popup.channel.contains(contact.pubKey) ||
-                    !contact.isContact) {
-                return;
-            }
+            if(popup.channel.chatMembers.filter(x => x.id === contact.pubKey).length > 0) return;
             contactList.membersData.append(contact)
-        })
+        });
     }
 
     onClosed: {
@@ -39,14 +36,14 @@ ModalPopup {
 
     onOpened: {
         addMembers = false;
-        popup.isAdmin = popup.channel.isAdmin(profileModel.profile.pubKey)
+        popup.isAdmin = popup.channel.chatMembers.filter(x => x.id === StatusSettings.PublicKey && x.admin).length;
         btnSelectMembers.enabled = false;
         resetSelectedMembers();
     }
 
     function doAddMembers(){
         if(pubKeys.length === 0) return;
-        chatsModel.groups.addMembers(popup.channel.id, JSON.stringify(pubKeys));
+        channel.addMembers(pubKeys);
         popup.close();
     }
 
@@ -143,6 +140,13 @@ ModalPopup {
         id: addMembersItem
         anchors.fill: parent
 
+        Connections {
+            target: channel
+            onGroupDataChanged: {
+                resetSelectedMembers();
+            }
+        }
+
         SearchBox {
             id: searchBox
             visible: addMembers
@@ -158,6 +162,26 @@ ModalPopup {
             anchors.top: searchBox.bottom
             anchors.topMargin: Style.current.xlPadding
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Item {
+            SortFilterProxyModel {
+                id: addedContacts
+                sourceModel: contactsModel
+                filters: [
+                    ValueFilter {
+                        enabled: true
+                        roleName: "isAdded"
+                        value: true
+                    },
+                    ValueFilter {
+                        enabled: true
+                        roleName: "isBlocked"
+                        value: false
+                    }
+                ]
+                sorters: StringSorter { roleName: "name" }
+            }
         }
 
         ContactList {
@@ -179,7 +203,7 @@ ModalPopup {
                         pubKeys.splice(idx, 1);
                     }
                 }
-                memberCount = popup.channel.members.rowCount() + pubKeys.length;
+                memberCount = popup.channel.chatMembers.length + pubKeys.length;
                 btnSelectMembers.enabled = pubKeys.length > 0
             }
         }
@@ -210,29 +234,28 @@ ModalPopup {
             spacing: 15
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: popup.channel.members
+            model: popup.channel.chatMembers
             delegate: Item {
                 id: contactRow
                 width: parent.width
                 height: identicon.height
 
-                property string nickname: appMain.getUserNickname(model.pubKey)
-
+                property var contact: contactsModel.get_or_create(modelData.id);
+    
                 StatusImageIdenticon {
                     id: identicon
                     anchors.left: parent.left
-                    source: appMain.getProfileImage(model.pubKey)|| model.identicon
+                    source: appMain.getProfileImage(contact)
                 }
 
                 StyledText {
-                    text: !model.userName.endsWith(".eth") && !!contactRow.nickname ?
-                              contactRow.nickname : Utils.removeStatusEns(model.userName)
+                    text: Utils.getUsernameLabel(contact)
                     anchors.left: identicon.right
                     anchors.leftMargin: Style.current.smallPadding
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 13
                     StyledText {
-                        visible: model.pubKey === profileModel.profile.pubKey
+                        visible: modelData.id === StatusSettings.PublicKey
                         anchors.left: parent.right
                         anchors.leftMargin: 5
                         //% "(You)"
@@ -244,15 +267,15 @@ ModalPopup {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            const userProfileImage = appMain.getProfileImage(model.pubKey)
-                            openProfilePopup(model.userName, model.pubKey, userProfileImage || model.identicon, '', contactRow.nickname)
+                            const userProfileImage = appMain.getProfileImage(contact)
+                            openProfilePopup(modelData.id !== StatusSettings.PublicKey, contact)
                         }
                     }
                 }
 
                 StyledText {
                     id: adminLabel
-                    visible: model.isAdmin
+                    visible: modelData.admin
                     //% "Admin"
                     text: qsTrId("group-chat-admin")
                     anchors.right: parent.right
@@ -263,7 +286,7 @@ ModalPopup {
 
                 StyledText {
                     id: moreActionsBtn
-                    visible: !model.isAdmin && popup.isAdmin
+                    visible: !modelData.admin && popup.isAdmin
                     text: "..."
                     anchors.right: parent.right
                     anchors.rightMargin: Style.current.smallPadding
@@ -283,14 +306,16 @@ ModalPopup {
                                 icon.source: "../../../img/make-admin.svg"
                                 //% "Make Admin"
                                 text: qsTrId("make-admin")
-                                onTriggered: chatsModel.groups.makeAdmin(popup.channel.id,  model.pubKey)
+                                onTriggered: channel.makeAdmin(modelData.id)
                             }
                             Action {
                                 icon.source: "../../../img/remove-from-group.svg"
                                 icon.color: Style.current.red
                                 //% "Remove From Group"
                                 text: qsTrId("remove-from-group")
-                                onTriggered: chatsModel.groups.kickMember(popup.channel.id,  model.pubKey)
+                                onTriggered: {
+                                    channel.removeFromGroup(modelData.id);
+                                }
                             }
                         }
                     }

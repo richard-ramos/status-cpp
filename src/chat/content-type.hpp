@@ -28,3 +28,5 @@ public:
 };
 
 typedef ContentTypeClass::Value ContentType;
+
+Q_DECLARE_METATYPE(ContentType)

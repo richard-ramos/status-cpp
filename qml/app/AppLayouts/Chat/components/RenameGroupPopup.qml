@@ -8,7 +8,7 @@ import "./"
 
 ModalPopup {
     function doRename(){
-        chatsModel.groups.rename(groupName.text)
+        channel.renameGroup(groupName.text)
         popup.close();
     }
 
@@ -20,7 +20,7 @@ ModalPopup {
 
     onOpened: {
         groupName.forceActiveFocus(Qt.MouseFocusReason)
-        groupName.text = chatsModel.activeChannel.name
+        groupName.text = channel.name;
     }
 
     Input {

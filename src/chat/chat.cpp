@@ -1,27 +1,27 @@
 #include "chat.hpp"
 #include "chat-type.hpp"
+#include "constants.hpp"
 #include "content-type.hpp"
 #include "mailserver-cycle.hpp"
-#include "constants.hpp"
 #include "messages-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
 #include "utils.hpp"
+#include <QColorSpace>
 #include <QDateTime>
 #include <QDebug>
+#include <QFileInfo>
 #include <QFutureWatcher>
+#include <QImage>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QPixmap>
 #include <QQmlApplicationEngine>
 #include <QRandomGenerator>
 #include <QString>
 #include <QVariant>
 #include <QtConcurrent>
 #include <stdexcept>
-#include <QImage>
-#include <QPixmap>
-#include <QFileInfo>
-#include <QColorSpace>
 
 Chat::Chat(QString id,
 		   ChatType chatType,
@@ -102,6 +102,29 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	m_lastMessage = new Message(data["lastMessage"]);
 	m_lastMessage->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
+
+	if(m_chatType == ChatType::PrivateGroupChat)
+	{
+		foreach(const QJsonValue& value, data["members"].toArray())
+		{
+			const QJsonObject obj = value.toObject();
+			m_members << ChatMember{.admin = obj["admin"].toBool(), .id = obj["id"].toString(), .joined = obj["joined"].toBool()};
+		}
+
+		foreach(const QJsonValue& value, data["membershipUpdateEvents"].toArray())
+		{
+			const QJsonObject obj = value.toObject();
+			ChatMembershipEvent c;
+			c.chatId = obj["id"].toString();
+			c.clockValue = obj["clockValue"].toString();
+			c.from = obj["from"].toString();
+			c.name = obj["name"].toString();
+			c.rawPayload = obj["rawPayload"].toString();
+			c.signature = obj["signature"].toString();
+			c.type = obj["type"].toInt();
+			m_membershipUpdateEvents << c;
+		}
+	}
 }
 
 void Chat::update(const QJsonValue data)
@@ -119,6 +142,37 @@ void Chat::update(const QJsonValue data)
 	update_deletedAtClockValue(data["deletedAtClockValue"].toString());
 	update_unviewedMessagesCount(data["unviewedMessagesCount"].toInt());
 	update_muted(data["muted"].toBool());
+
+	if(m_chatType == ChatType::PrivateGroupChat)
+	{
+		m_members.clear();
+		foreach(const QJsonValue& value, data["members"].toArray())
+		{
+			const QJsonObject obj = value.toObject();
+			ChatMember c;
+			c.id = obj["id"].toString();
+			c.joined = obj["joined"].toBool();
+			c.admin = obj["admin"].toBool();
+			m_members << c;
+		}
+
+		m_membershipUpdateEvents.clear();
+		foreach(const QJsonValue& value, data["membershipUpdateEvents"].toArray())
+		{
+			const QJsonObject obj = value.toObject();
+			ChatMembershipEvent c;
+			c.chatId = obj["id"].toString();
+			c.clockValue = obj["clockValue"].toString();
+			c.from = obj["from"].toString();
+			c.name = obj["name"].toString();
+			c.rawPayload = obj["rawPayload"].toString();
+			c.signature = obj["signature"].toString();
+			c.type = obj["type"].toInt();
+			m_membershipUpdateEvents << c;
+		}
+
+		emit groupDataChanged();
+	}
 }
 
 void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
@@ -147,29 +201,28 @@ void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 	});
 }
 
-
 void Chat::sendImage(QString imagePath)
 {
 	QString preferredUsername = Settings::instance()->preferredName();
 	emit sendingMessage();
 
-	qDebug() << imagePath;
+	QImage img(QUrl(imagePath).toLocalFile());
+	img.setColorSpace(QColorSpace::SRgb);
+	int w = img.width();
+	int h = img.height();
 
- 	QImage img(imagePath);
-    img.setColorSpace(QColorSpace::SRgb);
-    int w = img.width();
-    int h = img.height();
+	QPixmap pixmap;
+	pixmap = pixmap.fromImage(img.scaled(Constants::MaxImageSize < w ? Constants::MaxImageSize : w,
+										 Constants::MaxImageSize < h ? Constants::MaxImageSize : h,
+										 Qt::KeepAspectRatio,
+										 Qt::SmoothTransformation));
 
-    QPixmap pixmap;
-    pixmap = pixmap.fromImage(img.scaled(Constants::MaxImageSize < w ? Constants::MaxImageSize : w, Constants::MaxImageSize < h ? Constants::MaxImageSize : h, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+	auto newFilePath = Constants::tmpPath("/" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".jpg");
 
-    auto newFilePath = Constants::tmpPath("/" + QUuid::createUuid().toString(QUuid::WithoutBraces) + ".jpg");
-
-    QFile file(newFilePath);
-    file.open(QIODevice::WriteOnly);
-    pixmap.save(&file, "jpeg", 75);
-    file.close();
-
+	QFile file(newFilePath);
+	file.open(QIODevice::WriteOnly);
+	pixmap.save(&file, "jpeg", 75);
+	file.close();
 
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
@@ -192,9 +245,6 @@ void Chat::sendImage(QString imagePath)
 		Status::instance()->emitMessageSignal(response["result"].toObject());
 	});
 }
-
-
-
 
 void Chat::leave()
 {
@@ -244,7 +294,6 @@ void Chat::removeFilter()
 	QJsonObject obj{{"ChatID", m_id}, {"FilterID", m_filterId}};
 	const auto response = Status::instance()->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
 
-	qDebug() << response;
 	if(!response["error"].isUndefined())
 	{
 		throw std::domain_error(response["error"]["message"].toString().toUtf8());
@@ -258,7 +307,6 @@ void Chat::deleteChatHistory()
 	{
 		throw std::domain_error(response["error"]["message"].toString().toUtf8());
 	}
-
 
 	auto msg = new Message(QJsonValue{});
 	msg->setParent(this);
@@ -324,4 +372,56 @@ void Chat::save()
 		throw std::domain_error(response["error"]["message"].toString().toUtf8());
 	}
 	//});
+}
+
+uint qHash(const ChatMember& item)
+{
+	return qHash(item.id);
+}
+
+QSet<ChatMember> Chat::getChatMembers()
+{
+	return m_members;
+}
+
+void Chat::renameGroup(QString newName)
+{
+	const auto response =
+		Status::instance()->callPrivateRPC("wakuext_changeGroupChatName", QJsonArray{QJsonValue(), m_id, newName}.toVariantList()).toJsonObject();
+
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
+}
+
+void Chat::makeAdmin(QString memberId)
+{
+	const auto response = Status::instance()
+							  ->callPrivateRPC("wakuext_addAdminsToGroupChat", QJsonArray{QJsonValue(), m_id, QJsonArray{memberId}}.toVariantList())
+							  .toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
+
+	emit groupDataChanged();
+}
+
+void Chat::removeFromGroup(QString memberId)
+{
+	const auto response = Status::instance()
+							  ->callPrivateRPC("wakuext_removeMemberFromGroupChat", QJsonArray{QJsonValue(), m_id, memberId}.toVariantList())
+							  .toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
+
+	emit groupDataChanged();
+}
+
+void Chat::addMembers(QStringList members)
+{
+	const auto response = Status::instance()
+							  ->callPrivateRPC("wakuext_addMembersToGroupChat", QJsonArray{QJsonValue(), m_id, QJsonArray::fromStringList(members)}.toVariantList())
+							  .toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
+
+	emit groupDataChanged();
 }

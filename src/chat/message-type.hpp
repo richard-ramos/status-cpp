@@ -22,3 +22,5 @@ public:
 };
 
 typedef MessageTypeClass::Value MessageType;
+
+Q_DECLARE_METATYPE(MessageType)

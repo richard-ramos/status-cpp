@@ -27,6 +27,13 @@ Rectangle {
     }
 
     Component {
+        id: groupInfoPopupComponent
+        GroupInfoPopup {
+            id: groupInfoPopup
+        }
+    }
+
+    Component {
         id: chatInfoButton
         StatusChatInfoButton {
             chatId: chat.chatId
@@ -41,7 +48,7 @@ Rectangle {
             onClicked: {
                 switch (chat.chatType) {
                     case ChatType.PrivateGroupChat: 
-                        groupInfoPopup.open()
+                        openPopup(groupInfoPopupComponent, {channel: chatsModel.get(index)});
                         break;
                     case ChatType.OneToOne:
                         openProfilePopup(true, contactsModel.get_or_create(chat.chatId))
@@ -96,21 +103,7 @@ Rectangle {
             }
 
             onClicked: {
-                var menu = chatContextMenu;
-                var isPrivateGroupChat = chat.chatType === ChatType.PrivateGroupChat
-                if(isPrivateGroupChat){
-                    menu = groupContextMenu
-                }
-
-                if (menu.opened) {
-                    return menu.close()
-                }
-
-                if (isPrivateGroupChat) {
-                    menu.popup(moreActionsBtn.x, moreActionsBtn.height)
-                } else {
-                    menu.openMenu(index)
-                }
+                chatContextMenu.openMenu(index)
             }
             cursorShape: Qt.PointingHandCursor
             acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -118,48 +111,6 @@ Rectangle {
 
             ChannelContextMenu {
                 id: chatContextMenu
-                groupInfoPopup: groupInfoPopup
-            }
-
-            PopupMenu {
-                id: groupContextMenu
-                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-                Action {
-                    icon.source: "../../../img/group_chat.svg"
-                    icon.width: chatTopBarContent.iconSize
-                    icon.height: chatTopBarContent.iconSize
-                    //% "Group Information"
-                    text: qsTrId("group-information")
-                    onTriggered: groupInfoPopup.openMenu(chatsModel.activeChannel, chatsModel.getActiveChannelIdx())
-                }
-                Action {
-                    icon.source: "../../../img/close.svg"
-                    icon.width: chatTopBarContent.iconSize
-                    icon.height: chatTopBarContent.iconSize
-                    //% "Clear history"
-                    text: qsTrId("clear-history")
-                    onTriggered: chatsModel.clearChatHistory(chatsModel.activeChannel.id)
-                }
-                Action {
-                    icon.source: "../../../img/leave_chat.svg"
-                    icon.width: chatTopBarContent.iconSize
-                    icon.height: chatTopBarContent.iconSize
-                    //% "Leave Group"
-                    text: qsTrId("leave-group")
-                    onTriggered: {
-                      //% "Leave group"
-                      deleteChatConfirmationDialog.title = qsTrId("leave-group")
-                      //% "Leave group"
-                      deleteChatConfirmationDialog.confirmButtonLabel = qsTrId("leave-group")
-                      //% "Are you sure you want to leave this chat?"
-                      deleteChatConfirmationDialog.confirmationText = qsTrId("are-you-sure-you-want-to-leave-this-chat-")
-                      deleteChatConfirmationDialog.open()
-                    }
-                }
-            }
-
-            GroupInfoPopup {
-                id: groupInfoPopup
             }
         }
     }

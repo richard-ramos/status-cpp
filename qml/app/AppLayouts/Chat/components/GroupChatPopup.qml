@@ -65,7 +65,6 @@ ModalPopup {
         if (pubKeys.length === 0) {
             return;
         }
-        console.log(JSON.stringify(pubKeys))
         chatsModel.createGroup(Utils.filterXSS(groupName.text), pubKeys);
         popup.close();
     }

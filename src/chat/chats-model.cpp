@@ -14,9 +14,9 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QQmlApplicationEngine>
+#include <QVariantList>
 #include <algorithm>
 #include <array>
-#include <QVariantList>
 
 using namespace Messages;
 
@@ -146,8 +146,12 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 	}
 }
 
-void ChatsModel::createGroup(QString groupName, QVariantList members){
-	const auto response = Status::instance()->callPrivateRPC("wakuext_createGroupChatWithMembers", QJsonArray{QJsonValue(), groupName, QJsonArray::fromVariantList(members)}.toVariantList()).toJsonObject();
+void ChatsModel::createGroup(QString groupName, QStringList members)
+{
+	const auto response = Status::instance()
+							  ->callPrivateRPC("wakuext_createGroupChatWithMembers",
+											   QJsonArray{QJsonValue(), groupName, QJsonArray::fromStringList(members)}.toVariantList())
+							  .toJsonObject();
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 }
