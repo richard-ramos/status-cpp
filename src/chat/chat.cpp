@@ -103,6 +103,11 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	m_lastMessage->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
 
+	m_hasMentions = false;
+	if(m_lastMessage->get_hasMention()){
+		m_hasMentions = true;
+	}
+
 	if(m_chatType == ChatType::PrivateGroupChat)
 	{
 		foreach(const QJsonValue& value, data["members"].toArray())

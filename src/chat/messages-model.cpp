@@ -55,6 +55,7 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	roles[OutgoingStatus] = "outgoingStatus";
 	roles[Image] = "image";
 	roles[EmojiReactions] = "emojiReactions";
+	roles[HasMention] = "hasMention";
 	return roles;
 }
 
@@ -102,6 +103,7 @@ QVariant MessagesModel::data(const QModelIndex& index, int role) const
 	case LinkUrls: return QVariant(Messages::Format::linkUrls(msg));
 	case OutgoingStatus: return QVariant(msg->get_outgoingStatus());
 	case Image: return QVariant(msg->get_image());
+	case HasMention: return QVariant(msg->get_hasMention());
 	case EmojiReactions: {
 		QJsonArray emojiReactions = m_emojiReactions[msg->get_id()];
 		return m_emojiReactions.contains(msg->get_id()) ? QVariant(Utils::jsonToStr(emojiReactions)) : QVariant("[]");

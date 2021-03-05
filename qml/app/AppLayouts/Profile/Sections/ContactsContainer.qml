@@ -108,7 +108,7 @@ Item {
             title: qsTrId("blocked-contacts")
 
             ContactList {
-                id: blockedCOntactsListView
+                id: blockedContactsListView
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 contacts: SortFilterProxyModel {

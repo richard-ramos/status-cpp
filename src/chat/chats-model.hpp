@@ -52,9 +52,6 @@ public:
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
 	Q_INVOKABLE void setupMessageModel();
-	//Q_INVOKABLE void update();
-	//Q_INVOKABLE void leave(chatType, id);
-	//Q_INVOKABLE void mute(chatType, id);
 
 signals:
 	void joinError(QString message);

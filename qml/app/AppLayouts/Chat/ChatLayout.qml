@@ -14,12 +14,10 @@ SplitView {
     id: chatView
     handle: SplitViewHandle {}
 
-    //property alias chatColumn: chatColumn
-
     property string activeChatId: contactColumnLoader.item.list.count > 0 ? chatMsgStackLayout.children[chatMsgStackLayout.currentIndex].item.chatId : ""
 
     property var onActivated: function () {
-        chatColumn.onActivated()
+        chatMsgStackLayout.children[chatMsgStackLayout.currentIndex].item.onActivated();
     }
 
     function openPopup(popupComponent, params = {}) {

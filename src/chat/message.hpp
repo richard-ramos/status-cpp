@@ -57,6 +57,7 @@ public:
 	QML_READONLY_PROPERTY(QString, whisperTimestamp)
 	QML_READONLY_PROPERTY(QString, linksUrls)
 	QML_READONLY_PROPERTY(QString, image)
+	QML_READONLY_PROPERTY(bool, hasMention)
 
 	QML_READONLY_PROPERTY(Contact*, contact)
 

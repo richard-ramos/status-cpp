@@ -32,7 +32,8 @@ public:
 		LinkUrls = Qt::UserRole + 12,
 		OutgoingStatus = Qt::UserRole + 13,
 		Image = Qt::UserRole + 14,
-		EmojiReactions = Qt::UserRole + 15
+		EmojiReactions = Qt::UserRole + 15,
+		HasMention = Qt::UserRole + 16
 		// Audio
 		// AUdioDurationMs
 		// CommandParameters

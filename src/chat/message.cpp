@@ -1,8 +1,8 @@
 #include "message.hpp"
+#include "settings.hpp"
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
-
 using namespace Messages;
 
 Message::Message(QObject* parent)
@@ -18,6 +18,25 @@ Message::Message(QString id, ContentType contentType, QObject* parent)
 QString Message::get_sticker_hash()
 {
 	return m_sticker.hash;
+}
+
+bool hasMention(const QJsonArray& parsedText)
+{
+	foreach(const QJsonValue& value, parsedText)
+	{
+		const QJsonObject obj = value.toObject();
+		if(obj["type"].toString() != "paragraph")
+			continue;
+		foreach(const QJsonValue& child, obj["children"].toArray())
+		{
+			const QJsonObject c = child.toObject();
+			if(c["type"].toString() != "mention")
+				continue;
+			if(c["literal"].toString() == Settings::instance()->publicKey())
+				return true;
+		}
+	}
+	return false;
 }
 
 Message::Message(const QJsonValue data, QObject* parent)
@@ -43,6 +62,8 @@ Message::Message(const QJsonValue data, QObject* parent)
 	, m_outgoingStatus(data["outgoingStatus"].toString())
 
 {
+	m_hasMention = hasMention(m_parsedText);
+
 	int contentType = data["contentType"].toInt();
 	if(contentType < ContentType::FetchMoreMessagesButton || contentType > ContentType::Community)
 	{

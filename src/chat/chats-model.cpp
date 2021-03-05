@@ -92,6 +92,7 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case UnreadMessages: return QVariant(chat->get_unviewedMessagesCount());
 	case Type: return QVariant(chat->get_chatType());
 	case Color: return QVariant(chat->get_color());
+	case HasMentions: return QVariant(chat->get_hasMentions());
 	case Timestamp: return QVariant(chat->get_timestamp());
 	case LastMessage: return QVariant(Messages::Format::renderSimpleText(chat->get_lastMessage(), m_contacts));
 	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
@@ -266,7 +267,16 @@ void ChatsModel::update(QJsonValue updates)
 	{
 		Message* message = new Message(msgJson);
 		m_chatMap[message->get_localChatId()]->get_messages()->push(message);
-
+		if(message->get_hasMention())
+		{
+			m_chatMap[message->get_localChatId()]->update_hasMentions(true);
+			int chatIndex = m_chats.indexOf(m_chatMap[message->get_localChatId()]);
+			if(chatIndex > -1)
+			{
+				QModelIndex idx = createIndex(chatIndex, 0);
+				dataChanged(idx, idx);
+			}
+		}
 		// Create a contact if necessary
 		m_contacts->upsert(message);
 	}

@@ -80,7 +80,8 @@ public:
 	QML_READONLY_PROPERTY(int, unviewedMessagesCount)
 	QML_READONLY_PROPERTY(Message*, lastMessage)
 	QML_READONLY_PROPERTY(bool, muted)
-	// hasMentions
+	QML_READONLY_PROPERTY(bool, hasMentions)
+
 	// ensName
 
 	QML_READONLY_PROPERTY(MessagesModel*, messages)
@@ -117,7 +118,7 @@ public:
 	Q_INVOKABLE void makeAdmin(QString memberId);
 	Q_INVOKABLE void removeFromGroup(QString memberId);
 	Q_INVOKABLE void addMembers(QStringList members);
-	
+
 	bool operator==(const Chat& c);
 
 	void update(const QJsonValue data);
