@@ -164,7 +164,9 @@ RowLayout {
     }*/
 
     Component.onCompleted: {
-        StatusSettings.changeLocale(appSettings.locale);
+        if(appSettings.locale !== "en"){
+            StatusSettings.changeLocale(appSettings.locale);
+        }
         if(removeMnemonicAfterLogin){
             StatusSettings.removeMnemonic();
         }
