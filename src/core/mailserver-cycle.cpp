@@ -54,7 +54,7 @@ void MailserverCycle::trustPeer(QString enode)
 
 void MailserverCycle::updateMailserver(QString enode)
 {
-	const auto response = Status::instance()->callPrivateRPC("wakuext_updateMailservers", QJsonArray{enode}.toVariantList());
+	const auto response = Status::instance()->callPrivateRPC("wakuext_updateMailservers", QJsonArray{QJsonArray{enode}}.toVariantList());
 }
 
 void MailserverCycle::connect(QString enode)
@@ -127,7 +127,7 @@ QVector<QString> MailserverCycle::getMailservers()
 	// TODO: get custom mailservers
 	foreach(const QJsonValue& value, Settings::instance()->getNodeConfig()["ClusterConfig"].toObject()["TrustedMailServers"].toArray())
 	{
-		result << value.toString();
+		const auto response = Status::instance()->callPrivateRPC("admin_addPeer", QJsonArray{value.toString()}.toVariantList());
 	}
 	return result;
 }
@@ -237,9 +237,9 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 			if(nodes.contains(peer))
 			{
 				trustPeer(peer);
+				updateMailserver(peer);
 				available = true;
 			}
-			updateMailserver(peer);
 		}
 	}
 
@@ -325,7 +325,6 @@ void MailserverCycle::requestMessagesCall(
 																		  {"force", force}}}
 													   .toVariantList())
 								  .toJsonObject();
-
 	});
 }
 
