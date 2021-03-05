@@ -3,6 +3,7 @@ add_library(chat
     chat.cpp
     chats-model.cpp
     content-type.cpp
+    message-type.cpp
     message-format.cpp
     message.cpp
     messages-model.cpp)

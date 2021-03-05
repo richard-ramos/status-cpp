@@ -123,6 +123,8 @@ public:
 	QJsonObject getNodeConfig();
 
 	QString signingPhrase();
+	
+	QString installationId();
 
 
 signals:

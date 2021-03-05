@@ -232,6 +232,19 @@ QString Settings::preferredName()
 	return result;
 }
 
+QString Settings::installationId()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QString();
+	}
+	QString result(m_installationId);
+	lock.unlock();
+	return result;
+}
+
 void Settings::setAppearance(int value)
 {
 	lock.lockForWrite();

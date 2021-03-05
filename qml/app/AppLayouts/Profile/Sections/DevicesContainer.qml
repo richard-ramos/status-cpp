@@ -4,6 +4,8 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 Item {
     id: syncContainer
@@ -27,6 +29,10 @@ Item {
         font.pixelSize: 20
     }
 
+    DevicesModel {
+        id: devicesModel
+    }
+
     Item {
         id: firstTimeSetup
         anchors.left: syncContainer.left
@@ -35,7 +41,7 @@ Item {
         anchors.topMargin: Style.current.padding
         anchors.right: syncContainer.right
         anchors.rightMargin: Style.current.padding
-        visible: !profileModel.devices.isSetup
+        visible: !devicesModel.isSetup
 
         StyledText {
             id: deviceNameLbl
@@ -58,8 +64,8 @@ Item {
             anchors.right: deviceNameTxt.right
             //% "Continue"
             text: qsTrId("continue")
-            enabled: deviceNameTxt.text !== ""
-            onClicked : profileModel.devices.setName(deviceNameTxt.text.trim())
+            enabled: deviceNameTxt.text.trim() !== ""
+            onClicked : devicesModel.setName(deviceNameTxt.text.trim())
         }
     }
 
@@ -71,7 +77,7 @@ Item {
         anchors.topMargin: Style.current.padding
         anchors.right: syncContainer.right
         anchors.rightMargin: Style.current.padding
-        visible: profileModel.devices.isSetup
+        visible: devicesModel.isSetup
         height: childrenRect.height
 
         Rectangle {
@@ -116,7 +122,7 @@ Item {
             MouseArea {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
-                onClicked: profileModel.devices.advertise()
+                onClicked: devicesModel.advertise()
             }
         }
 
@@ -147,7 +153,7 @@ Item {
         anchors.bottomMargin: Style.current.padding
         anchors.right: syncContainer.right
         anchors.rightMargin: Style.current.padding
-        visible: profileModel.devices.isSetup
+        visible: devicesModel.isSetup
 
 
         StyledText {
@@ -156,6 +162,12 @@ Item {
             text: qsTrId("paired-devices")
             font.pixelSize: 16
             font.weight: Font.Bold
+        }
+
+        SortFilterProxyModel {
+            id: sortDevicesModel
+            sourceModel: devicesModel
+            sorters: StringSorter { roleName: "timestamp" }
         }
 
         ListView {
@@ -196,10 +208,10 @@ Item {
                     anchors.left: deviceItemLbl.right
                     anchors.leftMargin: Style.current.padding
                     anchors.top: deviceItemLbl.top
-                    onClicked: profileModel.devices.enableInstallation(model.installationId, devicePairedSwitch)
+                    onClicked: devicesModel.enableInstallation(model.installationId, devicePairedSwitch.checked)
                 }
             }
-            model: profileModel.devices.list
+            model: sortDevicesModel
         }
     }
 
@@ -216,7 +228,7 @@ Item {
         enabled: !isSyncing
         onClicked : {
             isSyncing = true;
-            profileModel.devices.syncAll()
+            devicesModel.syncAll()
             // Currently we don't know how long it takes, so we just disable for 10s, to avoid spamming
             timer.setTimeout(function(){ 
                 isSyncing = false

@@ -48,7 +48,7 @@ RowLayout {
 
     function openLink(link) {
         if (appSettings.showBrowserSelector) {
-            appMain.openPopup(chooseBrowserPopupComponent, {link: link})
+            openPopup(chooseBrowserPopupComponent, {link: link})
         } else {
             if (appSettings.openLinksInStatus) {
                 appMain.changeAppSection(Constants.browser)

@@ -6,6 +6,7 @@
 #include "contacts-model.hpp"
 #include "content-type.hpp"
 #include "custom-networks-model.hpp"
+#include "devices-model.hpp"
 #include "ens-model.hpp"
 #include "ens-utils.hpp"
 #include "libstatus.h"
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<ContactsModel>("im.status.desktop", 1, 0, "ContactsModel");
 	qmlRegisterType<CustomNetworksModel>("im.status.desktop", 1, 0, "CustomNetworksModel");
 	qmlRegisterType<ENSModel>("im.status.desktop", 1, 0, "ENSModel");
+	qmlRegisterType<DevicesModel>("im.status.desktop", 1, 0, "DevicesModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
@@ -110,6 +112,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
 
+	qRegisterMetaType<Device>("Device");
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
 	qRegisterMetaType<Topic>("Topic");
 	qRegisterMetaType<ChatMember>("ChatMember");

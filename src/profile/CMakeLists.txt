@@ -1,5 +1,6 @@
 add_library(profile
     custom-networks-model.cpp
+    devices-model.cpp
 )
 
 target_include_directories(profile PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
