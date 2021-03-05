@@ -40,13 +40,13 @@ find_package(OpenSSL REQUIRED)
 
 ################################################################################
 # Begin: status-go
-set(STATUSGO_ROOT ${CMAKE_BINARY_DIR}/status-go)
-set(STATUSGO_LIB_DIR ${STATUSGO_ROOT}/src/status-go/build/bin)
+set(STATUSGO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/vendor/status-go)
+set(STATUSGO_LIB_DIR ${STATUSGO_ROOT}/build/bin)
 
 ExternalProject_Add(status-go
   PREFIX ${STATUSGO_ROOT}
-  GIT_REPOSITORY "git://github.com/status-im/status-go"
-  GIT_TAG "develop"
+  SOURCE_DIR ${STATUSGO_ROOT}
+
   UPDATE_COMMAND ""
   PATCH_COMMAND ""
   CONFIGURE_COMMAND ""
@@ -57,10 +57,11 @@ ExternalProject_Add(status-go
 )
 
 ExternalProject_Get_Property(status-go SOURCE_DIR)
-add_library(status STATIC IMPORTED)
+add_library(status SHARED IMPORTED)
 set_property(TARGET status PROPERTY IMPORTED_LOCATION ${STATUSGO_LIB_DIR}/libstatus.so)
 add_dependencies(status status-go)
 include_directories(${STATUSGO_LIB_DIR})
+
 # End: status-go
 
 

@@ -7,3 +7,6 @@
 [submodule "vendor/bitcoin-core-base58"]
 	path = vendor/bitcoin-core-base58
 	url = https://github.com/benma/bitcoin-core-base58.git
+[submodule "vendor/status-go"]
+	path = vendor/status-go
+	url = https://github.com/status-im/status-go
