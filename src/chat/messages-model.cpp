@@ -1,4 +1,5 @@
 #include "messages-model.hpp"
+#include "chat-type.hpp"
 #include "contacts-model.hpp"
 #include "content-type.hpp"
 #include "message-format.hpp"
@@ -26,8 +27,9 @@
 
 using namespace Messages;
 
-MessagesModel::MessagesModel(QString chatId, QObject* parent)
+MessagesModel::MessagesModel(QString chatId, ChatType chatType, QObject* parent)
 	: m_chatId(chatId)
+	, m_chatType(chatType)
 	, QAbstractListModel(parent)
 {
 	qDebug() << "Creating MessageModel for chatId: " << m_chatId;
@@ -209,7 +211,15 @@ void MessagesModel::loadMessages(bool initialLoad)
 		{
 			Message* message = new Message(msgJson);
 			message->moveToThread(QApplication::instance()->thread());
-			emit messageLoaded(message);
+
+			if(m_chatType == ChatType::Timeline || m_chatType == ChatType::Profile)
+			{ 
+				emit statusUpdateLoaded(message);
+			}
+			else
+			{
+				emit messageLoaded(message);
+			}
 		}
 	});
 }
@@ -280,11 +290,14 @@ void MessagesModel::toggleReaction(QString messageId, int emojiId)
 
 void MessagesModel::addFakeMessages()
 {
-	Message* chatIdentifier = new Message("chatIdentifier", ContentType::ChatIdentifier, this);
-	QQmlApplicationEngine::setObjectOwnership(chatIdentifier, QQmlApplicationEngine::CppOwnership);
-	beginInsertRows(QModelIndex(), rowCount(), rowCount());
-	m_messages << chatIdentifier;
-	endInsertRows();
+	if(m_chatType != ChatType::Profile && m_chatType != ChatType::Timeline)
+	{
+		Message* chatIdentifier = new Message("chatIdentifier", ContentType::ChatIdentifier, this);
+		QQmlApplicationEngine::setObjectOwnership(chatIdentifier, QQmlApplicationEngine::CppOwnership);
+		beginInsertRows(QModelIndex(), rowCount(), rowCount());
+		m_messages << chatIdentifier;
+		endInsertRows();
+	}
 }
 
 void MessagesModel::clear()

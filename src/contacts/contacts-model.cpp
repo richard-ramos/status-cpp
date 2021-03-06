@@ -1,7 +1,7 @@
 #include "contacts-model.hpp"
-#include "contact.hpp"
-#include "chat.hpp"
 #include "chat-type.hpp"
+#include "chat.hpp"
+#include "contact.hpp"
 #include "message.hpp"
 #include "status.hpp"
 #include "utils.hpp"
@@ -119,6 +119,7 @@ void ContactsModel::insert(Contact* contact)
 	endInsertRows();
 	emit added(contact->get_id());
 	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactUpdated);
+	QObject::connect(contact, &Contact::contactToggled, this, &ContactsModel::contactToggled);
 	QObject::connect(contact, &Contact::blockedToggled, this, &ContactsModel::contactUpdated);
 	QObject::connect(contact, &Contact::imageChanged, this, &ContactsModel::contactUpdated);
 }
@@ -158,7 +159,6 @@ Contact* ContactsModel::upsert(Message* msg)
 		return newContact;
 	}
 }
-
 
 Contact* ContactsModel::upsert(Chat* chat)
 {
@@ -200,4 +200,9 @@ void ContactsModel::update(QJsonValue updates)
 			endInsertRows();
 		}
 	}
+}
+
+int ContactsModel::count() const
+{
+	return m_contacts.count();
 }

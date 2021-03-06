@@ -50,7 +50,7 @@ public:
 	Q_PROPERTY(QString image READ image NOTIFY imageChanged)
 
 signals:
-	void contactToggled(QString contactId);
+	void contactToggled(QString contactId, bool added);
 	void blockedToggled(QString contactId);
 	void imageChanged(QString contactId);
 

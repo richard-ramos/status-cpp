@@ -3,6 +3,7 @@
 #include "chat-type.hpp"
 #include "chat.hpp"
 #include "contacts-model.hpp"
+#include "message.hpp"
 #include <QAbstractListModel>
 #include <QDebug>
 #include <QHash>
@@ -49,9 +50,14 @@ public:
 	Q_INVOKABLE void markAllMessagesAsRead(int row);
 	Q_INVOKABLE void deleteChatHistory(int row);
 
+	Q_PROPERTY(QVariant timelineMessages READ timelineMessages CONSTANT)
+	Q_INVOKABLE QVariant timelineMessages();
+	Q_INVOKABLE void toggleTimelineChat(QString contactId, bool contactWasAdded);
+	Q_INVOKABLE void pushStatusUpdate(Message* msg);
+
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 
-	Q_INVOKABLE void setupMessageModel();
+	Q_INVOKABLE void onContactsChanged();
 
 signals:
 	void joinError(QString message);
@@ -64,7 +70,9 @@ private:
 	void loadChats();
 	void update(QJsonValue updates);
 	void insert(Chat* chat);
+	void addTimelineChat();
 
 	QVector<Chat*> m_chats;
+	QVector<Chat*> m_timelineChats;
 	QHash<QString, Chat*> m_chatMap;
 };

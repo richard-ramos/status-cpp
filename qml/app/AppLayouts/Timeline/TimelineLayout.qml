@@ -92,7 +92,7 @@ ScrollView {
             anchors.top: statusUpdateInput.bottom
             anchors.topMargin: 40
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: chatsModel.messageList.rowCount() === 0
+            visible: chatsModel.timelineMessages.rowCount() === 0
         }
 
         ListView {
@@ -157,7 +157,7 @@ ScrollView {
                     }
                 }
             }
-            model: chatsModel.messageList
+            model: chatsModel.timelineMessages
 
             delegate: Message {
                 id: msgDelegate

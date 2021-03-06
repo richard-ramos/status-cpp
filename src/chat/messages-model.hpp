@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chat-type.hpp"
 #include "contacts-model.hpp"
 #include "message.hpp"
 #include <QAbstractListModel>
@@ -40,7 +41,7 @@ public:
 		// CommunityId
 	};
 
-	explicit MessagesModel(QString chatId, QObject* parent = nullptr);
+	explicit MessagesModel(QString chatId, ChatType chatType, QObject* parent = nullptr);
 
 	QHash<int, QByteArray> roleNames() const;
 	virtual int rowCount(const QModelIndex&) const;
@@ -64,6 +65,7 @@ public:
 	void clear();
 
 signals:
+	void statusUpdateLoaded(Message* message);
 	void messageLoaded(Message* message);
 	void reactionLoaded(QString messageId, QJsonObject reaction);
 
@@ -72,6 +74,7 @@ private:
 	QHash<QString, Message*> m_messageMap;
 	QHash<QString, QJsonArray> m_emojiReactions;
 	QString m_chatId;
+	ChatType m_chatType;
 
 	QString m_cursor;
 	QString m_reactionsCursor;

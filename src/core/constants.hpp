@@ -23,5 +23,6 @@ const int MaxImageSize = 2000;
 QString applicationPath(QString path = "");
 QString tmpPath(QString path = "");
 QString settingsPath();
+QString getTimelineChatId(QString pubkey = "");
 
 } // namespace Constants

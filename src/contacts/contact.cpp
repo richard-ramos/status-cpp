@@ -24,7 +24,7 @@ Contact::Contact(QString id, QObject* parent)
 	, m_alias(Utils::generateAlias(id))
 	, m_identicon(Utils::generateIdenticon(id))
 {
-	qDebug() << "Contact does not exist. - " << id;
+	qDebug() << "Contact does not exist:" << m_alias;
 }
 
 Contact::Contact(QString id, QString ensName, QObject* parent)
@@ -34,7 +34,7 @@ Contact::Contact(QString id, QString ensName, QObject* parent)
 	, m_identicon(Utils::generateIdenticon(id))
 	, m_name(ensName)
 {
-	qDebug() << "Contact does not exist. - " << id;
+	qDebug() << "Contact does not exist:" << m_alias;
 }
 
 Contact::~Contact()
@@ -121,15 +121,17 @@ void Contact::toggleAdd()
 {
 	QString tag(":contact/added");
 	int index = m_systemTags.indexOf(tag);
+	bool added = false;
 	if(index == -1)
 	{
 		m_systemTags << tag;
+		added = true;
 	}
 	else
 	{
 		m_systemTags.remove(index);
 	}
-	emit contactToggled(m_id);
+	emit contactToggled(m_id, added);
 	save();
 
 	// TODO: react to contactToggled to add/remove timeline chat
@@ -241,7 +243,7 @@ void Contact::update(Contact* newContact)
 
 
 	// TODO: find a way to trigger these signals if values are different
-	emit contactToggled(m_id);
+	emit contactToggled(m_id, isAdded());
 	emit blockedToggled(m_id);
 	emit imageChanged(m_id);
 }

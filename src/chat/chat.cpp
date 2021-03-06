@@ -26,8 +26,8 @@
 Chat::Chat(QString id,
 		   ChatType chatType,
 		   QString name,
-		   QObject* parent,
 		   QString profile,
+		   QObject* parent,
 		   QString color,
 		   bool active,
 		   QString timestamp,
@@ -49,7 +49,7 @@ Chat::Chat(QString id,
 	, m_muted(muted)
 {
 	// Needs to be initialized because it's undefined
-	m_messages = new MessagesModel(m_id);
+	m_messages = new MessagesModel(m_id, chatType);
 	m_messages->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
 
@@ -95,7 +95,7 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	}
 
 	// Needs to be initialized because it's undefined
-	m_messages = new MessagesModel(m_id);
+	m_messages = new MessagesModel(m_id, m_chatType);
 	m_messages->setParent(this);
 	QQmlApplicationEngine::setObjectOwnership(m_messages, QQmlApplicationEngine::CppOwnership);
 
@@ -104,7 +104,8 @@ Chat::Chat(const QJsonValue data, QObject* parent)
 	QQmlApplicationEngine::setObjectOwnership(m_lastMessage, QQmlApplicationEngine::CppOwnership);
 
 	m_hasMentions = false;
-	if(m_lastMessage->get_hasMention()){
+	if(m_lastMessage->get_hasMention())
+	{
 		m_hasMentions = true;
 	}
 
@@ -422,21 +423,19 @@ void Chat::removeFromGroup(QString memberId)
 
 void Chat::addMembers(QStringList members)
 {
-	const auto response = Status::instance()
-							  ->callPrivateRPC("wakuext_addMembersToGroupChat", QJsonArray{QJsonValue(), m_id, QJsonArray::fromStringList(members)}.toVariantList())
-							  .toJsonObject();
+	const auto response =
+		Status::instance()
+			->callPrivateRPC("wakuext_addMembersToGroupChat", QJsonArray{QJsonValue(), m_id, QJsonArray::fromStringList(members)}.toVariantList())
+			.toJsonObject();
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 
 	emit groupDataChanged();
 }
 
-
 void Chat::join()
 {
-	const auto response = Status::instance()
-							  ->callPrivateRPC("wakuext_confirmJoiningGroup", QJsonArray{m_id}.toVariantList())
-							  .toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_confirmJoiningGroup", QJsonArray{m_id}.toVariantList()).toJsonObject();
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 	emit groupDataChanged();

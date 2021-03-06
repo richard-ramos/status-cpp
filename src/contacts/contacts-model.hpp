@@ -33,6 +33,7 @@ public:
 	virtual int rowCount(const QModelIndex&) const;
 	virtual QVariant data(const QModelIndex& index, int role) const;
 
+	int count() const;
 	Q_INVOKABLE Contact* get(int row) const;
 	Q_INVOKABLE Contact* get(QString id) const;
 	Q_INVOKABLE Contact* get_or_create(QString id);
@@ -46,6 +47,7 @@ signals:
 	void updated(QString contactId);
 	void added(QString contactId);
 	void contactLoaded(Contact* contact);
+	void contactToggled(QString contactId, bool added);
 private:
 	void loadContacts();
 	void update(QJsonValue updates);

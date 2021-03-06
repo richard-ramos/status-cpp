@@ -1,7 +1,9 @@
 #include "chats-model.hpp"
 #include "chat-type.hpp"
 #include "chat.hpp"
+#include "constants.hpp"
 #include "contact.hpp"
+#include "contacts-model.hpp"
 #include "mailserver-cycle.hpp"
 #include "message-format.hpp"
 #include "message.hpp"
@@ -23,21 +25,41 @@ using namespace Messages;
 ChatsModel::ChatsModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
-	init();
-
 	QObject::connect(Status::instance(), &Status::message, this, &ChatsModel::update);
 	QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
-	QObject::connect(this, &ChatsModel::contactsChanged, this, &ChatsModel::setupMessageModel);
+	QObject::connect(this, &ChatsModel::contactsChanged, this, &ChatsModel::onContactsChanged);
+
+	init();
 }
 
 void ChatsModel::init()
 {
 	loadChats();
+	addTimelineChat();
 	startMessenger();
 }
 
-void ChatsModel::setupMessageModel()
+void ChatsModel::addTimelineChat()
 {
+	Chat* timelineChat = new Chat(Constants::getTimelineChatId(), ChatType::Timeline);
+	timelineChat->save();
+	m_chatMap[timelineChat->get_id()] = timelineChat;
+}
+
+void ChatsModel::onContactsChanged()
+{
+	QObject::connect(m_contacts, &ContactsModel::contactToggled, this, &ChatsModel::toggleTimelineChat);
+
+	// Loading messages for timeline chats
+	m_chatMap[Constants::getTimelineChatId()]->get_messages()->set_contacts(m_contacts);
+	foreach(Chat* chat, m_timelineChats)
+	{
+		chat->get_messages()->set_contacts(m_contacts);
+		chat->get_messages()->loadMessages();
+		chat->get_messages()->loadReactions();
+	}
+
+	// Loading messages for standard chats
 	foreach(Chat* chat, m_chats)
 	{
 		chat->get_messages()->set_contacts(m_contacts);
@@ -95,7 +117,7 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	case HasMentions: return QVariant(chat->get_hasMentions());
 	case Timestamp: return QVariant(chat->get_timestamp());
 	case LastMessage: return QVariant(Messages::Format::renderSimpleText(chat->get_lastMessage(), m_contacts));
-	case Messages: return QVariant(QVariant::fromValue(chat->get_messages()));
+	case Messages: return QVariant::fromValue(chat->get_messages());
 	case Contact: return QVariant(chat->get_chatType() == ChatType::OneToOne ? QVariant::fromValue(m_contacts->upsert(chat)) : "");
 	case ContentType: return QVariant(chat->get_lastMessage()->get_contentType());
 	case ChatMembers: return QVariant(QVariant::fromValue(chat->getChatMembers()));
@@ -105,13 +127,31 @@ QVariant ChatsModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
+void ChatsModel::pushStatusUpdate(Message* msg)
+{
+	m_chatMap[Constants::getTimelineChatId()]->get_messages()->push(msg);
+}
+
 void ChatsModel::insert(Chat* chat)
 {
 	QQmlApplicationEngine::setObjectOwnership(chat, QQmlApplicationEngine::CppOwnership);
 	chat->setParent(this);
 	chat->get_messages()->set_contacts(m_contacts);
-	m_chats << chat;
 	m_chatMap[chat->get_id()] = chat;
+
+	if(chat->get_chatType() == ChatType::Profile || chat->get_chatType() == ChatType::Timeline)
+	{
+		// Status updates should not appear in channel list
+		m_timelineChats << chat;
+		// Loaded messages from contact updates will be pushed into timeline chat
+		QObject::connect(chat->get_messages(), &MessagesModel::statusUpdateLoaded, this, &ChatsModel::pushStatusUpdate);
+	}
+	else
+	{
+		beginInsertRows(QModelIndex(), rowCount(), rowCount());
+		m_chats << chat;
+		endInsertRows();
+	}
 }
 
 void ChatsModel::join(ChatType chatType, QString id, QString ensName)
@@ -128,9 +168,8 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 
 			QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
 
-			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			insert(c);
-			endInsertRows();
+
 			c->loadFilter();
 			emit joined(chatType, id, m_chats.count() - 1);
 		}
@@ -185,7 +224,6 @@ void ChatsModel::loadChats()
 	if(response["result"].isNull())
 		return;
 
-	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	foreach(const QJsonValue& value, response["result"].toArray())
 	{
 		const QJsonObject obj = value.toObject();
@@ -195,9 +233,6 @@ void ChatsModel::loadChats()
 		insert(c);
 		emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
 	}
-	endInsertRows();
-
-	// TODO: emit channel loaded?, request latest 24hrs
 }
 
 Chat* ChatsModel::get(int row) const
@@ -250,12 +285,10 @@ void ChatsModel::update(QJsonValue updates)
 		}
 		else
 		{
-			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			Chat* newChat = new Chat(chatJson);
 			m_contacts->upsert(newChat);
 			insert(newChat);
 			emit added(newChat->get_chatType(), newChat->get_id(), m_chats.count() - 1);
-			endInsertRows();
 		}
 		// TODO: tell @cammellos that the messages are not returning the ens name
 		m_contacts->upsert(m_chatMap[chatId]->get_lastMessage());
@@ -266,11 +299,15 @@ void ChatsModel::update(QJsonValue updates)
 	foreach(QJsonValue msgJson, updates["messages"].toArray())
 	{
 		Message* message = new Message(msgJson);
-		m_chatMap[message->get_localChatId()]->get_messages()->push(message);
+
+		QString chatId = Constants::getTimelineChatId(message->get_from()) == message->get_localChatId() ? Constants::getTimelineChatId()
+																										 : message->get_localChatId();
+
+		m_chatMap[chatId]->get_messages()->push(message);
 		if(message->get_hasMention())
 		{
-			m_chatMap[message->get_localChatId()]->update_hasMentions(true);
-			int chatIndex = m_chats.indexOf(m_chatMap[message->get_localChatId()]);
+			m_chatMap[chatId]->update_hasMentions(true);
+			int chatIndex = m_chats.indexOf(m_chatMap[chatId]);
 			if(chatIndex > -1)
 			{
 				QModelIndex idx = createIndex(chatIndex, 0);
@@ -292,4 +329,36 @@ void ChatsModel::update(QJsonValue updates)
 			m_chatMap[chatId]->get_messages()->push(messageId, r);
 		}
 	}
+}
+
+void ChatsModel::toggleTimelineChat(QString contactId, bool contactWasAdded)
+{
+	QString timelineChatId = Constants::getTimelineChatId(contactId);
+	if(contactWasAdded)
+	{
+		if(m_chatMap.contains(timelineChatId))
+			return;
+
+		Chat* c = new Chat(timelineChatId, ChatType::Profile, "", contactId);
+		c->save();
+		QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
+		insert(c);
+		c->loadFilter();
+	}
+	else
+	{
+		if(!m_chatMap.contains(timelineChatId))
+			return;
+
+		m_chatMap[timelineChatId]->leave();
+		m_chatMap.remove(timelineChatId);
+		int index = m_timelineChats.indexOf(m_chatMap[timelineChatId]);
+		delete m_timelineChats[index];
+		m_timelineChats.remove(index);
+	}
+}
+
+QVariant ChatsModel::timelineMessages()
+{
+	return QVariant::fromValue(m_chatMap[Constants::getTimelineChatId()]->get_messages());
 }

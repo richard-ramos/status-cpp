@@ -29,7 +29,7 @@ struct ChatMember
 	{
 		return (id == a.id);
 	}
-	
+
 	Q_GADGET
 };
 Q_DECLARE_METATYPE(ChatMember)
@@ -53,8 +53,8 @@ public:
 	explicit Chat(QString id,
 				  ChatType chatType,
 				  QString name = "",
-				  QObject* parent = nullptr,
 				  QString profile = "",
+				  QObject* parent = nullptr,
 				  QString color = "",
 				  bool active = true,
 				  QString timestamp = "0",
