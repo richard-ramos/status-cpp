@@ -1,9 +1,9 @@
 #pragma once
 
 #include "chat-type.hpp"
+#include "contact.hpp"
 #include "content-type.hpp"
 #include "message-type.hpp"
-#include "contact.hpp"
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -60,7 +60,6 @@ public:
 	QML_READONLY_PROPERTY(bool, hasMention)
 
 	QML_READONLY_PROPERTY(Contact*, contact)
-
 
 public:
 	QString get_sticker_hash();

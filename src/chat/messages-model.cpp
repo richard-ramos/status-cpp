@@ -295,10 +295,33 @@ void MessagesModel::clear()
 	endResetModel();
 }
 
-void MessagesModel::updateOutgoingStatus(QVector<QString> messageIds, bool sent){
-	foreach(const QString& messageId, messageIds){
-		if(!m_messageMap.contains(messageId)) continue;
+void MessagesModel::updateOutgoingStatus(QVector<QString> messageIds, bool sent)
+{
+	foreach(const QString& messageId, messageIds)
+	{
+		if(!m_messageMap.contains(messageId))
+			continue;
 		m_messageMap[messageId]->update_outgoingStatus(sent ? "sent" : "not-sent");
-		Status::instance()->callPrivateRPC("wakuext_updateMessageOutgoingStatus", QJsonArray{messageId, m_messageMap[messageId]->get_outgoingStatus()}.toVariantList()).toJsonObject();
+		Status::instance()
+			->callPrivateRPC("wakuext_updateMessageOutgoingStatus",
+							 QJsonArray{messageId, m_messageMap[messageId]->get_outgoingStatus()}.toVariantList())
+			.toJsonObject();
+		int index = m_messages.indexOf(m_messageMap[messageId]);
+		QModelIndex idx = createIndex(index, 0);
+		dataChanged(idx, idx);
 	}
+}
+
+void MessagesModel::resend(QString messageId)
+{
+	if(!m_messageMap.contains(messageId))
+		return;
+
+	m_messageMap[messageId]->update_outgoingStatus("sending");
+	Status::instance()->callPrivateRPC("wakuext_updateMessageOutgoingStatus", QJsonArray{messageId, QStringLiteral("sending")}.toVariantList());
+	Status::instance()->callPrivateRPC("wakuext_reSendChatMessage", QJsonArray{messageId}.toVariantList());
+
+	int index = m_messages.indexOf(m_messageMap[messageId]);
+	QModelIndex idx = createIndex(index, 0);
+	dataChanged(idx, idx);
 }

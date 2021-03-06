@@ -52,6 +52,7 @@ public:
 	Q_INVOKABLE Message* get(int row) const;
 	Q_INVOKABLE void toggleReaction(QString messageId, int emojiId);
 	Q_INVOKABLE void updateOutgoingStatus(QVector<QString> messageIds, bool sent);
+	Q_INVOKABLE void resend(QString messageId);
 
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
 

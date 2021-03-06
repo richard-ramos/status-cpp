@@ -318,7 +318,6 @@ ScrollView {
                 return -1;
             }
             scrollToBottom: chatLogView.scrollToBottom
-            timeout: model.timeout
         }
     }
 }

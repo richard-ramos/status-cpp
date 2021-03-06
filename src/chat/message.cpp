@@ -1,8 +1,10 @@
 #include "message.hpp"
 #include "settings.hpp"
+#include "status.hpp"
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
+
 using namespace Messages;
 
 Message::Message(QObject* parent)
@@ -88,5 +90,10 @@ Message::Message(const QJsonValue data, QObject* parent)
 	{
 		m_sticker.hash = data["sticker"]["hash"].toString();
 		m_sticker.pack = data["sticker"]["pack"].toInt();
+	}
+
+	// Marking message as expired if older than 60 seconds
+	if(m_timestamp.toLongLong() > 60000ll && m_outgoingStatus == "sending"){
+		m_outgoingStatus = "not-sent";
 	}
 }

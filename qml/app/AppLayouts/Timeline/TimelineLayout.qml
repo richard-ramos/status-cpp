@@ -186,7 +186,6 @@ ScrollView {
                     }
                     return -1;
                 }
-                timeout: model.timeout
             }
         }
     }

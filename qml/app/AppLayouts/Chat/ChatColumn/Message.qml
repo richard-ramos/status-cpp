@@ -21,7 +21,6 @@ Item {
     property string messageId: ""
     property string emojiReactions: ""
     property int prevMessageIndex: -1
-    property bool timeout: false
     property bool hasMention: false
     property string linkUrls: ""
     property bool placeholderMessage: false
@@ -43,7 +42,6 @@ Item {
     property bool isMessage: isEmoji || isImage || isSticker || isText || isAudio
                              || contentType === Constants.communityInviteType || contentType === Constants.transactionType
 
-    property bool isExpired: (outgoingStatus == "sending" && (Math.floor(timestamp) + 180000) < Date.now())
     property bool isStatusUpdate: false
 
     property var imageClick: function () {}
