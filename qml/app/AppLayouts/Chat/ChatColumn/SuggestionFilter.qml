@@ -1,4 +1,5 @@
 import QtQuick 2.13
+import im.status.desktop 1.0
 
 Item {
     id: component
@@ -49,7 +50,7 @@ Item {
             return false
         }
 
-        let filter = chatsModel.plainText(this.filter)
+        let filter = StatusUtils.plainText(this.filter)
         // Prevents suggestions to show up at all
         if (filter.indexOf("@") === -1)  {
           return false

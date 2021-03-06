@@ -12,6 +12,7 @@ import "./AppLayouts/Wallet"
 import "./AppLayouts/Chat/components"
 import Qt.labs.settings 1.0
 import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 RowLayout {
     id: appMain
@@ -288,6 +289,24 @@ RowLayout {
 
     ContactsModel {
         id: contactsModel
+    }
+
+    SortFilterProxyModel {
+        id: addedContacts
+        sourceModel: contactsModel
+        filters: [
+            ValueFilter {
+                enabled: true
+                roleName: "isAdded"
+                value: true
+            },
+            ValueFilter {
+                enabled: true
+                roleName: "isBlocked"
+                value: false
+            }
+        ]
+        sorters: StringSorter { roleName: "name" }
     }
 
     ChatsModel {

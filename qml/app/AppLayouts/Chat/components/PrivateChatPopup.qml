@@ -6,7 +6,6 @@ import "../../../../shared"
 import "../../../../shared/status"
 import "./"
 import im.status.desktop 1.0
-import SortFilterProxyModel 0.2
 
 ModalPopup {
     property string validationError: ""
@@ -150,26 +149,6 @@ ModalPopup {
         anchors.top: chatKey.bottom
         anchors.topMargin: Style.current.smallPadding
         anchors.horizontalCenter: parent.horizontalCenter
-    }
-
-    Item {
-        SortFilterProxyModel {
-            id: addedContacts
-            sourceModel: contactsModel
-            filters: [
-                ValueFilter {
-                    enabled: true
-                    roleName: "isAdded"
-                    value: true
-                },
-                ValueFilter {
-                    enabled: true
-                    roleName: "isBlocked"
-                    value: false
-                }
-            ]
-            sorters: StringSorter { roleName: "name" }
-        }
     }
 
     PrivateChatPopupExistingContacts {

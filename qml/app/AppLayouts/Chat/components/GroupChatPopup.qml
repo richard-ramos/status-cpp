@@ -105,26 +105,6 @@ ModalPopup {
         fontPixelSize: 15
     }
 
-    Item {
-        SortFilterProxyModel {
-            id: addedContacts
-            sourceModel: contactsModel
-            filters: [
-                ValueFilter {
-                    enabled: true
-                    roleName: "isAdded"
-                    value: true
-                },
-                ValueFilter {
-                    enabled: true
-                    roleName: "isBlocked"
-                    value: false
-                }
-            ]
-            sorters: StringSorter { roleName: "name" }
-        }
-    }
-
     Input {
         id: groupName
         //% "Group name"

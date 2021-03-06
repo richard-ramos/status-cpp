@@ -195,7 +195,7 @@ Rectangle {
     function formatInputMessage() {
         const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
         const deparsedEmoji = Emoji.deparse(messageInputField.text);
-        const plainText = chatsModel.plainText(deparsedEmoji);
+        const plainText = StatusUtils.plainText(deparsedEmoji);
         const formatted = parseMarkdown(Emoji.parse(plainText.replace(/\n/g, "<br />")))
         messageInputField.text = formatted
         messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
@@ -226,7 +226,7 @@ Rectangle {
     }
 
     function interrogateMessage() {
-        const text = chatsModel.plainText(Emoji.deparse(messageInputField.text));
+        const text = StatusUtils.plainText(Emoji.deparse(messageInputField.text));
         
         var words = text.split(' ');
 
@@ -259,7 +259,7 @@ Rectangle {
     // to the actual position in the string. 
     function extrapolateCursorPosition() {
         // we need only the message part to be html
-        const text = chatsModel.plainText(Emoji.deparse(messageInputField.text));
+        const text = StatusUtils.plainText(Emoji.deparse(messageInputField.text));
         const plainText = Emoji.parse(text);
 
         var bracketEvent = false;
@@ -459,8 +459,8 @@ Rectangle {
         onItemSelected: function (item, lastAtPosition, lastCursorPosition) {
             let hasEmoji = Emoji.hasEmoji(messageInputField.text)
             let currentText = hasEmoji ?
-              chatsModel.plainText(Emoji.deparse(messageInputField.text)) :
-              chatsModel.plainText(messageInputField.text);
+              StatusUtils.plainText(Emoji.deparse(messageInputField.text)) :
+              StatusUtils.plainText(messageInputField.text);
 
             var properties = "ensName, alias"; // Ignore localNickname
 
@@ -844,7 +844,7 @@ Rectangle {
                 anchors.rightMargin: Style.current.halfPadding
                 anchors.bottom: parent.bottom
                 visible: imageBtn2.visible
-                highlighted: chatsModel.plainText(Emoji.deparse(messageInputField.text)).length > 0 || isImage
+                highlighted: StatusUtils.plainText(Emoji.deparse(messageInputField.text)).length > 0 || isImage
                 enabled: highlighted && messageInputField.length < messageLimit
                 onClicked: function (event) {
                     control.sendMessage(event)

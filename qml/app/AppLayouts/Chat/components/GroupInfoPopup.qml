@@ -164,26 +164,6 @@ ModalPopup {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Item {
-            SortFilterProxyModel {
-                id: addedContacts
-                sourceModel: contactsModel
-                filters: [
-                    ValueFilter {
-                        enabled: true
-                        roleName: "isAdded"
-                        value: true
-                    },
-                    ValueFilter {
-                        enabled: true
-                        roleName: "isBlocked"
-                        value: false
-                    }
-                ]
-                sorters: StringSorter { roleName: "name" }
-            }
-        }
-
         ContactList {
             id: contactList
             visible: addMembers && contactList.membersData.count > 0
