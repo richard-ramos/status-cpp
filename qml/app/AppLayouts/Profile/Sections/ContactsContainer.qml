@@ -70,7 +70,7 @@ Item {
             anchors.top: addNewContact.bottom
             anchors.topMargin: Style.current.bigPadding
             width: blockButton.width + blockButtonLabel.width + Style.current.padding
-            visible: blockedContactsListView.count > 0
+            visible: blockedContacts.count > 0
             height: addButton.height
 
             StatusRoundButton {
@@ -102,6 +102,19 @@ Item {
             }
         }
 
+         SortFilterProxyModel {
+             id: blockedContacts
+            sourceModel: contactsModel
+            filters: [
+                ValueFilter {
+                    enabled: true
+                    roleName: "isBlocked"
+                    value: true
+                }
+            ]
+            sorters: StringSorter { roleName: "name" }
+        }
+
         ModalPopup {
             id: blockedContactsModal
             //% "Blocked contacts"
@@ -111,17 +124,7 @@ Item {
                 id: blockedContactsListView
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                contacts: SortFilterProxyModel {
-                    sourceModel: contactsModel
-                    filters: [
-                        ValueFilter {
-                            enabled: true
-                            roleName: "isBlocked"
-                            value: true
-                        }
-                    ]
-                    sorters: StringSorter { roleName: "name" }
-                }
+                contacts: blockedContacts
             }
         }
 
