@@ -1,5 +1,6 @@
 
 #include "status.hpp"
+#include "QrCode.hpp"
 #include "constants.hpp"
 #include "libstatus.h"
 #include "settings.hpp"
@@ -16,7 +17,6 @@
 #include <QTextDocumentFragment>
 #include <QVariant>
 #include <QtConcurrent/QtConcurrent>
-#include "QrCode.hpp"
 
 std::map<QString, Status::SignalType> Status::signalMap;
 Status* Status::theInstance;
@@ -84,7 +84,7 @@ void Status::processDiscoverySummarySignal(const QJsonObject& signalEvent)
 	QVector<QString> peerVector;
 	foreach(const QJsonValue& peer, peers)
 		peerVector << peer.toObject()["enode"].toString();
-	
+
 	emit discoverySummary(peerVector);
 }
 
@@ -111,6 +111,8 @@ void Status::processSignal(QString ev)
 	case NodeStopped: emit instance()->nodeStopped(signalEvent["event"]["error"].toString()); break;
 	case Message: emit instance()->message(signalEvent["event"].toObject()); break;
 	case DiscoverySummary: processDiscoverySummarySignal(signalEvent); break;
+	case EnvelopeExpired: emit instance()->updateOutgoingStatus(Utils::toStringVector(signalEvent["event"]["ids"].toArray()), false); break;
+	case EnvelopeSent: emit instance()->updateOutgoingStatus(Utils::toStringVector(signalEvent["event"]["ids"].toArray()), true); break;
 	}
 }
 

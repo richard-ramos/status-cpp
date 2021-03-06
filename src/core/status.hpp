@@ -60,6 +60,7 @@ signals:
 	void nodeStopped(QString error);
 	void message(QJsonObject update);
 	void discoverySummary(QVector<QString> enodes);
+	void updateOutgoingStatus(QVector<QString> messageIds, bool sent);
 	void logout();
 
 	void onlineStatusChanged(bool connected);

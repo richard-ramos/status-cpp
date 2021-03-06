@@ -247,7 +247,7 @@ Item {
 
     SentMessage {
         id: sentMessage
-        visible: root.isCurrentUser && !timeout && !isExpired && isMessage && outgoingStatus === "sent"
+        visible: root.isCurrentUser && outgoingStatus === "sent"
         anchors.verticalCenter: chatTime.verticalCenter
         anchors.right: chatTime.left
         anchors.rightMargin: 5
@@ -282,7 +282,7 @@ Item {
 
     Loader {
         id: emojiReactionLoader
-        active: emojiReactions !== ""
+        active: emojiReactions !== "[]"
         sourceComponent: emojiReactionsComponent
         anchors.left: root.isCurrentUser ? undefined : chatBox.left
         anchors.right: root.isCurrentUser ? chatBox.right : undefined

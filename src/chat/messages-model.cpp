@@ -33,7 +33,7 @@ MessagesModel::MessagesModel(QString chatId, QObject* parent)
 	qDebug() << "Creating MessageModel for chatId: " << m_chatId;
 	QObject::connect(this, &MessagesModel::messageLoaded, this, QOverload<Message*>::of(&MessagesModel::push));
 	QObject::connect(this, &MessagesModel::reactionLoaded, this, QOverload<QString, QJsonObject>::of(&MessagesModel::push));
-
+	QObject::connect(Status::instance(), &Status::updateOutgoingStatus, this, &MessagesModel::updateOutgoingStatus);
 	addFakeMessages();
 }
 
@@ -293,4 +293,12 @@ void MessagesModel::clear()
 	m_messages.clear();
 	addFakeMessages();
 	endResetModel();
+}
+
+void MessagesModel::updateOutgoingStatus(QVector<QString> messageIds, bool sent){
+	foreach(const QString& messageId, messageIds){
+		if(!m_messageMap.contains(messageId)) continue;
+		m_messageMap[messageId]->update_outgoingStatus(sent ? "sent" : "not-sent");
+		Status::instance()->callPrivateRPC("wakuext_updateMessageOutgoingStatus", QJsonArray{messageId, m_messageMap[messageId]->get_outgoingStatus()}.toVariantList()).toJsonObject();
+	}
 }
