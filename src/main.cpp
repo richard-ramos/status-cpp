@@ -39,6 +39,7 @@
 #include <iostream>
 #include <openssl/ssl.h>
 #include <string>
+#include <QIcon>
 
 int main(int argc, char* argv[])
 {
@@ -50,7 +51,14 @@ int main(int argc, char* argv[])
 	QApplication app(argc, argv);
 	app.setOrganizationName("Status");
 	app.setOrganizationDomain("status.im");
-	app.setApplicationName("StatusDesktop");
+	app.setApplicationName("Status Desktop");
+
+
+#ifndef NDEBUG
+    app.setWindowIcon(QIcon(":/resources/status-dev.svg"));
+#else
+    app.setWindowIcon(QIcon(":/resources/status.svg"));
+#endif	
 
 	QQmlApplicationEngine engine;
 

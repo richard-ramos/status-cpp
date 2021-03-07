@@ -4,5 +4,7 @@
     <file>./default-networks.json</file>
     <file>./fleets.json</file>
     <file>./node-config.json</file>
+    <file>./status-dev.svg</file>
+    <file>./status.svg</file>
   </qresource>
 </RCC>
