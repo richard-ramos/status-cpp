@@ -35,6 +35,7 @@ public:
 
 	void timeoutConnection(QString enode);
 	void requestMessages(QVector<QString> topicList, qint64 fromValue = 0, qint64 toValue = 0, bool force = false);
+	void removeMailserverTopicForChat(QString chatId);
 
 	enum MailserverStatus
 	{

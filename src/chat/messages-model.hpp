@@ -63,6 +63,7 @@ public:
 	void loadMessages(bool initialLoad = true);
 	void loadReactions(bool initialLoad = true);
 	void clear();
+	void removeFrom(QString contactId);
 
 signals:
 	void statusUpdateLoaded(Message* message);

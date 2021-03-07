@@ -14,7 +14,7 @@
 
 #include <QMutexLocker>
 
-// How do mailserver should work ?
+// How mailserver should work ?
 //
 // - We send a request to the mailserver, we are only interested in the
 //   messages since `last-request` up to the last seven days
@@ -261,6 +261,35 @@ QVector<Topic> MailserverCycle::getMailserverTopics()
 		topics << t;
 	}
 	return topics;
+}
+
+void MailserverCycle::removeMailserverTopicForChat(QString chatId)
+{
+	QVector<Topic> topics = getMailserverTopics();
+	QVector<Topic> topicsToUpdate;
+	foreach(Topic t, topics)
+	{
+		if(t.chatIds.contains(chatId))
+		{
+			if(t.chatIds.count() > 1)
+			{
+				t.chatIds.remove(t.chatIds.indexOf(chatId));
+				topicsToUpdate << t;
+			}
+			else
+			{
+				const auto response =
+					Status::instance()->callPrivateRPC("mailservers_deleteMailserverTopic", QJsonArray{t.topic}.toVariantList()).toJsonObject();
+			}
+		}
+	}
+
+	if(topicsToUpdate.count() == 0)
+		return;
+	foreach(Topic t, topicsToUpdate)
+	{
+		addMailserverTopic(t);
+	}
 }
 
 void MailserverCycle::addMailserverTopic(Topic t)

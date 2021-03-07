@@ -71,6 +71,11 @@ private:
 	void update(QJsonValue updates);
 	void insert(Chat* chat);
 	void addTimelineChat();
+	void removeFilter(Chat* chat);
+
+	void removeTimelineMessages(QString contactId);
+	void remove1on1Filters(QString chatId, QJsonArray filters);
+	void removeFilterRPC(QString chatId, QString filterId);
 
 	QVector<Chat*> m_chats;
 	QVector<Chat*> m_timelineChats;

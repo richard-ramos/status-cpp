@@ -41,7 +41,7 @@ void ChatsModel::init()
 
 void ChatsModel::addTimelineChat()
 {
-	Chat* timelineChat = new Chat(Constants::getTimelineChatId(), ChatType::Timeline);
+	Chat* timelineChat = new Chat(this, Constants::getTimelineChatId(), ChatType::Timeline);
 	timelineChat->save();
 	m_chatMap[timelineChat->get_id()] = timelineChat;
 }
@@ -161,7 +161,7 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 		qDebug() << "Chat does not exist. Creating chat: " << id;
 		try
 		{
-			Chat* c = new Chat(id, chatType, ensName);
+			Chat* c = new Chat(this, id, chatType, ensName);
 			c->save();
 
 			m_contacts->upsert(c);
@@ -204,17 +204,7 @@ void ChatsModel::createGroup(QString groupName, QStringList members)
 void ChatsModel::startMessenger()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList()).toJsonObject();
-	// TODO: do something with mailservers/ranges
-
-	foreach(const QJsonValue& filter, response["result"]["filters"].toArray())
-	{
-		// Add code for private chats
-		QString chatId = filter["chatId"].toString();
-		if(m_chatMap.contains(chatId))
-		{
-			m_chatMap[chatId]->setFilterId(filter["filterId"].toString());
-		}
-	}
+	// TODO: do something with mailservers/ranges?
 }
 
 void ChatsModel::loadChats()
@@ -229,7 +219,7 @@ void ChatsModel::loadChats()
 		const QJsonObject obj = value.toObject();
 		if(!value["active"].toBool())
 			continue;
-		Chat* c = new Chat(obj);
+		Chat* c = new Chat(this, obj);
 		insert(c);
 		emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
 	}
@@ -242,8 +232,141 @@ Chat* ChatsModel::get(int row) const
 	return m_chats[row];
 }
 
+void ChatsModel::removeFilterRPC(QString chatId, QString filterId)
+{
+	QJsonObject obj{{"ChatID", chatId}, {"FilterID", filterId}};
+
+	qDebug() << obj;
+
+	const auto response = Status::instance()->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
+	if(!response["error"].isUndefined())
+	{
+		throw std::domain_error(response["error"]["message"].toString().toUtf8());
+	}
+}
+
+void ChatsModel::remove1on1Filters(QString chatId, QJsonArray filters)
+{
+	qWarning() << "REMOVING 1 1 filter";
+	qWarning() << filters;
+
+	QString partitionedTopic;
+	foreach(const QJsonValue& filterJson, filters)
+	{
+		const QJsonObject filter = filterJson.toObject();
+
+		qDebug() << "CONDITION 1" << (filter["identity"].toString() == chatId) << filter["chatId"].toString().endsWith("-contact-code");
+
+		// Contact code filter should be removed
+		if(filter["identity"].toString() == chatId && filter["chatId"].toString().endsWith("-contact-code"))
+		{
+			removeFilterRPC(chatId, filter["chatId"].toString());
+		}
+
+
+		// Remove partitioned topic if no other user in an active group chat or one-to-one is from the
+		// same partitioned topic
+		if(filter["identity"].toString() == chatId && filter["chatId"].toString().startsWith("contact-discovery-"))
+		{
+			partitionedTopic = filter["topic"].toString();
+			bool samePartitionedTopic = false;
+			foreach(const QJsonValue& fJson, filters)
+			{
+				const QJsonObject f = fJson.toObject();
+				if(f["topic"].toString() == partitionedTopic && f["filterId"].toString() != filter["filterId"].toString())
+				{
+					QString fIdentity = f["identity"].toString();
+					if(m_chatMap.contains(fIdentity) && m_chatMap[fIdentity]->get_active())
+					{
+						samePartitionedTopic = true;
+						break;
+					}
+				}
+			}
+
+			if(!samePartitionedTopic)
+			{
+				removeFilterRPC(chatId, filter["filterId"].toString());
+			}
+		}
+	}
+}
+
+void ChatsModel::removeFilter(Chat* c)
+{
+	const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{}}.toVariantList()).toJsonObject();
+	QJsonArray filters = response["result"].toArray();
+
+	switch(c->get_chatType())
+	{
+	case ChatType::Profile:
+	case ChatType::Public: {
+		foreach(const QJsonValue &filterJson, filters)
+		{
+			const QJsonObject filter = filterJson.toObject();
+			if(filter["chatId"].toString() == c->get_id())
+			{
+				removeFilterRPC(c->get_id(), filter["filterId"].toString());
+			}
+		}
+	}
+	break;
+	case ChatType::OneToOne:
+ {
+		// Check if user does not belong to any active chat group
+		bool inGroup = false;
+		ChatMember member;
+		member.id = c->get_id();
+		foreach(Chat* chat, m_chats)
+		{
+			if(chat->get_active() && chat->get_chatType() == ChatType::PrivateGroupChat && chat->getChatMembers().contains(member))
+			{
+				inGroup = true;
+			}
+		}
+
+		if(!inGroup)
+		{
+			remove1on1Filters(c->get_id(), filters);
+		}
+	}
+	break;
+	case ChatType::PrivateGroupChat: {
+		foreach(const ChatMember& member, c->getChatMembers())
+		{
+			// Check that any of the members are not in other active group chats, or that you don’t have a one-to-one open.
+			bool hasConversation = false;
+			foreach(Chat* chat, m_chats)
+			{
+				if((chat->get_active() && chat->get_chatType() == ChatType::OneToOne && chat->get_id() == member.id) ||
+				   (chat->get_active() && chat->get_id() != c->get_id() && chat->get_chatType() == ChatType::PrivateGroupChat &&
+					chat->getChatMembers().contains(member)))
+				{
+					hasConversation = true;
+					break;
+				}
+			}
+
+			if(!hasConversation)
+			{
+				if(m_chatMap.contains(member.id))
+				{
+					remove1on1Filters(member.id, filters);
+				}
+			}
+		}
+	}
+	break;
+	default: qWarning() << "Unhandled chatType" << c->get_id() << c->get_chatType();
+	}
+
+	Settings::instance()->mailserverCycle.removeMailserverTopicForChat(c->get_id());
+}
+
 void ChatsModel::remove(int row)
 {
+	removeFilter(m_chats[row]);
+
 	m_chats[row]->leave();
 	m_chatMap.remove(m_chats[row]->get_id());
 	beginRemoveRows(QModelIndex(), row, row);
@@ -285,7 +408,7 @@ void ChatsModel::update(QJsonValue updates)
 		}
 		else
 		{
-			Chat* newChat = new Chat(chatJson);
+			Chat* newChat = new Chat(this, chatJson);
 			m_contacts->upsert(newChat);
 			insert(newChat);
 			emit added(newChat->get_chatType(), newChat->get_id(), m_chats.count() - 1);
@@ -339,7 +462,7 @@ void ChatsModel::toggleTimelineChat(QString contactId, bool contactWasAdded)
 		if(m_chatMap.contains(timelineChatId))
 			return;
 
-		Chat* c = new Chat(timelineChatId, ChatType::Profile, "", contactId);
+		Chat* c = new Chat(this, timelineChatId, ChatType::Profile, "", contactId);
 		c->save();
 		QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
 		insert(c);
@@ -350,9 +473,13 @@ void ChatsModel::toggleTimelineChat(QString contactId, bool contactWasAdded)
 		if(!m_chatMap.contains(timelineChatId))
 			return;
 
+		removeTimelineMessages(contactId);
+
+		removeFilter(m_chatMap[timelineChatId]);
 		m_chatMap[timelineChatId]->leave();
-		m_chatMap.remove(timelineChatId);
 		int index = m_timelineChats.indexOf(m_chatMap[timelineChatId]);
+		m_chatMap.remove(timelineChatId);
+		qDebug() << index << "CHAT INDEX!!!";
 		delete m_timelineChats[index];
 		m_timelineChats.remove(index);
 	}
@@ -361,4 +488,9 @@ void ChatsModel::toggleTimelineChat(QString contactId, bool contactWasAdded)
 QVariant ChatsModel::timelineMessages()
 {
 	return QVariant::fromValue(m_chatMap[Constants::getTimelineChatId()]->get_messages());
+}
+
+void ChatsModel::removeTimelineMessages(QString contactId)
+{
+	m_chatMap[Constants::getTimelineChatId()]->get_messages()->removeFrom(contactId);
 }

@@ -50,11 +50,11 @@ class Chat : public QObject
 	Q_OBJECT
 
 public:
-	explicit Chat(QString id,
+	explicit Chat(QObject* parent,
+				  QString id,
 				  ChatType chatType,
 				  QString name = "",
 				  QString profile = "",
-				  QObject* parent = nullptr,
 				  QString color = "",
 				  bool active = true,
 				  QString timestamp = "0",
@@ -62,7 +62,7 @@ public:
 				  QString deletedAtClockValue = "0",
 				  int unviewedMessagesCount = 0,
 				  bool muted = false);
-	explicit Chat(const QJsonValue data, QObject* parent = nullptr);
+	explicit Chat(QObject* parent, const QJsonValue data);
 	virtual ~Chat();
 
 	QML_READONLY_PROPERTY(QString, id)
@@ -99,7 +99,6 @@ signals:
 
 private:
 	QMutex m_mutex;
-	QString m_filterId;
 	QSet<ChatMember> m_members;
 	QVector<ChatMembershipEvent> m_membershipUpdateEvents;
 
@@ -123,8 +122,9 @@ public:
 
 	void update(const QJsonValue data);
 	void loadFilter();
-	void removeFilter();
-	void setFilterId(QString filterId);
+	void leaveGroup();
 
 	QSet<ChatMember> getChatMembers();
 };
+
+uint qHash(const ChatMember &item, uint seed = 0);

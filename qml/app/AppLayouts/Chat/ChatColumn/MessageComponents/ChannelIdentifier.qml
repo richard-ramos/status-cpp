@@ -116,7 +116,7 @@ Column {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
-                    chatsModel.get(index).join();
+                    chatsModel.get(chat.index).join();
                     joinOrDecline.visible = false;
                 }
             }

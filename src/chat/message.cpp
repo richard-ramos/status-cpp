@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
+#include <QDateTime>
 
 using namespace Messages;
 
@@ -93,7 +94,7 @@ Message::Message(const QJsonValue data, QObject* parent)
 	}
 
 	// Marking message as expired if older than 60 seconds
-	if(m_timestamp.toLongLong() > 60000ll && m_outgoingStatus == "sending"){
+	if(QDateTime::currentDateTime().toMSecsSinceEpoch() > (m_timestamp.toLongLong() + 60000ll)  && m_outgoingStatus == "sending"){
 		m_outgoingStatus = "not-sent";
 	}
 }

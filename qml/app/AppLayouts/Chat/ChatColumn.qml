@@ -226,6 +226,11 @@ StackLayout {
             StatusChatInput {
                 id: chatInput
                 visible: {
+                    if(chat.chatType == ChatType.PrivateGroupChat) {
+                        // Is member?
+                        return chat.chatMembers.filter(x => x.id === StatusSettings.PublicKey && x.joined == true).length > 0;
+                    }
+
                     const community = chatsModel.activeCommunity
                     if (chatsModel.activeChannel.chatType !== Constants.chatTypePrivateGroupChat &&
                             (!community.active ||

@@ -23,11 +23,11 @@
 #include <QtConcurrent>
 #include <stdexcept>
 
-Chat::Chat(QString id,
+Chat::Chat(QObject* parent,
+		   QString id,
 		   ChatType chatType,
 		   QString name,
 		   QString profile,
-		   QObject* parent,
 		   QString color,
 		   bool active,
 		   QString timestamp,
@@ -65,12 +65,7 @@ bool Chat::operator==(const Chat& c)
 	return m_id == c.get_id();
 }
 
-void Chat::setFilterId(QString filterId)
-{
-	m_filterId = filterId;
-}
-
-Chat::Chat(const QJsonValue data, QObject* parent)
+Chat::Chat(QObject* parent, const QJsonValue data)
 	: QObject(parent)
 	, m_id(data["id"].toString())
 	, m_name(data["name"].toString())
@@ -255,9 +250,13 @@ void Chat::sendImage(QString imagePath)
 void Chat::leave()
 {
 	m_active = false;
-	// TODO: ideally this should happen in a separate thread and notify parent to remove item from vector
+
+	if(m_chatType == ChatType::PrivateGroupChat)
+	{
+		leaveGroup();
+	}
+
 	deleteChatHistory();
-	removeFilter();
 	save();
 	left(m_id);
 }
@@ -268,7 +267,6 @@ void Chat::loadFilter()
 		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{{"ChatID", m_id}, {"OneToOne", m_chatType == ChatType::OneToOne}};
 		const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
-
 		if(!response["error"].isUndefined())
 		{
 			throw std::domain_error(response["error"]["message"].toString().toUtf8());
@@ -279,8 +277,6 @@ void Chat::loadFilter()
 			// Handle non public chats
 			if(value["chatId"].toString() == m_id)
 			{
-				m_filterId = value["filterId"].toString();
-
 				Topic t;
 				t.topic = value["topic"].toString();
 				t.discovery = value["discovery"].toBool();
@@ -295,16 +291,7 @@ void Chat::loadFilter()
 	});
 }
 
-void Chat::removeFilter()
-{
-	QJsonObject obj{{"ChatID", m_id}, {"FilterID", m_filterId}};
-	const auto response = Status::instance()->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
 
-	if(!response["error"].isUndefined())
-	{
-		throw std::domain_error(response["error"]["message"].toString().toUtf8());
-	}
-}
 
 void Chat::deleteChatHistory()
 {
@@ -380,10 +367,12 @@ void Chat::save()
 	//});
 }
 
-uint qHash(const ChatMember& item)
+
+uint qHash(const ChatMember &item, uint seed)
 {
-	return qHash(item.id);
+    return qHash(item.id, seed);
 }
+
 
 QSet<ChatMember> Chat::getChatMembers()
 {
@@ -439,4 +428,12 @@ void Chat::join()
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 	emit groupDataChanged();
+}
+
+void Chat::leaveGroup()
+{
+	const auto response =
+		Status::instance()->callPrivateRPC("wakuext_leaveGroupChat", QJsonArray{QJsonValue(), m_id, true}.toVariantList()).toJsonObject();
+	// TODO: error handling
+	Status::instance()->emitMessageSignal(response["result"].toObject());
 }

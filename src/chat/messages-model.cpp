@@ -134,7 +134,9 @@ void MessagesModel::push(Message* msg)
 		{
 			int row = m_messages.indexOf(m_messageMap[msg->get_id()]);
 			beginRemoveRows(QModelIndex(), row, row);
-			delete m_messageMap[msg->get_id()];
+			QString id = msg->get_id();
+			delete m_messageMap[id];
+			m_messageMap.remove(id);
 			m_messages.remove(row);
 			endRemoveRows();
 		}
@@ -213,7 +215,7 @@ void MessagesModel::loadMessages(bool initialLoad)
 			message->moveToThread(QApplication::instance()->thread());
 
 			if(m_chatType == ChatType::Timeline || m_chatType == ChatType::Profile)
-			{ 
+			{
 				emit statusUpdateLoaded(message);
 			}
 			else
@@ -337,4 +339,23 @@ void MessagesModel::resend(QString messageId)
 	int index = m_messages.indexOf(m_messageMap[messageId]);
 	QModelIndex idx = createIndex(index, 0);
 	dataChanged(idx, idx);
+}
+
+void MessagesModel::removeFrom(QString contactId)
+{
+	foreach(Message* message, m_messages)
+	{
+		if(message->get_from() != contactId)
+			continue;
+		QString id = message->get_id();
+		int index = m_messages.indexOf(m_messageMap[id]);
+		if(index == -1)
+			continue;
+
+		beginRemoveRows(QModelIndex(), index, index);
+		delete m_messageMap[id];
+		m_messageMap.remove(id);
+		m_messages.remove(index);
+		endRemoveRows();
+	}
 }
