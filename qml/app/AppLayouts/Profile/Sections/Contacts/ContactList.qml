@@ -62,8 +62,8 @@ ListView {
         //% "Are you sure you want to remove this contact?"
         confirmationText: qsTrId("are-you-sure-you-want-to-remove-this-contact-")
         onConfirmButtonClicked: {
-            if (profileModel.contacts.isAdded(removeContactConfirmationDialog.value)) {
-              profileModel.contacts.removeContact(removeContactConfirmationDialog.value);
+            if(contactsModel.get(removeContactConfirmationDialog.value).isAdded){
+                contactsModel.get(removeContactConfirmationDialog.value).toggleAdd();
             }
             removeContactConfirmationDialog.close()
         }
