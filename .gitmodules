@@ -10,3 +10,9 @@
 [submodule "vendor/status-go"]
 	path = vendor/status-go
 	url = https://github.com/status-im/status-go
+[submodule "vendor/uint256_t"]
+	path = vendor/uint256_t
+	url = https://github.com/calccrypto/uint256_t
+[submodule "vendor/edn-cpp"]
+	path = vendor/edn-cpp
+	url = https://github.com/shaunxcode/edn-cpp

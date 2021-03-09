@@ -110,6 +110,9 @@ add_definitions(-DUSE_INSTALL_TARGET)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib-qt-qml-tricks/include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/uint256_t/
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/edn-cpp/
+
 )
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/core)
@@ -124,6 +127,8 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/logs.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/bitcoin-core-base58/base58.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/uint256_t/uint128_t.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/uint256_t/uint256_t.cpp"
 )
 
 add_executable(status-cpp 
@@ -164,6 +169,8 @@ TARGET_COMPILE_DEFINITIONS(status-cpp
 qt5_add_binary_resources(static-resources "${CMAKE_CURRENT_SOURCE_DIR}/qml/resources.qrc" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/static-resources.rcc")
 
 add_dependencies(status-cpp static-resources)
+
+# TODO: qtquick_compiler_add_resources
 
 
 # Ninja run!
