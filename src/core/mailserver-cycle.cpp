@@ -377,6 +377,11 @@ void MailserverCycle::initialMailserverRequest()
 		}
 	}
 
+	if(minRequest < fromValue)
+	{
+		minRequest = fromValue; // Only last 24hrs
+	}
+
 	if(!isMailserverAvailable())
 		return; // TODO: add a pending request
 
