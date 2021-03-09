@@ -247,8 +247,6 @@ StackLayout {
                         //% "Type a message."
                         qsTrId("type-a-message-")
                 anchors.bottom: parent.bottom
-                recentStickers: chatsModel.stickers.recent
-                stickerPackList: chatsModel.stickers.stickerPacks
                 chatType: chat.chatType
                 onSendTransactionCommandButtonClicked: {
                     if (chatsModel.activeChannel.ensVerified) {
@@ -263,7 +261,7 @@ StackLayout {
                     txModalLoader.item.open()
                 }
                 onStickerSelected: {
-                    chatsModel.stickers.send(hashId, packId)
+                    chatsModel.get(index).sendSticker(packId, hashId)
                 }
                 onSendMessage: {
                     if (chatInput.fileUrls.length > 0){

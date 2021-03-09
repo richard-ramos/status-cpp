@@ -18,7 +18,8 @@ Item {
     signal buyClicked(int packId)
 
     Component.onCompleted: {
-        walletModel.getGasPricePredictions()
+        // TODO:
+      //  walletModel.getGasPricePredictions()
     }
 
     GridView {
@@ -47,7 +48,7 @@ Item {
                 height: 220
                 width: parent.width
                 radius: 12
-                source: "https://ipfs.infura.io/ipfs/" + preview
+                source: "https://ipfs.status.im/ipfs/" + preview
                 onClicked: {
                     stickerPackDetailsPopup.open()
                 }

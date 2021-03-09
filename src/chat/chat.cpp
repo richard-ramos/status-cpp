@@ -202,6 +202,32 @@ void Chat::sendMessage(QString message, QString replyTo, bool isEmoji)
 	});
 }
 
+void Chat::sendSticker(int packId, QString stickerHash)
+{
+	QString preferredUsername = Settings::instance()->preferredName();
+	emit sendingMessage();
+
+	QtConcurrent::run([=] {
+		QMutexLocker locker(&m_mutex);
+		QJsonObject obj{
+			{"chatId", m_id},
+			{"text", "Update to latest version to see a nice sticker here!"},
+			{"responseTo", QJsonValue()},
+			{"ensName", preferredUsername},
+			{"sticker", QJsonObject{{"hash", stickerHash}, {"pack", packId}}},
+			{"contentType", ContentType::Sticker}
+			// TODO: {"communityId", communityId}
+		};
+		const auto response = Status::instance()->callPrivateRPC("wakuext_sendChatMessage", QJsonArray{obj}.toVariantList()).toJsonObject();
+		if(!response["error"].isUndefined())
+		{
+			emit sendingMessageFailed();
+			throw std::domain_error(response["error"]["message"].toString().toUtf8());
+		}
+		Status::instance()->emitMessageSignal(response["result"].toObject());
+	});
+}
+
 void Chat::sendImage(QString imagePath)
 {
 	QString preferredUsername = Settings::instance()->preferredName();
@@ -291,8 +317,6 @@ void Chat::loadFilter()
 	});
 }
 
-
-
 void Chat::deleteChatHistory()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_deleteMessagesByChatID", QJsonArray{m_id}.toVariantList()).toJsonObject();
@@ -367,12 +391,10 @@ void Chat::save()
 	//});
 }
 
-
-uint qHash(const ChatMember &item, uint seed)
+uint qHash(const ChatMember& item, uint seed)
 {
-    return qHash(item.id, seed);
+	return qHash(item.id, seed);
 }
-
 
 QSet<ChatMember> Chat::getChatMembers()
 {

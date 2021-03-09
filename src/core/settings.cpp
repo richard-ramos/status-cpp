@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMap>
 #include <QReadWriteLock>
 #include <QTimer>
 #include <QTranslator>
@@ -77,6 +78,7 @@ void Settings::init(QString loginError)
 	m_networks = settings[settingsMap[SettingTypes::Networks_Networks]].toArray();
 	m_walletRootAddress = settings[settingsMap[SettingTypes::WalletRootAddress]].toString();
 	m_signingPhrase = settings[settingsMap[SettingTypes::SigningPhrase]].toString();
+	m_installedStickers = settings[settingsMap[SettingTypes::Stickers_PacksInstalled]].toObject();
 
 	if(!settings[settingsMap[SettingTypes::Usernames]].isUndefined())
 	{
@@ -515,4 +517,26 @@ void Settings::changeLocale(QString locale)
 	{
 		qWarning() << "Failed to load translation file: " << translationPackage;
 	}
+}
+
+void Settings::setInstalledStickerPacks(const QJsonObject& value)
+{
+	lock.lockForWrite();
+	m_installedStickers = value;
+	saveSettings(SettingTypes::Stickers_PacksInstalled, value);
+	lock.unlock();
+	emit installedStickerPacksChanged();
+}
+
+QJsonObject Settings::installedStickerPacks()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QJsonObject{};
+	}
+	QJsonObject result(m_installedStickers);
+	lock.unlock();
+	return result;
 }

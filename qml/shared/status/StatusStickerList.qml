@@ -4,14 +4,16 @@ import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 import "../../imports"
 import "../../shared"
+import im.status.desktop 1.0
 
 GridView {
+    property int packId;
+
     id: root
     visible: count > 0
     anchors.fill: parent
     cellWidth: 88
     cellHeight: 88
-    model: stickerList
     focus: true
     clip: true
     signal stickerClicked(string hash, int packId)
@@ -25,9 +27,9 @@ GridView {
             ImageLoader {
                 width: 80
                 height: 80
-                source: "https://ipfs.infura.io/ipfs/" + url
+                source: "https://ipfs.status.im/ipfs/" + StatusUtils.decodeHash(modelData)
                 onClicked: {
-                    root.stickerClicked(hash, packId)
+                    root.stickerClicked(modelData, packId)
                 }
             }
         }

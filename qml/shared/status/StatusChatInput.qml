@@ -24,9 +24,6 @@ Rectangle {
     property bool isReply: false
     property bool isImage: false
 
-    property var recentStickers
-    property var stickerPackList
-
     property int extraHeightFactor: calculateExtraHeightFactor()
     property int messageLimit: control.isStatusUpdateInput ? 300 : 2000
     property int messageLimitVisible: control.isStatusUpdateInput ? 50 : 200
@@ -521,9 +518,6 @@ Rectangle {
         id: stickersPopup
         x: parent.width - width - Style.current.halfPadding
         y: -height
-        enabled: !!control.recentStickers && !!control.stickerPackList
-        recentStickers: control.recentStickers
-        stickerPackList: control.stickerPackList
         onStickerSelected: {
             control.stickerSelected(hashId, packId)
             messageInputField.forceActiveFocus();

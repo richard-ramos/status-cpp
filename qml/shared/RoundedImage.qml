@@ -32,7 +32,7 @@ Rectangle {
         smooth: false
         radius: root.radius
         anchors.fill: parent
-        source: "https://ipfs.infura.io/ipfs/" + thumbnail
+        source: "https://ipfs.status.im/ipfs/" + thumbnail
         onClicked: root.clicked()
     }
 }

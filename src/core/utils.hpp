@@ -19,10 +19,10 @@ public:
 	Q_INVOKABLE static QString generateAlias(QString publicKey);
 	Q_INVOKABLE static QString generateIdenticon(QString publicKey);
 	Q_INVOKABLE static void copyToClipboard(const QString& value);
-
+	Q_INVOKABLE static QString decodeHash(QString ednHash);
 	Q_INVOKABLE static QString generateQRCode(QString publicKey);
 	Q_INVOKABLE static QString plainText(const QString& value);
-
+	Q_INVOKABLE static QString wei2Token(QString input, int decimals = 18);
 
 	static QString jsonToStr(QJsonObject& obj);
 	static QString jsonToStr(QJsonArray& arr);

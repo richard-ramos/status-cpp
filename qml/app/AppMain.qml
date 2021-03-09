@@ -314,6 +314,10 @@ RowLayout {
         contacts: contactsModel
     }
 
+    StickerPacksModel {
+        id: stickerPacksModel
+    }
+
     TabBar {
         id: tabBar
         width: 78

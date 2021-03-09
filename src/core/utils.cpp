@@ -1,7 +1,10 @@
 #include "utils.hpp"
 #include "QrCode.hpp"
+#include "base58.h"
 #include "libstatus.h"
+#include "uint256_t.h"
 #include <QClipboard>
+#include <QDebug>
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -92,4 +95,64 @@ QString Utils::generateQRCode(QString publicKey)
 QString Utils::plainText(const QString& value)
 {
 	return QTextDocumentFragment::fromHtml(value).toPlainText();
+}
+
+QString Utils::decodeHash(QString ednHash)
+{
+
+	if(ednHash.left(2) != QStringLiteral("e3"))
+	{
+		qWarning() << "Could not decode sticker. It may still be valid, but requires a different codec to be used: " + ednHash;
+		return "";
+	}
+
+	if(ednHash.left(8) == QStringLiteral("e3010170"))
+	{
+		ednHash.remove(0, 8);
+	}
+	else if(ednHash.left(6) == QStringLiteral("e30170"))
+	{
+		ednHash.remove(0, 6);
+	}
+
+	std::vector<unsigned char> vch;
+	for(int i = 0; i < ednHash.length(); i += 2)
+	{
+		QString byteString = ednHash.mid(i, 2);
+		unsigned char b = std::strtol(byteString.toUtf8().data(), NULL, 16);
+		vch.push_back(b);
+	}
+
+	return QString::fromStdString(EncodeBase58(vch));
+}
+
+// Optimized recursive solution to calculate `pow(x, n)`
+// using divide-and-conquer
+uint256_t power(uint256_t x, uint256_t n)
+{
+	// base condition
+	if(n == uint256_t(0))
+	{
+		return uint256_t(1);
+	}
+
+	// calculate subproblem recursively
+	uint256_t pow = power(x, n / uint256_t(2));
+
+	if(n & uint256_t(1))
+	{ // if `y` is odd
+		return x * pow * pow;
+	}
+
+	// otherwise, `y` is even
+	return pow * pow;
+}
+
+QString Utils::wei2Token(QString input, int decimals)
+{
+	uint256_t one_eth = power(uint256_t(10), uint256_t(decimals));
+	uint256_t inp = uint256_t(input.toStdString(), 10);
+	uint256_t eth = inp / one_eth;
+	uint256_t remainder = inp % one_eth;
+	return QString::fromStdString(eth.str()) + "." + QString::fromStdString(remainder.str(10, decimals));
 }

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "mailserver-cycle.hpp"
-#include <QJsonObject>
 #include <QJsonArray>
+#include <QJsonObject>
+#include <QMap>
 #include <QObject>
 #include <QReadWriteLock>
 #include <QTimer>
-#include <map>
 #include <QTranslator>
+#include <map>
 
 class Settings : public QObject
 {
@@ -22,6 +23,7 @@ class Settings : public QObject
 	Q_PROPERTY(QString CurrentNetwork READ currentNetwork WRITE setCurrentNetwork NOTIFY currentNetworkChanged)
 	Q_PROPERTY(QString Fleet READ fleet WRITE setFleet NOTIFY fleetChanged)
 	Q_PROPERTY(QString SigningPhrase READ signingPhrase CONSTANT)
+	Q_PROPERTY(QJsonObject InstalledStickerPacks READ installedStickerPacks WRITE setInstalledStickerPacks NOTIFY installedStickerPacksChanged)
 
 public:
 	static Settings* instance();
@@ -110,6 +112,9 @@ public:
 	QString fleet();
 	void setFleet(const QString& value);
 
+	QJsonObject installedStickerPacks();
+	void setInstalledStickerPacks(const QJsonObject& packs);
+
 	QString walletRootAddress();
 
 	int appearance();
@@ -123,9 +128,8 @@ public:
 	QJsonObject getNodeConfig();
 
 	QString signingPhrase();
-	
-	QString installationId();
 
+	QString installationId();
 
 signals:
 	void initialized();
@@ -137,6 +141,7 @@ signals:
 	void fleetChanged();
 	void networksChanged();
 	void usernamesChanged();
+	void installedStickerPacksChanged();
 
 private:
 	static Settings* theInstance;
@@ -155,6 +160,7 @@ private:
 	QJsonArray m_networks;
 	QString m_signingPhrase;
 	QVector<QString> m_usernames;
+	QJsonObject m_installedStickers;
 
 	int m_appearance;
 

@@ -19,7 +19,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 40
         height: 40
-        source: "https://ipfs.infura.io/ipfs/" + packThumb
+        source: "https://ipfs.status.im/ipfs/" + packThumb
     }
     Column {
         anchors.left: imgThumb.right

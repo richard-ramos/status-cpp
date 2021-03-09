@@ -6,7 +6,10 @@ add_library(chat
     message-type.cpp
     message-format.cpp
     message.cpp
-    messages-model.cpp)
+    messages-model.cpp
+    stickers-model.cpp
+    stickerpack.cpp
+    stickerpack-utils.cpp)
 
 target_include_directories(chat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

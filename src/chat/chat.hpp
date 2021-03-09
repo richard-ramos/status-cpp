@@ -105,6 +105,7 @@ private:
 public:
 	Q_INVOKABLE void save();
 	Q_INVOKABLE void sendMessage(QString message, QString replyTo, bool isEmoji);
+	Q_INVOKABLE void sendSticker(int packId, QString stickerHash);
 	Q_INVOKABLE void sendImage(QString imagePath);
 	Q_INVOKABLE void leave();
 	Q_INVOKABLE void loadMoreMessages();
@@ -127,4 +128,4 @@ public:
 	QSet<ChatMember> getChatMembers();
 };
 
-uint qHash(const ChatMember &item, uint seed = 0);
+uint qHash(const ChatMember& item, uint seed = 0);

@@ -6,6 +6,8 @@ import "../../imports"
 import "../../shared"
 import "../../shared/status"
 import "../../app/AppLayouts/Chat/ChatColumn/samples"
+import SortFilterProxyModel 0.2
+ 
 
 Popup {
     id: root
@@ -13,7 +15,7 @@ Popup {
     property var stickerPackList: StickerPackData {}
     signal stickerSelected(string hashId, string packId)
     property int installedPacksCount: chatsModel.stickers.numInstalledStickerPacks
-    property bool stickerPacksLoaded: false
+    property bool stickerPacksLoaded: stickerPackList.count > 0
     width: 360
     height: 440
     modal: false
@@ -37,15 +39,23 @@ Popup {
         footerContent.visible = true
         stickersContainer.visible = true
     }
+
+    /* TODO:
     Connections {
         target: chatsModel
         onOnlineStatusChanged: {
             root.close()
         }
-    }
+    }*/
     contentItem: ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
+        SortFilterProxyModel {
+            id: stickerPackList
+            sourceModel: stickerPacksModel
+            // sorters: StringSorter { roleName: "name" }
+        }
 
         StatusStickerMarket {
             id: stickerMarket
@@ -54,13 +64,12 @@ Popup {
             Layout.fillHeight: true
             stickerPacks: stickerPackList
             onInstallClicked: {
-                chatsModel.stickers.install(packId)
-                stickerGrid.model = stickers
-                stickerPackListView.itemAt(index).clicked()
+                stickerPacksModel.install(packId)
+                stickerPackListView.itemAt(stickerPackListView.count - 1).clicked()
             }
             onUninstallClicked: {
                 chatsModel.stickers.uninstall(packId)
-                stickerGrid.model = recentStickers
+             //   stickerGrid.model = recentStickers
                 btnHistory.clicked()
             }
             onBackClicked: {
@@ -142,7 +151,10 @@ Popup {
             }
             StatusStickerList {
                 id: stickerGrid
-                model: recentStickers
+                packId: stickerPackListView.selectedPackId
+                model: ListModel {
+
+                } // recentStickers
                 onStickerClicked: {
                     root.stickerSelected(hash, packId)
                     root.close()
@@ -160,7 +172,7 @@ Popup {
 
             Loader {
                 id: loadingGrid
-                active: chatsModel.stickers.recent.rowCount() === 0
+                active: !stickerPacksLoaded // TODO: && is connected
                 sourceComponent: loadingImageComponent
                 anchors.centerIn: parent
             }
@@ -182,7 +194,7 @@ Popup {
                 icon.name: "plusSign"
                 implicitWidth: 24
                 implicitHeight: 24
-                state: root.stickerPacksLoaded ? "default" : "pending"
+                state: stickerPackList.count != 0 ? "default" : "pending"
                 onClicked: {
                     stickersContainer.visible = false
                     stickerMarket.visible = true
@@ -201,7 +213,7 @@ Popup {
                 onClicked: {
                     btnHistory.selected = true
                     stickerPackListView.selectedPackId = -1
-                    stickerGrid.model = recentStickers
+                  //  stickerGrid.model = recentStickers
                 }
             }
 
@@ -218,30 +230,47 @@ Popup {
                 RowLayout {
                     id: stickersRowLayout
                     spacing: Style.current.padding
+                    ListModel {
+                        id: installedStickers
+                    }
                     Repeater {
                         id: stickerPackListView
                         property int selectedPackId: -1
-                        model: stickerPackList
-
+                        model: {                           
+                            installedStickers.clear();
+                            Object.keys(stickerPacksModel.installedPacks).forEach(packId => {
+                                installedStickers.append({
+                                    "packId": parseInt(packId),
+                                    "thumbnail": stickerPacksModel.installedPacks[packId].thumbnail,
+                                    "stickers": stickerPacksModel.installedPacks[packId].stickers
+                                });
+                            });
+                            return installedStickers;
+                        }
                         delegate: StatusStickerPackIconWithIndicator {
                             id: packIconWithIndicator
                             visible: installed
                             width: 24
                             height: 24
                             selected: stickerPackListView.selectedPackId === packId
-                            source: "https://ipfs.infura.io/ipfs/" + thumbnail
+                            source: "https://ipfs.status.im/ipfs/" + thumbnail
                             Layout.preferredHeight: height
                             Layout.preferredWidth: width
                             onClicked: {
                                 btnHistory.selected = false
                                 stickerPackListView.selectedPackId = packId
-                                stickerGrid.model = stickers
+                                stickerGrid.model.clear();
+                                for(let i = 0; i < stickerPacksModel.installedPacks[packId].stickers.length; i++){
+                                    stickerGrid.model.append({
+                                        ipfsHash: stickerPacksModel.installedPacks[packId].stickers[i]
+                                    });
+                                }
                             }
                         }
                     }
                     Repeater {
                         id: loadingStickerPackListView
-                        model: new Array(7)
+                        model: !stickerPacksLoaded ? new Array(7) : []
 
                         delegate: Rectangle {
                             width: 24
@@ -256,15 +285,14 @@ Popup {
             }
         }
     }
+
+    /* TODO:
     Connections {
         target: chatsModel.stickers
         onStickerPacksLoaded: {
-            root.stickerPacksLoaded = true
             stickerPackListView.visible = true
-            loadingGrid.active = false
-            loadingStickerPackListView.model = []
             noStickerPacks.visible = installedPacksCount === 0 || chatsModel.stickers.recent.rowCount() === 0
         }
-    }
+    }*/
 }
 

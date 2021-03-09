@@ -1,5 +1,4 @@
 #include "message-format.hpp"
-#include "base58.h"
 #include "constants.hpp"
 #include "contact.hpp"
 #include "contacts-model.hpp"
@@ -18,7 +17,6 @@
 
 using namespace Messages;
 using namespace Messages::Format;
-
 
 QHash<QString, RenderInlineTypes> renderInlineMap{
 	{"", Empty},
@@ -163,33 +161,7 @@ QString Messages::Format::decodeSticker(Message* message)
 	if(message->get_contentType() != ContentType::Sticker)
 		return "";
 
-	QString stickerHash = message->get_sticker_hash();
-
-	if(stickerHash.left(2) != QStringLiteral("e3"))
-	{
-		qWarning() << "Could not decode sticker. It may still be valid, but requires a different codec to be used: " + message->get_sticker_hash();
-		return "";
-	}
-
-	if(stickerHash.left(6) == QStringLiteral("e30170"))
-	{
-		stickerHash.remove(0, 6);
-	}
-
-	if(message->get_sticker_hash().left(8) == QStringLiteral("e3010170"))
-	{
-		stickerHash.remove(0, 8);
-	}
-
-	std::vector<unsigned char> vch;
-	for(int i = 0; i < stickerHash.length(); i += 2)
-	{
-		QString byteString = stickerHash.mid(i, 2);
-		unsigned char b = std::strtol(byteString.toUtf8().data(), NULL, 16);
-		vch.push_back(b);
-	}
-
-	return QString::fromStdString(EncodeBase58(vch));
+	return Utils::decodeHash(message->get_sticker_hash());
 }
 
 QString Messages::Format::linkUrls(Message* message)

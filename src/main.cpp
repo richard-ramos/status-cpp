@@ -17,12 +17,15 @@
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
+#include "stickerpack.hpp"
+#include "stickers-model.hpp"
 #include "utils.hpp"
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLockFile>
@@ -39,7 +42,6 @@
 #include <iostream>
 #include <openssl/ssl.h>
 #include <string>
-#include <QIcon>
 
 int main(int argc, char* argv[])
 {
@@ -53,12 +55,11 @@ int main(int argc, char* argv[])
 	app.setOrganizationDomain("status.im");
 	app.setApplicationName("Status Desktop");
 
-
 #ifndef NDEBUG
-    app.setWindowIcon(QIcon(":/resources/status-dev.svg"));
+	app.setWindowIcon(QIcon(":/resources/status-dev.svg"));
 #else
-    app.setWindowIcon(QIcon(":/resources/status.svg"));
-#endif	
+	app.setWindowIcon(QIcon(":/resources/status.svg"));
+#endif
 
 	QQmlApplicationEngine engine;
 
@@ -111,14 +112,17 @@ int main(int argc, char* argv[])
 	qmlRegisterType<CustomNetworksModel>("im.status.desktop", 1, 0, "CustomNetworksModel");
 	qmlRegisterType<ENSModel>("im.status.desktop", 1, 0, "ENSModel");
 	qmlRegisterType<DevicesModel>("im.status.desktop", 1, 0, "DevicesModel");
+	qmlRegisterType<StickerPacksModel>("im.status.desktop", 1, 0, "StickerPacksModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
+	qmlRegisterUncreatableType<StickerPack>("im.status.desktop", 1, 0, "StickerPack", "StickerPack class uncreatable");
 
 	qRegisterMetaType<Contact*>("Contact *");
 	qRegisterMetaType<Message*>("Message *");
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
+	qRegisterMetaType<StickerPack*>("StickerPack *");
 
 	qRegisterMetaType<Device>("Device");
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
