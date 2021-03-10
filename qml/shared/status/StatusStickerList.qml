@@ -27,7 +27,7 @@ GridView {
             ImageLoader {
                 width: 80
                 height: 80
-                source: "https://ipfs.status.im/ipfs/" + StatusUtils.decodeHash(modelData)
+                source: "image://ipfs-cache/" + StatusUtils.decodeHash(modelData)
                 onClicked: {
                     root.stickerClicked(modelData, packId)
                 }

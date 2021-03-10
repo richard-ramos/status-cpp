@@ -48,7 +48,7 @@ Item {
                 height: 220
                 width: parent.width
                 radius: 12
-                source: "https://ipfs.status.im/ipfs/" + preview
+                source: "image://ipfs-cache/" + preview
                 onClicked: {
                     stickerPackDetailsPopup.open()
                 }
