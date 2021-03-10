@@ -13,6 +13,11 @@ QString Constants::tmpPath(QString path)
 	return QFileInfo(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + path).absoluteFilePath();
 }
 
+QString Constants::cachePath(QString path)
+{
+	return QFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + path).absoluteFilePath();
+}
+
 QString Constants::getTimelineChatId(QString pubKey)
 {
 	if(pubKey.isEmpty())

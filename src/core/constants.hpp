@@ -29,5 +29,7 @@ QString applicationPath(QString path = "");
 QString tmpPath(QString path = "");
 QString settingsPath();
 QString getTimelineChatId(QString pubkey = "");
+QString cachePath(QString path = "");
+
 
 } // namespace Constants
