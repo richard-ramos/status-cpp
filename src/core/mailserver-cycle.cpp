@@ -46,12 +46,6 @@ void MailserverCycle::work()
 	}
 }
 
-void MailserverCycle::trustPeer(QString enode)
-{
-	const auto response = Status::instance()->callPrivateRPC("waku_markTrustedPeer", QJsonArray{enode}.toVariantList());
-	nodes[enode] = MailserverStatus::Trusted;
-}
-
 void MailserverCycle::updateMailserver(QString enode)
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_updateMailservers", QJsonArray{QJsonArray{enode}}.toVariantList());
@@ -61,7 +55,7 @@ void MailserverCycle::connect(QString enode)
 {
 	qDebug() << "Connecting to " << enode;
 
-	bool mailserverTrusted = false;
+	bool mailserverConnected = false;
 
 	if(!getMailservers().contains(enode))
 	{
@@ -79,9 +73,8 @@ void MailserverCycle::connect(QString enode)
 
 	if(nodes.contains(enode) && nodes[enode] == MailserverStatus::Connected)
 	{
-		trustPeer(enode);
 		updateMailserver(enode);
-		mailserverTrusted = true;
+		mailserverConnected = true;
 	}
 	else
 	{
@@ -97,7 +90,7 @@ void MailserverCycle::connect(QString enode)
 		});
 	}
 
-	if(mailserverTrusted)
+	if(mailserverConnected)
 	{
 		qDebug() << "Mailserver Available!";
 		emit mailserverAvailable();
@@ -179,9 +172,9 @@ void MailserverCycle::run()
 
 	// TODO: if there's a pinned mailserver, return
 
-	if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Trusted)
+	if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Connected)
 	{
-		qDebug() << "Mailserver is already connected and trusted. Skipping iteration";
+		qDebug() << "Mailserver is already connected. Skipping iteration";
 		return;
 	}
 
@@ -206,7 +199,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 
 	for(QHash<QString, MailserverStatus>::const_iterator it = nodes.cbegin(), end = nodes.cend(); it != end; ++it)
 	{
-		if(!peers.contains(it.key()) && (nodes[it.key()] == MailserverStatus::Connected || nodes[it.key()] == MailserverStatus::Trusted))
+		if(!peers.contains(it.key()) && nodes[it.key()] == MailserverStatus::Connected)
 		{
 			//qDebug() << "Peer disconnected: " << it.key();
 
@@ -221,7 +214,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 
 	for(QString& peer : peers)
 	{
-		if(nodes.contains(peer) && (nodes[peer] == MailserverStatus::Connected || nodes[peer] == MailserverStatus::Trusted))
+		if(nodes.contains(peer) && nodes[peer] == MailserverStatus::Connected)
 			continue;
 
 		// qDebug() << "Peer connected: " << peer;
@@ -231,7 +224,6 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 		{
 			if(nodes.contains(peer))
 			{
-				trustPeer(peer);
 				updateMailserver(peer);
 				available = true;
 			}
@@ -429,5 +421,5 @@ void MailserverCycle::addChannelTopic(Topic t)
 
 bool MailserverCycle::isMailserverAvailable()
 {
-	return m_activeMailserver != "" && nodes.contains(m_activeMailserver) && nodes[m_activeMailserver] == MailserverStatus::Trusted;
+	return m_activeMailserver != "" && nodes.contains(m_activeMailserver) && nodes[m_activeMailserver] == MailserverStatus::Connected;
 }

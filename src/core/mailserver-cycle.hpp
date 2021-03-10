@@ -42,7 +42,6 @@ public:
 		Disconnected = 0,
 		Connecting = 1,
 		Connected = 2,
-		Trusted = 3
 	};
 
 private:
