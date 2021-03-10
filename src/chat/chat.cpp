@@ -207,6 +207,8 @@ void Chat::sendSticker(int packId, QString stickerHash)
 	QString preferredUsername = Settings::instance()->preferredName();
 	emit sendingMessage();
 
+	Settings::instance()->addRecentSticker(packId, stickerHash);
+
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
 		QJsonObject obj{

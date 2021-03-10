@@ -42,6 +42,7 @@
 #include <iostream>
 #include <openssl/ssl.h>
 #include <string>
+#include "ipfs-image-provider.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -75,6 +76,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	// TODO: refactor
+
 	// Initialize app directory
 	if(Constants::applicationPath().isEmpty())
 	{
@@ -88,6 +91,38 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 	}
+
+	// Initialize cache directories
+	if(Constants::cachePath("/stickers/network").isEmpty())
+	{
+		QDir d{Constants::cachePath("/stickers/network")};
+		if(!d.mkpath(d.absolutePath()))
+		{
+			QMessageBox msgBox;
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setText("Cannot determine storage location");
+			msgBox.exec();
+			return 1;
+		}
+	}
+
+	// Initialize cache directories
+	if(Constants::cachePath("/ipfs").isEmpty())
+	{
+		QDir d{Constants::cachePath("/ipfs")};
+		if(!d.mkpath(d.absolutePath()))
+		{
+			QMessageBox msgBox;
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setText("Cannot determine storage location");
+			msgBox.exec();
+			return 1;
+		}
+	}
+
+
+	IPFSAsyncImageProvider* imageProvider = new IPFSAsyncImageProvider(Constants::cachePath("/ipfs"), Constants::StatusIPFS);
+	engine.addImageProvider("ipfs-cache", imageProvider);
 
 	// Init keystore
 	const char* initKeystoreResult = InitKeystore(Constants::applicationPath(Constants::Keystore).toUtf8().data());

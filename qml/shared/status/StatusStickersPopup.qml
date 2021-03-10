@@ -7,7 +7,7 @@ import "../../shared"
 import "../../shared/status"
 import "../../app/AppLayouts/Chat/ChatColumn/samples"
 import SortFilterProxyModel 0.2
- 
+import im.status.desktop 1.0
 
 Popup {
     id: root
@@ -34,19 +34,26 @@ Popup {
             color: "#22000000"
         }
     }
+
+    onOpened: {
+        btnHistory.clicked();
+    }
+
     onClosed: {
         stickerMarket.visible = false
         footerContent.visible = true
         stickersContainer.visible = true
     }
 
-    /* TODO:
     Connections {
-        target: chatsModel
+        target: Status
         onOnlineStatusChanged: {
-            root.close()
+            if(Status.isOnline){
+                stickerPacksModel.reloadStickers();
+            }
         }
-    }*/
+    }
+
     contentItem: ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -172,7 +179,7 @@ Popup {
 
             Loader {
                 id: loadingGrid
-                active: !stickerPacksLoaded // TODO: && is connected
+                active: !stickerPacksLoaded && Status.IsOnline
                 sourceComponent: loadingImageComponent
                 anchors.centerIn: parent
             }
@@ -194,13 +201,15 @@ Popup {
                 icon.name: "plusSign"
                 implicitWidth: 24
                 implicitHeight: 24
-                state: stickerPackList.count != 0 ? "default" : "pending"
+                enabled: Status.IsOnline
+                state: stickerPackList.count != 0 || !Status.IsOnline ? "default" : "pending"
                 onClicked: {
                     stickersContainer.visible = false
                     stickerMarket.visible = true
                     footerContent.visible = false
                 }
             }
+
             StatusStickerPackIconWithIndicator {
                 id: btnHistory
                 width: 24
@@ -213,7 +222,12 @@ Popup {
                 onClicked: {
                     btnHistory.selected = true
                     stickerPackListView.selectedPackId = -1
-                  //  stickerGrid.model = recentStickers
+                    stickerGrid.model.clear();
+                    for(let i = 0; i < StatusSettings.RecentStickers.length; i++){
+                        stickerGrid.model.append({
+                            ipfsHash: StatusSettings.RecentStickers[i].hash
+                        });
+                    }
                 }
             }
 
@@ -238,11 +252,11 @@ Popup {
                         property int selectedPackId: -1
                         model: {                           
                             installedStickers.clear();
-                            Object.keys(stickerPacksModel.installedPacks).forEach(packId => {
+                            Object.keys(StatusSettings.InstalledStickerPacks).forEach(packId => {
                                 installedStickers.append({
                                     "packId": parseInt(packId),
-                                    "thumbnail": stickerPacksModel.installedPacks[packId].thumbnail,
-                                    "stickers": stickerPacksModel.installedPacks[packId].stickers
+                                    "thumbnail": StatusSettings.InstalledStickerPacks[packId].thumbnail,
+                                    "stickers": StatusSettings.InstalledStickerPacks[packId].stickers
                                 });
                             });
                             return installedStickers;
@@ -253,16 +267,16 @@ Popup {
                             width: 24
                             height: 24
                             selected: stickerPackListView.selectedPackId === packId
-                            source: "https://ipfs.status.im/ipfs/" + thumbnail
+                            source: "image://ipfs-cache/" + thumbnail
                             Layout.preferredHeight: height
                             Layout.preferredWidth: width
                             onClicked: {
                                 btnHistory.selected = false
                                 stickerPackListView.selectedPackId = packId
                                 stickerGrid.model.clear();
-                                for(let i = 0; i < stickerPacksModel.installedPacks[packId].stickers.length; i++){
+                                for(let i = 0; i < StatusSettings.InstalledStickerPacks[packId].stickers.length; i++){
                                     stickerGrid.model.append({
-                                        ipfsHash: stickerPacksModel.installedPacks[packId].stickers[i]
+                                        ipfsHash: StatusSettings.InstalledStickerPacks[packId].stickers[i]
                                     });
                                 }
                             }

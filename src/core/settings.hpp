@@ -24,6 +24,7 @@ class Settings : public QObject
 	Q_PROPERTY(QString Fleet READ fleet WRITE setFleet NOTIFY fleetChanged)
 	Q_PROPERTY(QString SigningPhrase READ signingPhrase CONSTANT)
 	Q_PROPERTY(QJsonObject InstalledStickerPacks READ installedStickerPacks WRITE setInstalledStickerPacks NOTIFY installedStickerPacksChanged)
+	Q_PROPERTY(QJsonArray RecentStickers READ recentStickers WRITE setRecentStickers NOTIFY recentStickersChanged)
 
 public:
 	static Settings* instance();
@@ -115,6 +116,9 @@ public:
 	QJsonObject installedStickerPacks();
 	void setInstalledStickerPacks(const QJsonObject& packs);
 
+	QJsonArray recentStickers();
+	void setRecentStickers(const QJsonArray& packs);
+
 	QString walletRootAddress();
 
 	int appearance();
@@ -131,6 +135,8 @@ public:
 
 	QString installationId();
 
+	void addRecentSticker(int packId, QString stickerHash);
+
 signals:
 	void initialized();
 	void currencyChanged();
@@ -142,6 +148,7 @@ signals:
 	void networksChanged();
 	void usernamesChanged();
 	void installedStickerPacksChanged();
+	void recentStickersChanged();
 
 private:
 	static Settings* theInstance;
@@ -161,6 +168,7 @@ private:
 	QString m_signingPhrase;
 	QVector<QString> m_usernames;
 	QJsonObject m_installedStickers;
+	QJsonArray m_recentStickers;
 
 	int m_appearance;
 

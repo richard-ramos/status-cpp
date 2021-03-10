@@ -18,6 +18,7 @@
 #include <QQmlApplicationEngine>
 #include <QString>
 #include <QtConcurrent/QtConcurrent>
+#include <QNetworkDiskCache>
 #include <algorithm>
 #include <array>
 
@@ -25,8 +26,6 @@ StickerPacksModel::StickerPacksModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
 	loadStickerPacks();
-	m_installedPacks = Settings::instance()->installedStickerPacks();
-
 	QObject::connect(this, &StickerPacksModel::stickerPackLoaded, this, &StickerPacksModel::push);
 }
 
@@ -80,8 +79,11 @@ QVariant StickerPacksModel::data(const QModelIndex& index, int role) const
 void StickerPacksModel::loadStickerPacks()
 {
 	QtConcurrent::run([=] {
-		QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-		// TODO: add cache
+		// TODO: should this be part of the StickerPacksModel object?
+		QNetworkAccessManager* manager = new QNetworkAccessManager();
+		QNetworkDiskCache *diskCache = new QNetworkDiskCache();
+		diskCache->setCacheDirectory(Constants::cachePath("/stickers/network"));
+		manager->setCache(diskCache);
 
 		int numPacks = StickerPackUtils::getPackCount();
 		for(int i = 0; i < numPacks; i++)
@@ -91,7 +93,19 @@ void StickerPacksModel::loadStickerPacks()
 			stickerPack->moveToThread(QApplication::instance()->thread());
 			emit stickerPackLoaded(stickerPack);
 		}
+
+		delete manager;
 	});
+}
+
+void StickerPacksModel::reloadStickers(){
+	beginResetModel();
+	for(int i = 0; i < m_stickerPacks.count(); i++){
+		delete m_stickerPacks[i];
+	}
+	m_stickerPacks.clear();
+	endResetModel();
+	loadStickerPacks();
 }
 
 void StickerPacksModel::install(int packId)
@@ -104,7 +118,6 @@ void StickerPacksModel::install(int packId)
 			installedStickerPacks[QString::number(packId)] =
 				QJsonObject{{"thumbnail", sticker->get_thumbnail()}, {"stickers", QJsonArray::fromStringList(sticker->get_stickers())}};
 			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
-			update_installedPacks(installedStickerPacks);
 			// TODO: change installed to true
 		}
 	}

@@ -33,9 +33,8 @@ public:
 	virtual QVariant data(const QModelIndex& index, int role) const;
 
 	Q_INVOKABLE void push(StickerPack* pack);
+	Q_INVOKABLE void reloadStickers();
 	Q_INVOKABLE void install(int packId);
-
-	QML_READONLY_PROPERTY(QJsonObject, installedPacks)
 
 signals:
 	void stickerPackLoaded(StickerPack* pack);

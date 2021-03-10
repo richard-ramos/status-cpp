@@ -25,6 +25,7 @@ void StickerPack::loadContent(QNetworkAccessManager* manager)
 {
 	QUrl url(Constants::StatusIPFS + m_contentHash);
 	QNetworkRequest request(url);
+	request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
 	request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
 	QNetworkReply* netReply = manager->get(request);
 
@@ -42,6 +43,9 @@ void StickerPack::loadContent(QNetworkAccessManager* manager)
 	}
 
 	edn::EdnNode stickerPackDefinition = edn::read(netReply->readAll().toStdString());
+
+	delete netReply;
+
 	for(edn::EdnNode node1 : stickerPackDefinition.values)
 	{
 		if(node1.type == edn::NodeType::EdnMap)

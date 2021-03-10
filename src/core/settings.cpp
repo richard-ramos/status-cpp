@@ -79,6 +79,7 @@ void Settings::init(QString loginError)
 	m_walletRootAddress = settings[settingsMap[SettingTypes::WalletRootAddress]].toString();
 	m_signingPhrase = settings[settingsMap[SettingTypes::SigningPhrase]].toString();
 	m_installedStickers = settings[settingsMap[SettingTypes::Stickers_PacksInstalled]].toObject();
+	m_recentStickers = settings[settingsMap[SettingTypes::Stickers_Recent]].toArray();
 
 	if(!settings[settingsMap[SettingTypes::Usernames]].isUndefined())
 	{
@@ -539,4 +540,60 @@ QJsonObject Settings::installedStickerPacks()
 	QJsonObject result(m_installedStickers);
 	lock.unlock();
 	return result;
+}
+
+void Settings::setRecentStickers(const QJsonArray& value)
+{
+	lock.lockForWrite();
+	m_recentStickers = value;
+	saveSettings(SettingTypes::Stickers_Recent, value);
+	lock.unlock();
+	emit recentStickersChanged();
+}
+
+QJsonArray Settings::recentStickers()
+{
+	lock.lockForRead();
+	if(!m_initialized)
+	{
+		lock.unlock();
+		return QJsonArray{};
+	}
+	QJsonArray result(m_recentStickers);
+	lock.unlock();
+	return result;
+}
+
+
+void Settings::addRecentSticker(int packId, QString stickerHash)
+{
+	lock.lockForWrite();
+
+	uint i = -1;
+	int found = -1;
+	foreach(const QJsonValue& jsonValue, m_recentStickers)
+	{
+		i++;
+		const QJsonObject obj = jsonValue.toObject();
+		if(obj["hash"].toString() == stickerHash && obj["packId"].toInt() == packId)
+		{
+			found = i;
+			break;
+		}
+	}
+
+	if(found > -1)
+	{
+		m_recentStickers.removeAt(found);
+	}
+
+	m_recentStickers.push_front(QJsonObject{{"hash", stickerHash}, {"packId", packId}});
+	if(m_recentStickers.count() > 36)
+	{
+		m_recentStickers.pop_back();
+	}
+
+	saveSettings(SettingTypes::Stickers_Recent, m_recentStickers);
+	lock.unlock();
+	emit recentStickersChanged();
 }
