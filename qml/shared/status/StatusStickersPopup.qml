@@ -14,7 +14,7 @@ Popup {
     property var recentStickers: StickerData {}
     property var stickerPackList: StickerPackData {}
     signal stickerSelected(string hashId, string packId)
-    property int installedPacksCount: chatsModel.stickers.numInstalledStickerPacks
+    property int installedPacksCount: Object.keys(StatusSettings.InstalledStickerPacks).length
     property bool stickerPacksLoaded: stickerPackList.count > 0
     width: 360
     height: 440
@@ -99,7 +99,7 @@ Popup {
             Item {
                 id: noStickerPacks
                 anchors.fill: parent
-                visible: false
+                visible: root.installedPacksCount === 0 || StatusSettings.RecentStickers.length === 0
 
                 Image {
                     id: imgNoStickers
@@ -132,7 +132,7 @@ Popup {
 
                     StyledText {
                         id: lblNoRecentStickers
-                        visible: stickerPackListView.selectedPackId === -1 && chatsModel.stickers.recent.rowCount() === 0 && !lblNoStickersYet.visible
+                        visible: stickerPackListView.selectedPackId === -1 && StatusSettings.RecentStickers.length === 0 && !lblNoStickersYet.visible
                         anchors.fill: parent
                         font.pixelSize: 15
                         //% "Recently used stickers will appear here"
