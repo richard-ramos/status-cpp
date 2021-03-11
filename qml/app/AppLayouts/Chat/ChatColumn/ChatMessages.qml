@@ -11,6 +11,8 @@ import "../../../../imports"
 import "../components"
 import "./samples/"
 import "./MessageComponents"
+import SortFilterProxyModel 0.2
+import im.status.desktop 1.0
 
 ScrollView {
     id: root
@@ -40,7 +42,7 @@ ScrollView {
         flickDeceleration: 10000
         Layout.fillWidth: true
         Layout.fillHeight: true
-        verticalLayoutDirection: ListView.TopToBottom
+        verticalLayoutDirection: ListView.BottomToTop
 
         Timer {
             id: timer
@@ -115,9 +117,9 @@ ScrollView {
             // Call this twice and with a timer since the first scroll to bottom might have happened before some stuff loads
             // meaning that the scroll will not actually be at the bottom on switch
             // Add a small delay because images, even though they say they say they are loaed, they aren't shown yet
-            Qt.callLater(chatLogView.positionViewAtEnd)
+            Qt.callLater(chatLogView.positionViewAtBeginning)
             timer.setTimeout(function() {
-                 Qt.callLater(chatLogView.positionViewAtEnd)
+                 Qt.callLater(chatLogView.positionViewAtBeginning)
             }, 100);
             return true
         }
@@ -131,7 +133,6 @@ ScrollView {
         }
 
         Connections {
-
             target: chat.messages
             onMessagesLoaded: {
                 loadingMessages = false;
@@ -140,7 +141,7 @@ ScrollView {
             onActiveChannelChanged: {
                 Qt.callLater(chatLogView.scrollToBottom.bind(this, true))
             }
-
+            
             onSendingMessage: {
                 chatLogView.scrollToBottom(true)
             }
@@ -229,67 +230,7 @@ ScrollView {
         }
 
 
-        model: messageListDelegate
-        section.property: "sectionIdentifier"
-        section.criteria: ViewSection.FullString
-    }
-
-    MessageDialog {
-        id: sendingMsgFailedPopup
-        standardButtons: StandardButton.Ok
-        //% "Failed to send message."
-        text: qsTrId("failed-to-send-message-")
-        icon: StandardIcon.Critical
-    }
-
-    DelegateModel {
-        id: messageListDelegate
-        property var lessThan: [
-            function(left, right) { return left.clock < right.clock }
-        ]
-
-        property int sortOrder: 0
-        onSortOrderChanged: items.setGroups(0, items.count, "unsorted")
-
-        function insertPosition(lessThan, item) {
-            var lower = 0
-            var upper = items.count
-            while (lower < upper) {
-                var middle = Math.floor(lower + (upper - lower) / 2)
-                var result = lessThan(item.model, items.get(middle).model);
-                if (result) {
-                    upper = middle
-                } else {
-                    lower = middle + 1
-                }
-            }
-            return lower
-        }
-
-        function sort(lessThan) {
-            while (unsortedItems.count > 0) {
-                var item = unsortedItems.get(0)
-                var index = insertPosition(lessThan, item)
-                item.groups = "items"
-                items.move(item.itemsIndex, index)
-            }
-        }
-
-        items.includeByDefault: false
-        groups: DelegateModelGroup {
-            id: unsortedItems
-            name: "unsorted"
-            includeByDefault: true
-            onChanged: {
-                if (messageListDelegate.sortOrder == messageListDelegate.lessThan.length)
-                    setGroups(0, count, "items")
-                else {
-                    messageListDelegate.sort(messageListDelegate.lessThan[messageListDelegate.sortOrder])
-                }
-            }
-        }
-        model: messageList
-
+        model: messageListModel
         delegate: Message {
             id: msgDelegate
             contact: model.contact
@@ -302,23 +243,37 @@ ScrollView {
             outgoingStatus: model.outgoingStatus
             responseTo: model.responseTo
             authorCurrentMsg: msgDelegate.ListView.section
-            authorPrevMsg: msgDelegate.ListView.previousSection
+            // The previous message is actually the nextSection since we reversed the list order
+            authorPrevMsg: msgDelegate.ListView.nextSection
             imageClick: imagePopup.openPopup.bind(imagePopup)
             messageId: model.messageId
             emojiReactions: model.emojiReactions
             linkUrls: model.linkUrls
             communityId: model.communityId
             hasMention: model.hasMention
-            prevMessageIndex: {
-                // This is used in order to have access to the previous message and determine the timestamp
-                // we can't rely on the index because the sequence of messages is not ordered on the nim side
-                if(msgDelegate.DelegateModel.itemsIndex > 0){
-                    return messageListDelegate.items.get(msgDelegate.DelegateModel.itemsIndex - 1).model.index
-                }
-                return -1;
-            }
+            prevMessageIndex: model.index === messageListModel.count - 1 ? -1 : model.index + 1
             scrollToBottom: chatLogView.scrollToBottom
         }
+        section.property: "sectionIdentifier"
+        section.criteria: ViewSection.FullString
+    }
+
+    SortFilterProxyModel {
+        id: messageListModel
+        sourceModel: messageList
+        sorters: ExpressionSorter {
+            expression: {
+                return modelLeft.clock > modelRight.clock;
+            }
+        }
+    }
+
+    MessageDialog {
+        id: sendingMsgFailedPopup
+        standardButtons: StandardButton.Ok
+        //% "Failed to send message."
+        text: qsTrId("failed-to-send-message-")
+        icon: StandardIcon.Critical
     }
 }
 
