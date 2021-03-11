@@ -263,7 +263,7 @@ Popup {
                         }
                         delegate: StatusStickerPackIconWithIndicator {
                             id: packIconWithIndicator
-                            visible: installed
+                            visible: true
                             width: 24
                             height: 24
                             selected: stickerPackListView.selectedPackId === packId

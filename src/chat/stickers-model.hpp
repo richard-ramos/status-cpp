@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #include <QHash>
 #include <QQmlHelpers>
+#include <QReadWriteLock>
 #include <QVector>
 
 class StickerPacksModel : public QAbstractListModel
@@ -46,4 +47,7 @@ private:
 	// TODO: purchase
 
 	QVector<StickerPack*> m_stickerPacks;
+
+	mutable QReadWriteLock m_installedStickersLock;
+	QSet<int> m_installedStickers;
 };

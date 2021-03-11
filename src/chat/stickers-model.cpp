@@ -14,11 +14,12 @@
 #include <QJsonValue>
 #include <QMap>
 #include <QNetworkAccessManager>
+#include <QNetworkDiskCache>
 #include <QNetworkRequest>
 #include <QQmlApplicationEngine>
+#include <QReadWriteLock>
 #include <QString>
 #include <QtConcurrent/QtConcurrent>
-#include <QNetworkDiskCache>
 #include <algorithm>
 #include <array>
 
@@ -68,7 +69,12 @@ QVariant StickerPacksModel::data(const QModelIndex& index, int role) const
 	case Thumbnail: return QVariant(pack->get_thumbnail());
 	case Price: return QVariant(Utils::wei2Token(pack->get_price()));
 	case Stickers: return QVariant::fromValue(pack->get_stickers());
-	case Installed: return QVariant(false);
+	case Installed: {
+		m_installedStickersLock.lockForRead();
+		bool isInstalled = m_installedStickers.contains(pack->get_id());
+		m_installedStickersLock.unlock();
+		return QVariant(isInstalled);
+	}
 	case Bought: return QVariant(false); // TODO:
 	case Pending: return QVariant(false); // TODO:
 	}
@@ -79,9 +85,16 @@ QVariant StickerPacksModel::data(const QModelIndex& index, int role) const
 void StickerPacksModel::loadStickerPacks()
 {
 	QtConcurrent::run([=] {
+		m_installedStickersLock.lockForWrite();
+		foreach(const QString& packId, Settings::instance()->installedStickerPacks().keys())
+		{
+			m_installedStickers << packId.toInt();
+		}
+		m_installedStickersLock.unlock();
+
 		// TODO: should this be part of the StickerPacksModel object?
 		QNetworkAccessManager* manager = new QNetworkAccessManager();
-		QNetworkDiskCache *diskCache = new QNetworkDiskCache();
+		QNetworkDiskCache* diskCache = new QNetworkDiskCache();
 		diskCache->setCacheDirectory(Constants::cachePath("/stickers/network"));
 		manager->setCache(diskCache);
 
@@ -98,9 +111,11 @@ void StickerPacksModel::loadStickerPacks()
 	});
 }
 
-void StickerPacksModel::reloadStickers(){
+void StickerPacksModel::reloadStickers()
+{
 	beginResetModel();
-	for(int i = 0; i < m_stickerPacks.count(); i++){
+	for(int i = 0; i < m_stickerPacks.count(); i++)
+	{
 		delete m_stickerPacks[i];
 	}
 	m_stickerPacks.clear();
@@ -110,15 +125,23 @@ void StickerPacksModel::reloadStickers(){
 
 void StickerPacksModel::install(int packId)
 {
+	int i = -1;
 	foreach(StickerPack* sticker, m_stickerPacks)
 	{
+		i++;
 		if(sticker->get_id() == packId)
 		{
+			m_installedStickersLock.lockForWrite();
 			QJsonObject installedStickerPacks = Settings::instance()->installedStickerPacks();
 			installedStickerPacks[QString::number(packId)] =
 				QJsonObject{{"thumbnail", sticker->get_thumbnail()}, {"stickers", QJsonArray::fromStringList(sticker->get_stickers())}};
 			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
-			// TODO: change installed to true
+			m_installedStickers << packId;
+			m_installedStickersLock.unlock();
+
+			QModelIndex idx = createIndex(i, 0);
+			dataChanged(idx, idx);
+			break;
 		}
 	}
 }
