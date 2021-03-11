@@ -12,6 +12,7 @@ import im.status.desktop 1.0
 
 SplitView {
     id: chatView
+    property bool isActive: false
     handle: SplitViewHandle {}
 
     property string activeChatId: contactColumnLoader.item.list.count > 0 ? chatMsgStackLayout.children[chatMsgStackLayout.currentIndex].item.chatId : ""
@@ -103,6 +104,7 @@ SplitView {
                     id: chatColumn
                     chat: model
                     chatGroupsListViewCount: contactColumnLoader.item.chatGroupsListViewCount
+                    isActiveChat: (index + 1) === chatMsgStackLayout.currentIndex && chatView.isActive
                 }
             }
             

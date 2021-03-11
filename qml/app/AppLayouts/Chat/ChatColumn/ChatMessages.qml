@@ -18,7 +18,23 @@ ScrollView {
     id: root
 
     property alias chatLogView: chatLogView
-    
+
+    property bool isActiveChat: false
+    property int unreadMessagesWhileInactive: 0
+    property int lastVisibleIndex: -1
+    onIsActiveChatChanged: {
+        if(isActiveChat){
+            // Restore scroll
+            chatLogView.currentIndex = lastVisibleIndex + unreadMessagesWhileInactive;
+            chatLogView.positionViewAtIndex(chatLogView.currentIndex, ListView.Visible)
+            unreadMessagesWhileInactive = 0;
+            lastVisibleIndex = -1;
+        } else {
+            var center_x = chatLogView.x + chatLogView.width / 2
+            lastVisibleIndex = chatLogView.indexAt( center_x, chatLogView.y + chatLogView.contentY + chatLogView.height - 10)
+        }
+    }
+
     property var messageList: MessagesData {}
     property bool loadingMessages: false
     property real scrollY: chatLogView.visibleArea.yPosition * chatLogView.contentHeight
@@ -133,31 +149,31 @@ ScrollView {
         }
 
         Connections {
-            target: chat.messages
-            onMessagesLoaded: {
-                loadingMessages = false;
-            }
+            target: chatsModel.get(index)
 
-            onActiveChannelChanged: {
-                Qt.callLater(chatLogView.scrollToBottom.bind(this, true))
-            }
-            
             onSendingMessage: {
                 chatLogView.scrollToBottom(true)
             }
 
             onSendingMessageFailed: {
+                // TODO:
                 sendingMsgFailedPopup.open();
             }
+        }
 
+        Connections {
+            target: chat.messages
+            onMessagesLoaded: {
+                loadingMessages = false;
+            }
+            
             onNewMessagePushed: {
+                if(!isActiveChat){
+                    unreadMessagesWhileInactive++;
+                }
                 if (!chatLogView.scrollToBottom()) {
                     root.newMessages++
                 }
-            }
-
-            onAppReady: {
-                chatLogView.scrollToBottom(true)
             }
 
             onMessageNotificationPushed: function(chatId, msg, messageType, chatType, timestamp, identicon, username, hasMention, isAddedContact, channelName) {

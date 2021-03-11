@@ -13,6 +13,7 @@ import im.status.desktop 1.0
 
 StackLayout {
     id: root
+    property bool isActiveChat: false
 
     property var chat
 
@@ -191,6 +192,7 @@ StackLayout {
             ChatMessages {
                 id: chatMessages
                 messageList: chat.messages
+                isActiveChat: root.isActiveChat
             }
        }
 

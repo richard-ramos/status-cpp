@@ -153,6 +153,8 @@ void MessagesModel::push(Message* msg)
 	m_messageMap[msg->get_id()] = msg;
 	m_messages << msg;
 	endInsertRows();
+	
+	emit newMessagePushed();
 }
 
 void MessagesModel::push(QString messageId, QJsonObject newReaction)

@@ -481,10 +481,6 @@ RowLayout {
 
             timelineLayoutContainer.active = this.children[currentIndex] == timelineLayoutContainer
 
-            if(this.children[currentIndex] === chatLayoutContainer){
-                // TODO: chatLayoutContainer.chatColumn.chatMessages.chatLogView.scrollToBottom(true);
-            }
-
             if(this.children[currentIndex] === walletLayoutContainer){
                 walletLayoutContainer.showSigningPhrasePopup();
             }
@@ -495,6 +491,7 @@ RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillHeight: true
+            isActive: sLayout.children[sLayout.currentIndex] === chatLayoutContainer
         }
 
 

@@ -69,6 +69,7 @@ signals:
 	void statusUpdateLoaded(Message* message);
 	void messageLoaded(Message* message);
 	void reactionLoaded(QString messageId, QJsonObject reaction);
+	void newMessagePushed();
 
 private:
 	QVector<Message*> m_messages;
