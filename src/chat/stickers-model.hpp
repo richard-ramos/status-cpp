@@ -36,6 +36,7 @@ public:
 	Q_INVOKABLE void push(StickerPack* pack);
 	Q_INVOKABLE void reloadStickers();
 	Q_INVOKABLE void install(int packId);
+	Q_INVOKABLE void uninstall(int packId);
 
 signals:
 	void stickerPackLoaded(StickerPack* pack);

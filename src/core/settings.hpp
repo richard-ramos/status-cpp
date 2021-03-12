@@ -136,6 +136,7 @@ public:
 	QString installationId();
 
 	void addRecentSticker(int packId, QString stickerHash);
+	void removeRecentStickerPack(int packId);
 
 signals:
 	void initialized();

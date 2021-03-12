@@ -11,7 +11,6 @@ import im.status.desktop 1.0
 
 Popup {
     id: root
-    property var recentStickers: StickerData {}
     property var stickerPackList: StickerPackData {}
     signal stickerSelected(string hashId, string packId)
     property int installedPacksCount: Object.keys(StatusSettings.InstalledStickerPacks).length
@@ -61,7 +60,6 @@ Popup {
         SortFilterProxyModel {
             id: stickerPackList
             sourceModel: stickerPacksModel
-            // sorters: StringSorter { roleName: "name" }
         }
 
         StatusStickerMarket {
@@ -71,12 +69,10 @@ Popup {
             Layout.fillHeight: true
             stickerPacks: stickerPackList
             onInstallClicked: {
-                stickerPacksModel.install(packId)
-                stickerPackListView.itemAt(stickerPackListView.count - 1).clicked()
+                stickerPacksModel.install(packId);
             }
             onUninstallClicked: {
-                chatsModel.stickers.uninstall(packId)
-             //   stickerGrid.model = recentStickers
+                stickerPacksModel.uninstall(packId)
                 btnHistory.clicked()
             }
             onBackClicked: {
@@ -159,9 +155,7 @@ Popup {
             StatusStickerList {
                 id: stickerGrid
                 packId: stickerPackListView.selectedPackId
-                model: ListModel {
-
-                } // recentStickers
+                model: ListModel { }
                 onStickerClicked: {
                     root.stickerSelected(hash, packId)
                     root.close()
@@ -255,8 +249,7 @@ Popup {
                             Object.keys(StatusSettings.InstalledStickerPacks).forEach(packId => {
                                 installedStickers.append({
                                     "packId": parseInt(packId),
-                                    "thumbnail": StatusSettings.InstalledStickerPacks[packId].thumbnail,
-                                    "stickers": StatusSettings.InstalledStickerPacks[packId].stickers
+                                    "thumbnail": StatusSettings.InstalledStickerPacks[packId].thumbnail
                                 });
                             });
                             return installedStickers;
@@ -299,14 +292,4 @@ Popup {
             }
         }
     }
-
-    /* TODO:
-    Connections {
-        target: chatsModel.stickers
-        onStickerPacksLoaded: {
-            stickerPackListView.visible = true
-            noStickerPacks.visible = installedPacksCount === 0 || chatsModel.stickers.recent.rowCount() === 0
-        }
-    }*/
 }
-

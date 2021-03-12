@@ -146,6 +146,30 @@ void StickerPacksModel::install(int packId)
 	}
 }
 
+void StickerPacksModel::uninstall(int packId)
+{
+	int i = -1;
+	foreach(StickerPack* sticker, m_stickerPacks)
+	{
+		i++;
+		if(sticker->get_id() == packId)
+		{
+			m_installedStickersLock.lockForWrite();
+			QJsonObject installedStickerPacks = Settings::instance()->installedStickerPacks();
+			installedStickerPacks.remove(QString::number(packId));
+			m_installedStickers.remove(packId);
+			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
+			m_installedStickersLock.unlock();
+
+			Settings::instance()->removeRecentStickerPack(packId);
+
+			QModelIndex idx = createIndex(i, 0);
+			dataChanged(idx, idx);
+			break;
+		}
+	}
+}
+
 void StickerPacksModel::push(StickerPack* pack)
 {
 	insert(pack);

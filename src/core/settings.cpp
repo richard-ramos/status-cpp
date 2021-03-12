@@ -564,7 +564,6 @@ QJsonArray Settings::recentStickers()
 	return result;
 }
 
-
 void Settings::addRecentSticker(int packId, QString stickerHash)
 {
 	lock.lockForWrite();
@@ -591,6 +590,34 @@ void Settings::addRecentSticker(int packId, QString stickerHash)
 	if(m_recentStickers.count() > 36)
 	{
 		m_recentStickers.pop_back();
+	}
+
+	saveSettings(SettingTypes::Stickers_Recent, m_recentStickers);
+	lock.unlock();
+	emit recentStickersChanged();
+}
+
+void Settings::removeRecentStickerPack(int packId)
+{
+	lock.lockForWrite();
+
+	uint i = -1;
+	int found = -1;
+
+	QVector<int> rowsToRemove;
+
+	foreach(const QJsonValue& jsonValue, m_recentStickers)
+	{
+		i++;
+		if(jsonValue.toObject()["packId"].toInt() == packId)
+		{
+			rowsToRemove << i;
+		}
+	}
+
+	foreach(const int& idx, rowsToRemove)
+	{
+		m_recentStickers.removeAt(idx);
 	}
 
 	saveSettings(SettingTypes::Stickers_Recent, m_recentStickers);

@@ -98,7 +98,7 @@ void Status::processSignal(QString ev)
 	if(!signalMap.count(signalEvent["type"].toString()))
 	{
 		qWarning() << "Unknown signal: " << signalEvent["type"].toString();
-		qDebug() << ev;
+		// qDebug() << ev;
 		return;
 	}
 
