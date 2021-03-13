@@ -100,13 +100,11 @@ void MailserverCycle::connect(QString enode)
 void MailserverCycle::timeoutConnection(QString enode)
 {
 	QMutexLocker locker(&m_mutex);
-	if(nodes[enode] != MailserverStatus::Connecting)
-		return;
+	if(nodes[enode] != MailserverStatus::Connecting) return;
 
 	qDebug() << "Connection attempt failed due to timeout";
 	nodes[enode] == MailserverStatus::Disconnected;
-	if(get_activeMailserver() == enode)
-		update_activeMailserver("");
+	if(get_activeMailserver() == enode) update_activeMailserver("");
 }
 
 int poolSize(int fleetSize)
@@ -133,8 +131,7 @@ void MailserverCycle::findNewMailserver()
 	QVector<std::tuple<QString, int>> availableMailservers;
 	foreach(const QJsonValue& value, pingResponse["result"].toArray())
 	{
-		if(!value["error"].isNull())
-			continue;
+		if(!value["error"].isNull()) continue;
 		availableMailservers << std::make_tuple(value["address"].toString(), value["rttMs"].toInt());
 	}
 
@@ -180,8 +177,7 @@ void MailserverCycle::run()
 
 	qDebug() << "Automatically switching mailserver";
 
-	if(get_activeMailserver() != "")
-		disconnectActiveMailserver();
+	if(get_activeMailserver() != "") disconnectActiveMailserver();
 
 	findNewMailserver();
 }
@@ -214,8 +210,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 
 	for(QString& peer : peers)
 	{
-		if(nodes.contains(peer) && nodes[peer] == MailserverStatus::Connected)
-			continue;
+		if(nodes.contains(peer) && nodes[peer] == MailserverStatus::Connected) continue;
 
 		// qDebug() << "Peer connected: " << peer;
 		nodes[peer] = MailserverStatus::Connected;
@@ -255,6 +250,41 @@ QVector<Topic> MailserverCycle::getMailserverTopics()
 	return topics;
 }
 
+std::optional<QVector<Topic>> MailserverCycle::getMailserverTopicByChatId(QString chatId, bool isOneToOne)
+{
+	const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{}.toVariantList()).toJsonObject();
+	if(!response["error"].isUndefined())
+	{
+		qCritical() << "Couldn't load filters" << response["error"];
+		return {};
+	}
+
+	QVector<Topic> results;
+	QStringList topicList;
+	foreach(const QJsonValue& value, response["result"].toArray())
+	{
+		const QJsonObject obj = value.toObject();
+
+		if(obj["chatId"].toString() != chatId && obj["identity"].toString() != chatId) continue;
+		topicList << obj["topic"].toString();
+	}
+
+	QVector<Topic> topics = getMailserverTopics();
+	foreach(const Topic& topic, topics)
+	{
+		if(topicList.contains(topic.topic))
+		{
+			results << topic;
+		}
+	}
+	if(results.size() > 0)
+	{
+		return results;
+	}
+
+	return {};
+}
+
 void MailserverCycle::removeMailserverTopicForChat(QString chatId)
 {
 	QVector<Topic> topics = getMailserverTopics();
@@ -276,8 +306,7 @@ void MailserverCycle::removeMailserverTopicForChat(QString chatId)
 		}
 	}
 
-	if(topicsToUpdate.count() == 0)
-		return;
+	if(topicsToUpdate.count() == 0) return;
 	foreach(Topic t, topicsToUpdate)
 	{
 		addMailserverTopic(t);
@@ -354,15 +383,16 @@ void MailserverCycle::initialMailserverRequest()
 
 	qint64 fromValue = QDateTime::currentDateTimeUtc().toSecsSinceEpoch() - 86400; // 24 hours ago
 
-	if(mailserverTopics.count() == 0)
-		return;
+	if(mailserverTopics.count() == 0) return;
 
 	// TODO: how to do a map and min?
 	int minRequest = mailserverTopics.at(0).lastRequest;
-	QVector<QString> topicList;
+	QVector<Topic> topicsToRequest;
 	for(int i = 0; i < mailserverTopics.size(); ++i)
 	{
-		topicList << mailserverTopics.at(i).topic;
+		if(mailserverTopics.at(i).lastRequest > fromValue) continue;
+
+		topicsToRequest << mailserverTopics.at(i);
 		if(mailserverTopics.at(i).lastRequest < minRequest)
 		{
 			minRequest = mailserverTopics.at(i).lastRequest;
@@ -374,10 +404,93 @@ void MailserverCycle::initialMailserverRequest()
 		minRequest = fromValue; // Only last 24hrs
 	}
 
-	if(!isMailserverAvailable())
-		return; // TODO: add a pending request
+	QVector<QString> topicList;
+	foreach(Topic t, topicsToRequest)
+	{
+		topicList << t.topic;
+	}
+
+	if(topicList.size() == 0) return;
+
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
+
+	// Updating topic request date
+	foreach(Topic t, topicsToRequest)
+	{
+		t.lastRequest = minRequest;
+		addMailserverTopic(t);
+	}
 
 	requestMessages(topicList, minRequest);
+	emit requestSent();
+}
+
+void MailserverCycle::requestMessages(QString chatId, bool isOneToOne, int fetchRange)
+{
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
+
+	auto topics = getMailserverTopicByChatId(chatId, isOneToOne);
+	if(!topics.has_value()) return;
+
+	QVector<Topic> topicVector = topics.value();
+	qint64 from = topicVector[0].lastRequest > 1 ? topicVector[0].lastRequest : QDateTime::currentSecsSinceEpoch() - fetchRange;
+	QVector<QString> topicsToRequest;
+
+	foreach(const Topic& t, topicVector)
+	{
+		if(t.lastRequest > from)
+		{
+			// Get the more recent date from the list of topics
+			from = t.lastRequest;
+		}
+		topicsToRequest << t.topic;
+	}
+
+	from -= fetchRange;
+	if(from < 0) from = 0;
+
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
+
+	// Updating topic request date
+	foreach(Topic t, topicVector)
+	{
+		t.lastRequest = from;
+		addMailserverTopic(t);
+	}
+
+	requestMessages(topicsToRequest, from);
+	emit requestSent();
+}
+
+void MailserverCycle::requestMessagesInLast(QString chatId, bool isOneToOne, int fetchRange)
+{
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
+
+	auto topics = getMailserverTopicByChatId(chatId, isOneToOne);
+	if(!topics.has_value()) return;
+
+	QVector<Topic> topicVector = topics.value();
+	qint64 from = QDateTime::currentSecsSinceEpoch() - fetchRange;
+	QVector<QString> topicsToRequest;
+
+	foreach(const Topic& t, topicVector)
+	{
+		topicsToRequest << t.topic;
+	}
+
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
+
+	// Updating topic request date
+	foreach(Topic t, topicVector)
+	{
+		if(t.lastRequest > from)
+		{
+			t.lastRequest = from;
+			addMailserverTopic(t);
+		}
+	}
+
+	requestMessages(topicsToRequest, from);
 	emit requestSent();
 }
 
@@ -412,8 +525,7 @@ void MailserverCycle::addChannelTopic(Topic t)
 	QVector<QString> topicList;
 	topicList << t.topic;
 
-	if(!isMailserverAvailable())
-		return; // TODO: add a pending request
+	if(!isMailserverAvailable()) return; // TODO: add a pending request
 
 	requestMessages(topicList);
 	emit requestSent();
@@ -421,5 +533,6 @@ void MailserverCycle::addChannelTopic(Topic t)
 
 bool MailserverCycle::isMailserverAvailable()
 {
+	// TODO: does this require a mutex?  consider replace this for read locker
 	return m_activeMailserver != "" && nodes.contains(m_activeMailserver) && nodes[m_activeMailserver] == MailserverStatus::Connected;
 }

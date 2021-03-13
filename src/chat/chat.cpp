@@ -303,7 +303,7 @@ void Chat::loadFilter()
 		foreach(const QJsonValue& value, response["result"].toArray())
 		{
 			// Handle non public chats
-			if(value["chatId"].toString() == m_id)
+			if(value["chatId"].toString() == m_id || value["identity"].toString() == m_id)
 			{
 				Topic t;
 				t.topic = value["topic"].toString();
@@ -460,4 +460,12 @@ void Chat::leaveGroup()
 		Status::instance()->callPrivateRPC("wakuext_leaveGroupChat", QJsonArray{QJsonValue(), m_id, true}.toVariantList()).toJsonObject();
 	// TODO: error handling
 	Status::instance()->emitMessageSignal(response["result"].toObject());
+}
+
+void Chat::requestMoreMessages(){
+	Settings::instance()->mailserverCycle.requestMessages(m_id, m_chatType == ChatType::OneToOne, 86400);
+}
+
+void Chat::requestMessagesInLast(int fetchRange){
+	Settings::instance()->mailserverCycle.requestMessagesInLast(m_id, m_chatType == ChatType::OneToOne, fetchRange);
 }

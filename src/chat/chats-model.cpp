@@ -205,6 +205,7 @@ void ChatsModel::startMessenger()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList()).toJsonObject();
 	// TODO: do something with mailservers/ranges?
+	qCritical() << response;
 }
 
 void ChatsModel::loadChats()
@@ -235,9 +236,6 @@ Chat* ChatsModel::get(int row) const
 void ChatsModel::removeFilterRPC(QString chatId, QString filterId)
 {
 	QJsonObject obj{{"ChatID", chatId}, {"FilterID", filterId}};
-
-	qDebug() << obj;
-
 	const auto response = Status::instance()->callPrivateRPC("wakuext_removeFilters", QJsonArray{QJsonArray{obj}}.toVariantList()).toJsonObject();
 	if(!response["error"].isUndefined())
 	{
@@ -247,9 +245,6 @@ void ChatsModel::removeFilterRPC(QString chatId, QString filterId)
 
 void ChatsModel::remove1on1Filters(QString chatId, QJsonArray filters)
 {
-	qWarning() << "REMOVING 1 1 filter";
-	qWarning() << filters;
-
 	QString partitionedTopic;
 	foreach(const QJsonValue& filterJson, filters)
 	{

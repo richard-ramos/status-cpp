@@ -15,10 +15,7 @@ PopupMenu {
         text: qsTrId("last-24-hours");
         icon.width: 0;
         onTriggered: {
-            chatsModel.requestMoreMessages(Constants.fetchRangeLast24Hours)
-            timer.setTimeout(function(){
-                chatsModel.hideLoadingIndicator()
-            }, 3000);
+            chatsModel.get(chat.index).requestMessagesInLast(Constants.fetchRangeLast24Hours);
         }
     }
     //% "Last 2 days"
@@ -26,10 +23,7 @@ PopupMenu {
         text: qsTrId("last-2-days");
         icon.width: 0;
         onTriggered: {
-            chatsModel.requestMoreMessages(Constants.fetchRangeLast2Days)
-            timer.setTimeout(function(){
-                chatsModel.hideLoadingIndicator()
-            }, 4000);
+            chatsModel.get(chat.index).requestMessagesInLast(Constants.fetchRangeLast2Days);
         }
       }
     //% "Last 3 days"
@@ -37,10 +31,7 @@ PopupMenu {
         text: qsTrId("last-3-days");
         icon.width: 0;
         onTriggered: {
-            chatsModel.requestMoreMessages(Constants.fetchRangeLast3Days)
-            timer.setTimeout(function(){
-                chatsModel.hideLoadingIndicator()
-            }, 5000);
+            chatsModel.get(chat.index).requestMessagesInLast(Constants.fetchRangeLast3Days);
         }
     }
     //% "Last 7 days"
@@ -48,10 +39,7 @@ PopupMenu {
         text: qsTrId("last-7-days");
         icon.width: 0;
         onTriggered: {
-            chatsModel.requestMoreMessages(Constants.fetchRangeLast7Days)
-            timer.setTimeout(function(){
-                chatsModel.hideLoadingIndicator()
-            }, 7000);
+            chatsModel.get(chat.index).requestMessagesInLast(Constants.fetchRangeLast7Days);
         }
     }
 }

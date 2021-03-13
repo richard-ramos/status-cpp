@@ -142,8 +142,7 @@ void MessagesModel::push(Message* msg)
 		}
 	}
 
-	if(m_messageMap.contains(msg->get_id()))
-		return;
+	if(m_messageMap.contains(msg->get_id())) return;
 
 	m_contacts->upsert(msg);
 
@@ -153,7 +152,7 @@ void MessagesModel::push(Message* msg)
 	m_messageMap[msg->get_id()] = msg;
 	m_messages << msg;
 	endInsertRows();
-	
+
 	emit newMessagePushed();
 }
 
@@ -182,8 +181,7 @@ void MessagesModel::push(QString messageId, QJsonObject newReaction)
 			}
 			if(!found)
 			{
-				if(newReaction["retracted"].toBool())
-					return;
+				if(newReaction["retracted"].toBool()) return;
 				m_emojiReactions[messageId] << newReaction;
 			}
 			else if(retraction)
@@ -200,8 +198,7 @@ void MessagesModel::push(QString messageId, QJsonObject newReaction)
 
 void MessagesModel::loadMessages(bool initialLoad)
 {
-	if(!initialLoad && m_cursor == "")
-		return;
+	if(!initialLoad && m_cursor == "") return;
 
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
@@ -230,8 +227,7 @@ void MessagesModel::loadMessages(bool initialLoad)
 
 void MessagesModel::loadReactions(bool initialLoad)
 {
-	if(!initialLoad && m_reactionsCursor == "")
-		return;
+	if(!initialLoad && m_reactionsCursor == "") return;
 
 	QtConcurrent::run([=] {
 		QMutexLocker locker(&m_mutex);
@@ -296,9 +292,14 @@ void MessagesModel::addFakeMessages()
 {
 	if(m_chatType != ChatType::Profile && m_chatType != ChatType::Timeline)
 	{
+		Message* fetchMoreMessages = new Message("fetchMoreMessages", ContentType::FetchMoreMessagesButton, this);
+		QQmlApplicationEngine::setObjectOwnership(fetchMoreMessages, QQmlApplicationEngine::CppOwnership);
+
 		Message* chatIdentifier = new Message("chatIdentifier", ContentType::ChatIdentifier, this);
 		QQmlApplicationEngine::setObjectOwnership(chatIdentifier, QQmlApplicationEngine::CppOwnership);
+
 		beginInsertRows(QModelIndex(), rowCount(), rowCount());
+		m_messages << fetchMoreMessages;
 		m_messages << chatIdentifier;
 		endInsertRows();
 	}
@@ -316,8 +317,7 @@ void MessagesModel::updateOutgoingStatus(QVector<QString> messageIds, bool sent)
 {
 	foreach(const QString& messageId, messageIds)
 	{
-		if(!m_messageMap.contains(messageId))
-			continue;
+		if(!m_messageMap.contains(messageId)) continue;
 		m_messageMap[messageId]->update_outgoingStatus(sent ? "sent" : "not-sent");
 		Status::instance()
 			->callPrivateRPC("wakuext_updateMessageOutgoingStatus",
@@ -331,8 +331,7 @@ void MessagesModel::updateOutgoingStatus(QVector<QString> messageIds, bool sent)
 
 void MessagesModel::resend(QString messageId)
 {
-	if(!m_messageMap.contains(messageId))
-		return;
+	if(!m_messageMap.contains(messageId)) return;
 
 	m_messageMap[messageId]->update_outgoingStatus("sending");
 	Status::instance()->callPrivateRPC("wakuext_updateMessageOutgoingStatus", QJsonArray{messageId, QStringLiteral("sending")}.toVariantList());
@@ -347,12 +346,10 @@ void MessagesModel::removeFrom(QString contactId)
 {
 	foreach(Message* message, m_messages)
 	{
-		if(message->get_from() != contactId)
-			continue;
+		if(message->get_from() != contactId) continue;
 		QString id = message->get_id();
 		int index = m_messages.indexOf(m_messageMap[id]);
-		if(index == -1)
-			continue;
+		if(index == -1) continue;
 
 		beginRemoveRows(QModelIndex(), index, index);
 		delete m_messageMap[id];

@@ -31,6 +31,8 @@ public:
 	Q_INVOKABLE void peerSummaryChange(QVector<QString> peers);
 	Q_INVOKABLE void addChannelTopic(Topic t);
 	Q_INVOKABLE void initialMailserverRequest();
+	Q_INVOKABLE void requestMessages(QString chatId, bool isOneToOne, int fetchRange);
+	Q_INVOKABLE void requestMessagesInLast(QString chatId, bool isOneToOne, int fetchRange);
 
 
 	void timeoutConnection(QString enode);
@@ -66,6 +68,7 @@ private:
 
 	QVector<Topic> getMailserverTopics();
 
+	std::optional<QVector<Topic>> getMailserverTopicByChatId(QString chatId, bool isOneToOne);
 
 signals:
 	void cycle();

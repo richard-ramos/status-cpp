@@ -17,7 +17,7 @@ void logFormatter(QtMsgType type, const QMessageLogContext& context, const QStri
 	case QtDebugMsg: log = "\033[0;90mDBG \033[0m%s \033[1m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
 	case QtInfoMsg: log = "\033[0;36mINF \033[0m%s \033[1m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
 	case QtWarningMsg: log = "\033[0;33mWRN \033[0m%s \033[1m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
-	case QtCriticalMsg: log = "\033[0;91mCRT \033[0m%s \033[1m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
+	case QtCriticalMsg: log = "\033[0;91mCRT \033[0m%s \033[1;91m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
 	case QtFatalMsg: log = "\033[0;31m!!! \033[0m%s \033[1m%s \033[0;33mfile=\033[94m%s:%u %s\n"; break;
 	}
 	fprintf(stderr, log, timestamp.constData(), localMsg.constData(), file, context.line, function.constData());
