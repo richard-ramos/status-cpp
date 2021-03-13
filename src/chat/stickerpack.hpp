@@ -26,7 +26,7 @@ public:
 						 QString contentHash,
 						 QObject* parent = nullptr);
 
-	void loadContent(QNetworkAccessManager* manager);
+	void loadContent(QScopedPointer<QNetworkAccessManager>& manager);
 
 	QML_READONLY_PROPERTY(int, id)
 	QML_READONLY_PROPERTY(QStringList, category)

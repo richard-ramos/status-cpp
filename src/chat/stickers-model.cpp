@@ -92,7 +92,8 @@ void StickerPacksModel::loadStickerPacks()
 		m_installedStickersLock.unlock();
 
 		// TODO: should this be part of the StickerPacksModel object?
-		QNetworkAccessManager* manager = new QNetworkAccessManager();
+		QScopedPointer<QNetworkAccessManager> manager(new QNetworkAccessManager());
+		
 		QNetworkDiskCache* diskCache = new QNetworkDiskCache();
 		diskCache->setCacheDirectory(Constants::cachePath("/stickers/network"));
 		manager->setCache(diskCache);
@@ -105,8 +106,6 @@ void StickerPacksModel::loadStickerPacks()
 			stickerPack->moveToThread(QApplication::instance()->thread());
 			emit stickerPackLoaded(stickerPack);
 		}
-
-		delete manager;
 	});
 }
 
@@ -130,16 +129,17 @@ void StickerPacksModel::install(int packId)
 		i++;
 		if(sticker->get_id() == packId)
 		{
-			QWriteLocker locker(&m_installedStickersLock);
+			m_installedStickersLock.lockForWrite();
 			QJsonObject installedStickerPacks = Settings::instance()->installedStickerPacks();
 			installedStickerPacks[QString::number(packId)] =
 				QJsonObject{{"thumbnail", sticker->get_thumbnail()}, {"stickers", QJsonArray::fromStringList(sticker->get_stickers())}};
 			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
 			m_installedStickers << packId;
-
+			m_installedStickersLock.unlock();
+			
 			QModelIndex idx = createIndex(i, 0);
 			dataChanged(idx, idx);
-			break;
+			return;
 		}
 	}
 }

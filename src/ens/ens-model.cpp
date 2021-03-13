@@ -108,7 +108,7 @@ QString ENSModel::validate(QString ens, bool isStatus)
 	}
 	else
 	{
-		auto ensUtils = new Ens::Utils();
+		QScopedPointer<Ens::Utils> ensUtils(new Ens::Utils());
 		QString ownerAddr = ensUtils->owner(username); // TODO: extract to static function
 		if(ownerAddr == "" && isStatus)
 		{
@@ -147,8 +147,6 @@ QString ENSModel::validate(QString ens, bool isStatus)
 				output = "taken";
 			}
 		}
-
-		delete ensUtils;
 	}
 
 	return output;
