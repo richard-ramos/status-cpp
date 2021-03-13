@@ -70,9 +70,8 @@ QVariant StickerPacksModel::data(const QModelIndex& index, int role) const
 	case Price: return QVariant(Utils::wei2Token(pack->get_price()));
 	case Stickers: return QVariant::fromValue(pack->get_stickers());
 	case Installed: {
-		m_installedStickersLock.lockForRead();
+		QReadLocker locker(&m_installedStickersLock);
 		bool isInstalled = m_installedStickers.contains(pack->get_id());
-		m_installedStickersLock.unlock();
 		return QVariant(isInstalled);
 	}
 	case Bought: return QVariant(false); // TODO:
@@ -131,13 +130,12 @@ void StickerPacksModel::install(int packId)
 		i++;
 		if(sticker->get_id() == packId)
 		{
-			m_installedStickersLock.lockForWrite();
+			QWriteLocker locker(&m_installedStickersLock);
 			QJsonObject installedStickerPacks = Settings::instance()->installedStickerPacks();
 			installedStickerPacks[QString::number(packId)] =
 				QJsonObject{{"thumbnail", sticker->get_thumbnail()}, {"stickers", QJsonArray::fromStringList(sticker->get_stickers())}};
 			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
 			m_installedStickers << packId;
-			m_installedStickersLock.unlock();
 
 			QModelIndex idx = createIndex(i, 0);
 			dataChanged(idx, idx);
@@ -154,13 +152,11 @@ void StickerPacksModel::uninstall(int packId)
 		i++;
 		if(sticker->get_id() == packId)
 		{
-			m_installedStickersLock.lockForWrite();
+			QWriteLocker locker(&m_installedStickersLock);
 			QJsonObject installedStickerPacks = Settings::instance()->installedStickerPacks();
 			installedStickerPacks.remove(QString::number(packId));
 			m_installedStickers.remove(packId);
 			Settings::instance()->setInstalledStickerPacks(installedStickerPacks);
-			m_installedStickersLock.unlock();
-
 			Settings::instance()->removeRecentStickerPack(packId);
 
 			QModelIndex idx = createIndex(i, 0);

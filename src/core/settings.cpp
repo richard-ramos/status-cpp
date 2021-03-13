@@ -59,8 +59,8 @@ void Settings::init(QString loginError)
 	if(loginError != "")
 		return;
 
-	// TODO: extract to callPrivateRPC helper function
-	lock.lockForWrite();
+	QWriteLocker locker(&lock);
+
 	QJsonObject obj{{"method", "settings_getSettings"}, {"params", QJsonArray{}}};
 	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
 	// TODO: error handling for callrpc
@@ -80,37 +80,35 @@ void Settings::init(QString loginError)
 	m_signingPhrase = settings[settingsMap[SettingTypes::SigningPhrase]].toString();
 	m_installedStickers = settings[settingsMap[SettingTypes::Stickers_PacksInstalled]].toObject();
 	m_recentStickers = settings[settingsMap[SettingTypes::Stickers_Recent]].toArray();
-
-	if(!settings[settingsMap[SettingTypes::Usernames]].isUndefined())
-	{
-		foreach(const QJsonValue& value, settings[settingsMap[SettingTypes::Usernames]].toArray())
-		{
-			m_usernames << value.toString();
-		}
-	}
+	m_usernames = Utils::toStringVector(settings[settingsMap[SettingTypes::Usernames]].toArray());
 
 	// defaults:
 	if(m_fleet == "")
 		m_fleet = QStringLiteral("eth.prod");
 
 	m_initialized = true;
-	lock.unlock();
 
 	emit initialized();
 }
 
 void Settings::terminate()
 {
-	// TODO: clear all settings from memory
-	lock.lockForWrite();
+	QWriteLocker locker(&lock);
 	m_initialized = false;
-	lock.unlock();
 }
 
 // TODO: Probably can be replaced by templates. Research this
-void Settings::saveSettings(SettingTypes setting, const int& value)
+
+bool Settings::saveSetting(SettingTypes setting, int& member, const int& value)
 {
-	save(QJsonArray{settingsMap[setting], value});
+	QWriteLocker locker(&lock);
+	if(value != member)
+	{
+		member = value;
+		save(QJsonArray{settingsMap[setting], value});
+		return true;
+	}
+	return false;
 }
 
 void Settings::saveSettings(SettingTypes setting, const QJsonArray& value)
@@ -123,9 +121,16 @@ void Settings::saveSettings(SettingTypes setting, const QJsonObject& value)
 	save(QJsonArray{settingsMap[setting], value});
 }
 
-void Settings::saveSettings(SettingTypes setting, const QString& value)
+bool Settings::saveSetting(SettingTypes setting, QString& member, const QString& value)
 {
-	save(QJsonArray{settingsMap[setting], value});
+	QWriteLocker locker(&lock);
+	if(value != member)
+	{
+		member = value;
+		save(QJsonArray{settingsMap[setting], value});
+		return true;
+	}
+	return false;
 }
 
 void Settings::saveSettings(SettingTypes setting, const QVector<QString>& value)
@@ -145,158 +150,127 @@ void Settings::save(const QJsonArray& input)
 	// TODO: error handling?
 }
 
-QString Settings::publicKey()
+QString Settings::publicKey() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
 
-	QString result(m_publicKey);
-	lock.unlock();
-	return result;
+	return m_publicKey;
 }
 
-QString Settings::keyUID()
+QString Settings::keyUID() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_keyUID);
-	lock.unlock();
-	return result;
+
+	return m_keyUID;
 }
 
-QString Settings::mnemonic()
+QString Settings::mnemonic() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_mnemonic);
-	lock.unlock();
-	return result;
+
+	return m_mnemonic;
 }
 
 void Settings::setCurrency(const QString& value)
 {
-	lock.lockForWrite();
-	if(value != m_currency)
+	if(saveSetting(SettingTypes::Currency, m_currency, value))
 	{
-		m_currency = value;
-		saveSettings(SettingTypes::Currency, value);
 		emit currencyChanged();
 	}
-	lock.unlock();
 }
 
-QString Settings::currency()
+QString Settings::currency() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_currency);
-	lock.unlock();
-	return result;
+
+	return m_currency;
 }
 
 void Settings::setPreferredName(const QString& value)
 {
-	lock.lockForWrite();
-	if(value != m_preferredName)
+	if(saveSetting(SettingTypes::PreferredUsername, m_preferredName, value))
 	{
-		m_preferredName = value;
-		saveSettings(SettingTypes::PreferredUsername, value);
+		emit preferredNameChanged();
 	}
-	lock.unlock();
-	emit preferredNameChanged();
 }
 
-QString Settings::preferredName()
+QString Settings::preferredName() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_preferredName);
-	lock.unlock();
-	return result;
+
+	return m_preferredName;
 }
 
-QString Settings::installationId()
+QString Settings::installationId() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_installationId);
-	lock.unlock();
-	return result;
+
+	return m_installationId;
 }
 
 void Settings::setAppearance(int value)
 {
-	lock.lockForWrite();
-	if(value != m_appearance)
-	{
-		m_appearance = value;
-		saveSettings(SettingTypes::Appearance, value);
+	if(saveSetting(SettingTypes::Appearance, m_appearance, value)){
+		emit appearanceChanged();
 	}
-	lock.unlock();
-	emit appearanceChanged();
 }
 
-int Settings::appearance()
+int Settings::appearance() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return 0;
 	}
-	int result(m_appearance);
-	lock.unlock();
-	return result;
+
+	return m_appearance;
 }
 
 void Settings::removeMnemonic()
 {
-	lock.lockForWrite();
-	m_mnemonic = ""; // TODO: clear from memory
-	saveSettings(SettingTypes::Mnemonic, m_mnemonic);
-	lock.unlock();
-
-	emit mnemonicRemoved();
+	// TODO: clear from memory
+	if(saveSetting(SettingTypes::Mnemonic, m_mnemonic, ""))
+	{
+		emit mnemonicRemoved();
+	}
 }
 
-bool Settings::isMnemonicBackedUp()
+bool Settings::isMnemonicBackedUp() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return false;
 	}
-	bool result(m_mnemonic == "");
-	lock.unlock();
-	return result;
+
+	return m_mnemonic == "";
 }
 
-QString Settings::getLinkPreviewWhitelist()
+QString Settings::getLinkPreviewWhitelist() const
 {
 	QJsonObject obj{{"method", "wakuext_getLinkPreviewWhitelist"}, {"params", QJsonArray{}}};
 	const char* result = CallPrivateRPC(Utils::jsonToStr(obj).toUtf8().data());
@@ -304,7 +278,7 @@ QString Settings::getLinkPreviewWhitelist()
 	return Utils::jsonToStr(whiteList);
 }
 
-QJsonObject Settings::getNodeConfig()
+QJsonObject Settings::getNodeConfig() const
 {
 	// TODO: DRY this code with onboarding
 
@@ -373,56 +347,43 @@ QJsonObject Settings::getNodeConfig()
 
 void Settings::setCurrentNetwork(const QString& value)
 {
-	lock.lockForWrite();
-	if(value != m_currentNetwork)
+	if(saveSetting(SettingTypes::Networks_CurrentNetwork, m_currentNetwork, value))
 	{
-		m_currentNetwork = value;
-		saveSettings(SettingTypes::Networks_CurrentNetwork, value);
 		saveSettings(SettingTypes::NodeConfig, getNodeConfig());
 		saveSettings(SettingTypes::Stickers_PacksInstalled, QJsonArray{});
 		saveSettings(SettingTypes::Stickers_Recent, QJsonArray{});
+		emit currentNetworkChanged();
 	}
-	lock.unlock();
-	emit currentNetworkChanged();
 }
 
 void Settings::setFleet(const QString& value)
 {
-	lock.lockForWrite();
-	if(value != m_fleet)
+	if(saveSetting(SettingTypes::Fleet, m_fleet, value))
 	{
-		m_fleet = value;
-		saveSettings(SettingTypes::Fleet, value);
 		saveSettings(SettingTypes::NodeConfig, getNodeConfig());
+		emit fleetChanged();
 	}
-	lock.unlock();
-	emit fleetChanged();
 }
 
-QString Settings::currentNetwork()
+QString Settings::currentNetwork() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_currentNetwork);
-	lock.unlock();
-	return result;
+
+	return m_currentNetwork;
 }
 
-QString Settings::fleet()
+QString Settings::fleet() const
 {
-	lock.lockForRead();
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_fleet);
-	lock.unlock();
-	return result;
+
+	return m_fleet;
 }
 
 void Settings::setNetworks(const QJsonArray& value)
@@ -437,30 +398,26 @@ void Settings::setNetworks(const QJsonArray& value)
 	emit networksChanged();
 }
 
-QJsonArray Settings::networks()
+QJsonArray Settings::networks() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QJsonArray();
 	}
-	QJsonArray result(m_networks);
-	lock.unlock();
-	return result;
+
+	return m_networks;
 }
 
-QVector<QString> Settings::usernames()
+QVector<QString> Settings::usernames() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QVector<QString>{};
 	}
-	QVector<QString> result = m_usernames;
-	lock.unlock();
-	return result;
+
+	return m_usernames;
 }
 
 void Settings::setUsernames(QVector<QString> value)
@@ -475,30 +432,26 @@ void Settings::setUsernames(QVector<QString> value)
 	emit usernamesChanged();
 }
 
-QString Settings::walletRootAddress()
+QString Settings::walletRootAddress() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_walletRootAddress);
-	lock.unlock();
-	return result;
+
+	return m_walletRootAddress;
 }
 
-QString Settings::signingPhrase()
+QString Settings::signingPhrase() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QString();
 	}
-	QString result(m_signingPhrase);
-	lock.unlock();
-	return result;
+
+	return m_signingPhrase;
 }
 
 void Settings::changeLocale(QString locale)
@@ -529,17 +482,15 @@ void Settings::setInstalledStickerPacks(const QJsonObject& value)
 	emit installedStickerPacksChanged();
 }
 
-QJsonObject Settings::installedStickerPacks()
+QJsonObject Settings::installedStickerPacks() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
-		lock.unlock();
 		return QJsonObject{};
 	}
-	QJsonObject result(m_installedStickers);
-	lock.unlock();
-	return result;
+
+	return m_installedStickers;
 }
 
 void Settings::setRecentStickers(const QJsonArray& value)
@@ -551,17 +502,16 @@ void Settings::setRecentStickers(const QJsonArray& value)
 	emit recentStickersChanged();
 }
 
-QJsonArray Settings::recentStickers()
+QJsonArray Settings::recentStickers() const
 {
-	lock.lockForRead();
+	QReadLocker locker(&lock);
 	if(!m_initialized)
 	{
 		lock.unlock();
 		return QJsonArray{};
 	}
-	QJsonArray result(m_recentStickers);
-	lock.unlock();
-	return result;
+
+	return m_recentStickers;
 }
 
 void Settings::addRecentSticker(int packId, QString stickerHash)

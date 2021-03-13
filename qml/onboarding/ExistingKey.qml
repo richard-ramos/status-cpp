@@ -32,7 +32,7 @@ Item {
               wentNext = true
               enterSeedPhraseModal.close()
               root.account = onboardingModel.importMnemonic(mnemonic)
-              appSettings.removeMnemonicAfterLogin = true
+              removeMnemonicAfterLogin = true
               openPopup(recoverySuccessModalComponent)
             }
         }

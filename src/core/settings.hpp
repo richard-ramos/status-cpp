@@ -33,7 +33,7 @@ public:
 	Q_INVOKABLE void init(QString loginError);
 	Q_INVOKABLE void terminate();
 	Q_INVOKABLE void removeMnemonic();
-	Q_INVOKABLE QString getLinkPreviewWhitelist();
+	Q_INVOKABLE QString getLinkPreviewWhitelist() const;
 	Q_INVOKABLE void changeLocale(QString locale);
 
 	// TODO: move this to mailserver model
@@ -94,46 +94,34 @@ public:
 		{PinnedMailservers, "pinned-mailservers"},
 	};
 
-	QString publicKey();
-	QString keyUID();
-	QString mnemonic();
+	QString publicKey() const;
+	QString keyUID() const;
+	QString mnemonic() const;
+	QString currency() const;
+	QString preferredName() const;
+	QString currentNetwork() const;
+	QJsonArray networks() const;
+	QString fleet() const;
+	QJsonObject installedStickerPacks() const;
+	QJsonArray recentStickers() const;
+	QString walletRootAddress() const;
+	int appearance() const;
+	QVector<QString> usernames() const;
+	bool isMnemonicBackedUp() const;
+	QString signingPhrase() const;
+	QString installationId() const;
 
-	QString currency();
 	void setCurrency(const QString& value);
-
-	QString preferredName();
 	void setPreferredName(const QString& value);
-
-	QString currentNetwork();
 	void setCurrentNetwork(const QString& value);
-
-	QJsonArray networks();
 	void setNetworks(const QJsonArray& value);
-
-	QString fleet();
 	void setFleet(const QString& value);
-
-	QJsonObject installedStickerPacks();
 	void setInstalledStickerPacks(const QJsonObject& packs);
-
-	QJsonArray recentStickers();
 	void setRecentStickers(const QJsonArray& packs);
-
-	QString walletRootAddress();
-
-	int appearance();
 	void setAppearance(int value);
-
-	QVector<QString> usernames();
 	void setUsernames(QVector<QString> value);
 
-	bool isMnemonicBackedUp();
-
-	QJsonObject getNodeConfig();
-
-	QString signingPhrase();
-
-	QString installationId();
+	QJsonObject getNodeConfig() const;
 
 	void addRecentSticker(int packId, QString stickerHash);
 	void removeRecentStickerPack(int packId);
@@ -173,13 +161,15 @@ private:
 
 	int m_appearance;
 
-	QReadWriteLock lock;
+	mutable QReadWriteLock lock;
 
-	void saveSettings(SettingTypes setting, const QString& value);
-	void saveSettings(SettingTypes setting, const int& value);
+
 	void saveSettings(SettingTypes setting, const QJsonArray& value);
 	void saveSettings(SettingTypes setting, const QJsonObject& value);
 	void saveSettings(SettingTypes setting, const QVector<QString>& value);
+	
+	bool saveSetting(SettingTypes setting, QString& member, const QString& value);
+	bool saveSetting(SettingTypes setting, int& member, const int& value);
 
 	void save(const QJsonArray& input);
 
