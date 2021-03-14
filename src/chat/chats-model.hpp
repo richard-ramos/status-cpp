@@ -64,6 +64,7 @@ signals:
 	void joined(ChatType chatType, QString id, int index);
 	void added(ChatType chatType, QString id, int index);
 	void left(int index);
+	void lastRequest(ChatType chatType, QString id, qint64 lastRequest);
 
 private:
 	void startMessenger();

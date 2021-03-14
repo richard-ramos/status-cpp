@@ -303,7 +303,7 @@ void Chat::loadFilter()
 		foreach(const QJsonValue& value, response["result"].toArray())
 		{
 			// Handle non public chats
-			if(value["chatId"].toString() == m_id || value["identity"].toString() == m_id)
+			if(value["chatId"].toString() == m_id || (value["identity"].toString() == m_id && value["oneToOne"].toBool() == true))
 			{
 				Topic t;
 				t.topic = value["topic"].toString();
@@ -462,8 +462,9 @@ void Chat::leaveGroup()
 	Status::instance()->emitMessageSignal(response["result"].toObject());
 }
 
-void Chat::requestMoreMessages(){
-	Settings::instance()->mailserverCycle.requestMessages(m_id, m_chatType == ChatType::OneToOne, 86400);
+void Chat::requestMoreMessages(qint64 from){
+	Settings::instance()->mailserverCycle.requestMessages(m_id, m_chatType == ChatType::OneToOne, static_cast<int>(from/1000));
+	m_messages->update_oldestMsgTimestamp(from - (86400*1000));
 }
 
 void Chat::requestMessagesInLast(int fetchRange){

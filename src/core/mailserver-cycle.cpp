@@ -252,7 +252,7 @@ QVector<Topic> MailserverCycle::getMailserverTopics()
 
 std::optional<QVector<Topic>> MailserverCycle::getMailserverTopicByChatId(QString chatId, bool isOneToOne)
 {
-	const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{}.toVariantList()).toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_filters", QJsonArray{}.toVariantList()).toJsonObject();
 	if(!response["error"].isUndefined())
 	{
 		qCritical() << "Couldn't load filters" << response["error"];
@@ -265,7 +265,7 @@ std::optional<QVector<Topic>> MailserverCycle::getMailserverTopicByChatId(QStrin
 	{
 		const QJsonObject obj = value.toObject();
 
-		if(obj["chatId"].toString() != chatId && obj["identity"].toString() != chatId) continue;
+		if(!(obj["chatId"].toString() == chatId || (obj["identity"].toString() == chatId && obj["oneToOne"].toBool() == true))) continue;
 		topicList << obj["topic"].toString();
 	}
 
@@ -329,13 +329,12 @@ QString MailserverCycle::generateSymKeyFromPassword()
 	// TODO: unhardcode this for non - status mailservers
 	const auto response =
 		Status::instance()->callPrivateRPC("waku_generateSymKeyFromPassword", QJsonArray{"status-offline-inbox"}.toVariantList()).toJsonObject();
-
 	return response["result"].toString();
 }
 
 void MailserverCycle::requestMessages(QVector<QString> topicList, qint64 fromValue, qint64 toValue, bool force)
 {
-	qDebug() << "Requesting messages to " << get_activeMailserver();
+	qDebug() << "Requesting messages to " << get_activeMailserver() << fromValue << toValue;
 	QString generatedSymKey = generateSymKeyFromPassword();
 	requestMessagesCall(topicList, generatedSymKey, get_activeMailserver(), 1000, fromValue, toValue, force);
 }
@@ -425,7 +424,7 @@ void MailserverCycle::initialMailserverRequest()
 	emit requestSent();
 }
 
-void MailserverCycle::requestMessages(QString chatId, bool isOneToOne, int fetchRange)
+void MailserverCycle::requestMessages(QString chatId, bool isOneToOne, int earliestKnownMessageTimestamp)
 {
 	if(!isMailserverAvailable()) return; // TODO: add a pending request
 
@@ -433,20 +432,19 @@ void MailserverCycle::requestMessages(QString chatId, bool isOneToOne, int fetch
 	if(!topics.has_value()) return;
 
 	QVector<Topic> topicVector = topics.value();
-	qint64 from = topicVector[0].lastRequest > 1 ? topicVector[0].lastRequest : QDateTime::currentSecsSinceEpoch() - fetchRange;
+	qint64 from = earliestKnownMessageTimestamp - 86400;
 	QVector<QString> topicsToRequest;
 
 	foreach(const Topic& t, topicVector)
 	{
-		if(t.lastRequest > from)
+		if(t.lastRequest - 86400 > from)
 		{
 			// Get the more recent date from the list of topics
-			from = t.lastRequest;
+			from = t.lastRequest - 86400;
 		}
 		topicsToRequest << t.topic;
 	}
 
-	from -= fetchRange;
 	if(from < 0) from = 0;
 
 	if(!isMailserverAvailable()) return; // TODO: add a pending request
@@ -458,7 +456,7 @@ void MailserverCycle::requestMessages(QString chatId, bool isOneToOne, int fetch
 		addMailserverTopic(t);
 	}
 
-	requestMessages(topicsToRequest, from);
+	requestMessages(topicsToRequest, from, earliestKnownMessageTimestamp);
 	emit requestSent();
 }
 

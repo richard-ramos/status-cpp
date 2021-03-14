@@ -127,6 +127,11 @@ Message* MessagesModel::get(int row) const
 
 void MessagesModel::push(Message* msg)
 {
+	if(msg->get_timestamp().toLongLong() < m_oldestMsgTimestamp)
+	{
+		update_oldestMsgTimestamp(msg->get_timestamp().toLongLong());
+	}
+
 	if(msg->get_replace() != "")
 	{
 		// Delete existing message from UI since it's going to be replaced
@@ -196,6 +201,18 @@ void MessagesModel::push(QString messageId, QJsonObject newReaction)
 	});
 }
 
+QString MessagesModel::getCursor()
+{
+	QMutexLocker locker(&m_mutex);
+	return m_cursor;
+}
+
+void MessagesModel::setCursor(QString value)
+{
+	m_cursor = value;
+	emit cursorChanged();
+}
+
 void MessagesModel::loadMessages(bool initialLoad)
 {
 	if(!initialLoad && m_cursor == "") return;
@@ -205,7 +222,7 @@ void MessagesModel::loadMessages(bool initialLoad)
 
 		const auto response =
 			Status::instance()->callPrivateRPC("wakuext_chatMessages", QJsonArray{m_chatId, m_cursor, 20}.toVariantList()).toJsonObject();
-		m_cursor = response["result"]["cursor"].toString();
+		setCursor(response["result"]["cursor"].toString());
 
 		// TODO: handle cursor
 		foreach(QJsonValue msgJson, response["result"]["messages"].toArray())
@@ -222,6 +239,7 @@ void MessagesModel::loadMessages(bool initialLoad)
 				emit messageLoaded(message);
 			}
 		}
+		emit messagesLoaded();
 	});
 }
 

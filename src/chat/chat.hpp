@@ -111,7 +111,7 @@ public:
 	Q_INVOKABLE void loadMoreMessages();
 	Q_INVOKABLE void deleteChatHistory();
 	Q_INVOKABLE void markAllMessagesAsRead();
-	Q_INVOKABLE void requestMoreMessages();
+	Q_INVOKABLE void requestMoreMessages(qint64);
 	Q_INVOKABLE void requestMessagesInLast(int fetchRange);
 
 	Q_INVOKABLE void join();

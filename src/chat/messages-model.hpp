@@ -56,8 +56,14 @@ public:
 	Q_INVOKABLE void resend(QString messageId);
 
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
+	QML_READONLY_PROPERTY(qint64, oldestMsgTimestamp)
+
+	Q_PROPERTY(QString Cursor READ getCursor NOTIFY cursorChanged)
 
 	QString renderBlock(Message* message) const;
+
+	QString getCursor();
+	void setCursor(QString value);
 
 public:
 	void loadMessages(bool initialLoad = true);
@@ -68,8 +74,10 @@ public:
 signals:
 	void statusUpdateLoaded(Message* message);
 	void messageLoaded(Message* message);
+	void messagesLoaded();
 	void reactionLoaded(QString messageId, QJsonObject reaction);
 	void newMessagePushed();
+	void cursorChanged();
 
 private:
 	QVector<Message*> m_messages;

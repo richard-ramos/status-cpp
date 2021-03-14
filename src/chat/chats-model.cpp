@@ -205,7 +205,6 @@ void ChatsModel::startMessenger()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_startMessenger", QJsonArray{}.toVariantList()).toJsonObject();
 	// TODO: do something with mailservers/ranges?
-	qCritical() << response;
 }
 
 void ChatsModel::loadChats()
@@ -250,14 +249,11 @@ void ChatsModel::remove1on1Filters(QString chatId, QJsonArray filters)
 	{
 		const QJsonObject filter = filterJson.toObject();
 
-		qDebug() << "CONDITION 1" << (filter["identity"].toString() == chatId) << filter["chatId"].toString().endsWith("-contact-code");
-
 		// Contact code filter should be removed
 		if(filter["identity"].toString() == chatId && filter["chatId"].toString().endsWith("-contact-code"))
 		{
 			removeFilterRPC(chatId, filter["chatId"].toString());
 		}
-
 
 		// Remove partitioned topic if no other user in an active group chat or one-to-one is from the
 		// same partitioned topic
@@ -289,7 +285,7 @@ void ChatsModel::remove1on1Filters(QString chatId, QJsonArray filters)
 
 void ChatsModel::removeFilter(Chat* c)
 {
-	const auto response = Status::instance()->callPrivateRPC("wakuext_loadFilters", QJsonArray{QJsonArray{}}.toVariantList()).toJsonObject();
+	const auto response = Status::instance()->callPrivateRPC("wakuext_filters", QJsonArray{}.toVariantList()).toJsonObject();
 	QJsonArray filters = response["result"].toArray();
 
 	switch(c->get_chatType())

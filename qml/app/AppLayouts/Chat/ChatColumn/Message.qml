@@ -131,7 +131,15 @@ Item {
     }
 
     Loader {
-        active: true
+        active: {
+            if (contentType === Constants.fetchMoreMessagesButton) {
+                const gapNowAndOldestTimestamp = Date.now() - messages.oldestMsgTimestamp
+                return gapNowAndOldestTimestamp < Constants.maxNbDaysToFetch * Constants.fetchRangeLast24Hours * 1000 &&
+                        (chat.chatType != ChatType.PrivateGroupChat)
+            }
+
+            return true
+        }
         width: parent.width
         sourceComponent: {
             switch(contentType) {
@@ -158,7 +166,7 @@ Item {
     Component {
         id: fetchMoreMessagesButtonComponent
         Item {
-            visible: chatsModel.activeChannel.chatType !== Constants.chatTypePrivateGroupChat || chatsModel.activeChannel.isMember
+            visible: chat.chatType != ChatType.PrivateGroupChat && Status.IsOnline
             id: wrapper
             height: wrapper.visible ? childrenRect.height + Style.current.smallPadding*2 : 0
             anchors.left: parent.left
@@ -181,7 +189,11 @@ Item {
                   cursorShape: Qt.PointingHandCursor
                   anchors.fill: parent
                   onClicked: {
-                    chatsModel.get(chat.index).requestMoreMessages();
+                    chatsModel.get(chat.index).requestMoreMessages(messages.oldestMsgTimestamp);
+                    wrapper.visible = false;
+                    timer.setTimeout(function(){
+                        wrapper.visible = Qt.binding(function() { return chat.chatType != ChatType.PrivateGroupChat });
+                    }, 3000);
                   }
                 }
             }
@@ -193,7 +205,10 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 color: Style.current.darkGrey
                 //% "before %1"
-                text: qsTrId("before--1").arg(new Date(chatsModel.oldestMsgTimestamp*1000).toDateString())
+                text: {
+                    const d = new Date(messages.oldestMsgTimestamp);
+                    return qsTrId("before--1").arg(Qt.formatDateTime(d, "MMM dd, yyyy, hh:mm:ss"));
+                }
             }
             Separator {
                 anchors.top: fetchDate.bottom
