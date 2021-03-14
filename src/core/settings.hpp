@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mailserver-cycle.hpp"
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QMap>
@@ -36,10 +35,7 @@ public:
 	Q_INVOKABLE QString getLinkPreviewWhitelist() const;
 	Q_INVOKABLE void changeLocale(QString locale);
 
-	// TODO: move this to mailserver model
-	MailserverCycle mailserverCycle;
 signals:
-	void mailserverRequestSent();
 	void localeChanged();
 
 public:
@@ -173,10 +169,6 @@ private:
 
 	void save(const QJsonArray& input);
 
-	QTimer* timer;
-
 	QTranslator* m_translator;
 
-public:
-	Q_INVOKABLE void startMailserverCycle();
 };

@@ -3,6 +3,7 @@
 #include "chat-type.hpp"
 #include "contact.hpp"
 #include "mailserver-cycle.hpp"
+#include "mailserver-model.hpp"
 #include "message.hpp"
 #include "messages-model.hpp"
 #include <QDebug>
@@ -83,7 +84,7 @@ public:
 	QML_READONLY_PROPERTY(bool, hasMentions)
 
 	// ensName
-
+	QML_WRITABLE_PROPERTY(MailserverModel*, mailservers)
 	QML_READONLY_PROPERTY(MessagesModel*, messages)
 	QML_READONLY_PROPERTY(Contact*, contact)
 

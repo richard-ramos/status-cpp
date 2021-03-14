@@ -1,6 +1,5 @@
 add_library(core
     constants.cpp
-    mailserver-cycle.cpp
     settings.cpp
     status.cpp
     utils.cpp

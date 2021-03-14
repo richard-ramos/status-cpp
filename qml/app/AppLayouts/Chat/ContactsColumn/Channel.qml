@@ -174,7 +174,7 @@ Rectangle {
         }
         onClicked: {
             if (mouse.button & Qt.RightButton) {
-                channelContextMenu.openMenu(index, muted, chatType, name, chatId, identicon)
+                channelContextMenu.openMenu(index)//, muted, chatType, name, chatId, identicon)
                 return;
             }
             chatGroupsListView.currentIndex = index

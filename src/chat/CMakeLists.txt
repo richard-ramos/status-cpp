@@ -18,6 +18,7 @@ target_link_libraries(chat
         status
         contacts
         core
+        profile
         Qt5::Core
         Qt5::Widgets
         Qt5::Quick

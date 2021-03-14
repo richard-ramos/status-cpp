@@ -463,10 +463,10 @@ void Chat::leaveGroup()
 }
 
 void Chat::requestMoreMessages(qint64 from){
-	Settings::instance()->mailserverCycle.requestMessages(m_id, m_chatType == ChatType::OneToOne, static_cast<int>(from/1000));
+	m_mailservers->getCycle()->requestMessages(m_id, m_chatType == ChatType::OneToOne, static_cast<int>(from/1000));
 	m_messages->update_oldestMsgTimestamp(from - (86400*1000));
 }
 
 void Chat::requestMessagesInLast(int fetchRange){
-	Settings::instance()->mailserverCycle.requestMessagesInLast(m_id, m_chatType == ChatType::OneToOne, fetchRange);
+	m_mailservers->getCycle()->requestMessagesInLast(m_id, m_chatType == ChatType::OneToOne, fetchRange);
 }

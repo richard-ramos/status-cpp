@@ -177,7 +177,7 @@ Item {
         anchors.topMargin: 200
         anchors.top: automaticSelectionSwitch.bottom
         anchors.fill: parent
-        model: profileModel.mailservers.list
+        model: mailserverModel
         delegate: mailserversList
         visible: !automaticSelectionSwitch.checked
     }

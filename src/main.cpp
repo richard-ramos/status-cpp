@@ -12,6 +12,7 @@
 #include "libstatus.h"
 #include "login-model.hpp"
 #include "logs.hpp"
+#include "mailserver-model.hpp"
 #include "mailserver-cycle.hpp"
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
@@ -148,6 +149,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<ENSModel>("im.status.desktop", 1, 0, "ENSModel");
 	qmlRegisterType<DevicesModel>("im.status.desktop", 1, 0, "DevicesModel");
 	qmlRegisterType<StickerPacksModel>("im.status.desktop", 1, 0, "StickerPacksModel");
+	qmlRegisterType<MailserverModel>("im.status.desktop", 1, 0, "MailserverModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
@@ -160,6 +162,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<StickerPack*>("StickerPack *");
 
 	qRegisterMetaType<Device>("Device");
+	qRegisterMetaType<Mailserver>("Mailserver");
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
 	qRegisterMetaType<Topic>("Topic");
 	qRegisterMetaType<ChatMember>("ChatMember");

@@ -184,6 +184,7 @@ void MailserverCycle::run()
 
 void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 {
+	qCritical() << "PEER SUMMARY CHANGE";
 	QMutexLocker locker(&m_mutex);
 
 	// When a node is added as a peer, or disconnected

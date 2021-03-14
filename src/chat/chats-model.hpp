@@ -4,6 +4,8 @@
 #include "chat.hpp"
 #include "contacts-model.hpp"
 #include "message.hpp"
+#include "mailserver-model.hpp"
+#include "mailserver-cycle.hpp"
 #include <QAbstractListModel>
 #include <QDebug>
 #include <QHash>
@@ -56,8 +58,10 @@ public:
 	Q_INVOKABLE void pushStatusUpdate(Message* msg);
 
 	QML_WRITABLE_PROPERTY(ContactsModel*, contacts)
+	QML_WRITABLE_PROPERTY(MailserverModel*, mailservers)
 
 	Q_INVOKABLE void onContactsChanged();
+	Q_INVOKABLE void onMailserversChanged();
 
 signals:
 	void joinError(QString message);

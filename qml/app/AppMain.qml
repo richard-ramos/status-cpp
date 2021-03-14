@@ -309,9 +309,14 @@ RowLayout {
         sorters: StringSorter { roleName: "name" }
     }
 
+    MailserverModel {
+        id: mailserverModel
+    }
+
     ChatsModel {
         id: chatsModel
         contacts: contactsModel
+        mailservers: mailserverModel
     }
 
     StickerPacksModel {
@@ -448,7 +453,7 @@ RowLayout {
     property var mailserverRequestTimer: null
 
     Connections {
-        target: StatusSettings
+        target: mailserverModel
         onMailserverRequestSent: {
             loadingMessagesIndicator.active = true;
             

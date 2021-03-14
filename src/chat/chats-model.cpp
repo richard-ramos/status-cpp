@@ -5,6 +5,7 @@
 #include "contact.hpp"
 #include "contacts-model.hpp"
 #include "mailserver-cycle.hpp"
+#include "mailserver-model.hpp"
 #include "message-format.hpp"
 #include "message.hpp"
 #include "settings.hpp"
@@ -28,7 +29,7 @@ ChatsModel::ChatsModel(QObject* parent)
 	QObject::connect(Status::instance(), &Status::message, this, &ChatsModel::update);
 	QObject::connect(this, &ChatsModel::joined, this, &ChatsModel::added);
 	QObject::connect(this, &ChatsModel::contactsChanged, this, &ChatsModel::onContactsChanged);
-
+	QObject::connect(this, &ChatsModel::mailserversChanged, this, &ChatsModel::onMailserversChanged);
 	init();
 }
 
@@ -67,6 +68,19 @@ void ChatsModel::onContactsChanged()
 		chat->get_messages()->loadReactions();
 
 		m_contacts->upsert(chat);
+	}
+}
+
+void ChatsModel::onMailserversChanged()
+{
+	foreach(Chat* chat, m_timelineChats)
+	{
+		chat->set_mailservers(m_mailservers);
+	}
+
+	foreach(Chat* chat, m_chats)
+	{
+		chat->set_mailservers(m_mailservers);
 	}
 }
 
@@ -137,6 +151,7 @@ void ChatsModel::insert(Chat* chat)
 	QQmlApplicationEngine::setObjectOwnership(chat, QQmlApplicationEngine::CppOwnership);
 	chat->setParent(this);
 	chat->get_messages()->set_contacts(m_contacts);
+	chat->set_mailservers(m_mailservers);
 	m_chatMap[chat->get_id()] = chat;
 
 	if(chat->get_chatType() == ChatType::Profile || chat->get_chatType() == ChatType::Timeline)
@@ -166,7 +181,7 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 
 			m_contacts->upsert(c);
 
-			QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
+			QObject::connect(c, &Chat::topicCreated, m_mailservers->getCycle(), &MailserverCycle::addChannelTopic);
 
 			insert(c);
 
@@ -211,14 +226,12 @@ void ChatsModel::loadChats()
 {
 	const auto response = Status::instance()->callPrivateRPC("wakuext_chats", QJsonArray{}.toVariantList()).toJsonObject();
 
-	if(response["result"].isNull())
-		return;
+	if(response["result"].isNull()) return;
 
 	foreach(const QJsonValue& value, response["result"].toArray())
 	{
 		const QJsonObject obj = value.toObject();
-		if(!value["active"].toBool())
-			continue;
+		if(!value["active"].toBool()) continue;
 		Chat* c = new Chat(this, obj);
 		insert(c);
 		emit added(c->get_chatType(), c->get_id(), m_chats.count() - 1);
@@ -227,8 +240,7 @@ void ChatsModel::loadChats()
 
 Chat* ChatsModel::get(int row) const
 {
-	if(row < 0)
-		return nullptr;
+	if(row < 0) return nullptr;
 	return m_chats[row];
 }
 
@@ -292,7 +304,7 @@ void ChatsModel::removeFilter(Chat* c)
 	{
 	case ChatType::Profile:
 	case ChatType::Public: {
-		foreach(const QJsonValue &filterJson, filters)
+		foreach(const QJsonValue& filterJson, filters)
 		{
 			const QJsonObject filter = filterJson.toObject();
 			if(filter["chatId"].toString() == c->get_id())
@@ -302,8 +314,7 @@ void ChatsModel::removeFilter(Chat* c)
 		}
 	}
 	break;
-	case ChatType::OneToOne:
- {
+	case ChatType::OneToOne: {
 		// Check if user does not belong to any active chat group
 		bool inGroup = false;
 		ChatMember member;
@@ -351,7 +362,7 @@ void ChatsModel::removeFilter(Chat* c)
 	default: qWarning() << "Unhandled chatType" << c->get_id() << c->get_chatType();
 	}
 
-	Settings::instance()->mailserverCycle.removeMailserverTopicForChat(c->get_id());
+	m_mailservers->getCycle()->removeMailserverTopicForChat(c->get_id());
 }
 
 void ChatsModel::remove(int row)
@@ -450,19 +461,17 @@ void ChatsModel::toggleTimelineChat(QString contactId, bool contactWasAdded)
 	QString timelineChatId = Constants::getTimelineChatId(contactId);
 	if(contactWasAdded)
 	{
-		if(m_chatMap.contains(timelineChatId))
-			return;
+		if(m_chatMap.contains(timelineChatId)) return;
 
 		Chat* c = new Chat(this, timelineChatId, ChatType::Profile, "", contactId);
 		c->save();
-		QObject::connect(c, &Chat::topicCreated, &Settings::instance()->mailserverCycle, &MailserverCycle::addChannelTopic);
+		QObject::connect(c, &Chat::topicCreated, m_mailservers->getCycle(), &MailserverCycle::addChannelTopic);
 		insert(c);
 		c->loadFilter();
 	}
 	else
 	{
-		if(!m_chatMap.contains(timelineChatId))
-			return;
+		if(!m_chatMap.contains(timelineChatId)) return;
 
 		removeTimelineMessages(contactId);
 

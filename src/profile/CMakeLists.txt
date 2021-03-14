@@ -1,6 +1,8 @@
 add_library(profile
     custom-networks-model.cpp
     devices-model.cpp
+    mailserver-model.cpp
+    mailserver-cycle.cpp
 )
 
 target_include_directories(profile PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

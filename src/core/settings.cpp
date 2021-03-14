@@ -32,21 +32,6 @@ Settings::Settings(QObject* parent)
 	// TODO: can login signal have an error?
 	QObject::connect(Status::instance(), &Status::login, this, &Settings::init);
 	QObject::connect(Status::instance(), &Status::logout, this, &Settings::terminate);
-
-	timer = new QTimer(this);
-	QObject::connect(this, &Settings::initialized, this, &Settings::startMailserverCycle);
-	QObject::connect(Status::instance(), &Status::logout, timer, &QTimer::stop);
-	QObject::connect(Status::instance(), &Status::discoverySummary, &mailserverCycle, &MailserverCycle::peerSummaryChange);
-	QObject::connect(&mailserverCycle, &MailserverCycle::requestSent, this, &Settings::mailserverRequestSent);
-}
-
-void Settings::startMailserverCycle()
-{
-	// Fire immediately
-	mailserverCycle.work();
-	// Execute every 1 seconds
-	QObject::connect(timer, &QTimer::timeout, &mailserverCycle, &MailserverCycle::work);
-	timer->start(10000);
 }
 
 Settings::~Settings()
