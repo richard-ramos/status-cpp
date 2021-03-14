@@ -160,6 +160,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
 	qRegisterMetaType<StickerPack*>("StickerPack *");
+	qRegisterMetaType<MailserverCycle*>("MailserverCycle *");
 
 	qRegisterMetaType<Device>("Device");
 	qRegisterMetaType<Mailserver>("Mailserver");

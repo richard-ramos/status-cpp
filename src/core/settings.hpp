@@ -24,7 +24,7 @@ class Settings : public QObject
 	Q_PROPERTY(QString SigningPhrase READ signingPhrase CONSTANT)
 	Q_PROPERTY(QJsonObject InstalledStickerPacks READ installedStickerPacks WRITE setInstalledStickerPacks NOTIFY installedStickerPacksChanged)
 	Q_PROPERTY(QJsonArray RecentStickers READ recentStickers WRITE setRecentStickers NOTIFY recentStickersChanged)
-
+	Q_PROPERTY(QString PinnedMailserver READ pinnedMailserver WRITE setPinnedMailserver NOTIFY pinnedMailserverChanged);
 public:
 	static Settings* instance();
 	~Settings();
@@ -106,6 +106,7 @@ public:
 	bool isMnemonicBackedUp() const;
 	QString signingPhrase() const;
 	QString installationId() const;
+	QString pinnedMailserver() const;
 
 	void setCurrency(const QString& value);
 	void setPreferredName(const QString& value);
@@ -116,6 +117,7 @@ public:
 	void setRecentStickers(const QJsonArray& packs);
 	void setAppearance(int value);
 	void setUsernames(QVector<QString> value);
+	void setPinnedMailserver(const QString& value);
 
 	QJsonObject getNodeConfig() const;
 
@@ -134,6 +136,7 @@ signals:
 	void usernamesChanged();
 	void installedStickerPacksChanged();
 	void recentStickersChanged();
+	void pinnedMailserverChanged();
 
 private:
 	static Settings* theInstance;
@@ -153,6 +156,7 @@ private:
 	QString m_signingPhrase;
 	QVector<QString> m_usernames;
 	QJsonObject m_installedStickers;
+	QJsonObject m_pinnedMailservers;
 	QJsonArray m_recentStickers;
 
 	int m_appearance;

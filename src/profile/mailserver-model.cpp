@@ -23,9 +23,13 @@ MailserverModel::MailserverModel(QObject* parent)
 	timer = new QTimer(this);
 
 	QObject::connect(Status::instance(), &Status::logout, timer, &QTimer::stop);
-	QObject::connect(Status::instance(), &Status::discoverySummary, mailserverCycle, &MailserverCycle::peerSummaryChange); // TODO: determine if i need to preload peers?
+	QObject::connect(Status::instance(),
+					 &Status::discoverySummary,
+					 mailserverCycle,
+					 &MailserverCycle::peerSummaryChange); // TODO: determine if i need to preload peers?
 	QObject::connect(this, &MailserverModel::mailserverLoaded, this, &MailserverModel::push);
 	QObject::connect(mailserverCycle, &MailserverCycle::requestSent, this, &MailserverModel::mailserverRequestSent);
+	QObject::connect(mailserverCycle, &MailserverCycle::activeMailserverChanged, this, &MailserverModel::activeMailserverChanged);
 
 	loadMailservers();
 	startMailserverCycle();
@@ -94,6 +98,25 @@ void MailserverModel::loadMailservers()
 	});
 }
 
+void MailserverModel::enableAutomaticSelection(bool enable)
+{
+	if(enable)
+	{
+		qDebug() << "Restarting mailserver cicle ";
+		timer->stop();
+		Settings::instance()->setPinnedMailserver("");
+		startMailserverCycle();
+	}
+}
+
+void MailserverModel::pinMailserver(QString endpoint)
+{
+	qDebug() << "Pinning " << endpoint;
+	timer->stop();
+	Settings::instance()->setPinnedMailserver(endpoint);
+	startMailserverCycle();
+}
+
 void MailserverModel::push(Mailserver mailserver)
 {
 	insert(mailserver);
@@ -104,4 +127,17 @@ void MailserverModel::insert(Mailserver mailserver)
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	m_mailservers << mailserver;
 	endInsertRows();
+}
+
+Mailserver MailserverModel::getActiveMailserver()
+{
+	QString activeMailserverEndpoint = mailserverCycle->getActiveMailserver();
+	foreach(Mailserver m, m_mailservers)
+	{
+		if(m.endpoint == activeMailserverEndpoint)
+		{
+			return m;
+		}
+	}
+	return Mailserver{};
 }

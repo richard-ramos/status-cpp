@@ -4,11 +4,14 @@ import QtQuick.Layouts 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: syncContainer
     Layout.fillHeight: true
     Layout.fillWidth: true
+
+    property var activeMailserver: mailserverModel.ActiveMailserver
 
     StyledText {
         id: element4
@@ -27,10 +30,11 @@ Item {
         
         StatusRadioButton {
             text: name
-            checked: name == profileModel.mailservers.activeMailserver
+            checked: StatusSettings.PinnedMailserver == "" ? name == activeMailserver.name : StatusSettings.PinnedMailserver == endpoint
             onClicked: {
                 if (checked) {
-                    profileModel.mailservers.setMailserver(name);
+                    // TODO: ask confirmation
+                    mailserverModel.pinMailserver(endpoint);
                 }
             }
         }
@@ -54,7 +58,6 @@ Item {
 
                 
         StyledText {
-            id: usernameText
             //% "Add mailserver"
             text: qsTrId("add-mailserver")
             color: Style.current.blue
@@ -153,8 +156,8 @@ Item {
 
     StatusSwitch {
         id: automaticSelectionSwitch
-        checked: profileModel.mailservers.automaticSelection
-        onCheckedChanged: profileModel.mailservers.enableAutomaticSelection(checked)
+        checked: StatusSettings.PinnedMailserver === ""
+        onCheckedChanged: mailserverModel.enableAutomaticSelection(checked)
         anchors.top: addMailserver.bottom
         anchors.topMargin: Style.current.padding
         anchors.left: switchLbl.right
@@ -164,7 +167,7 @@ Item {
 
     StyledText {
         //% "..."
-        text: profileModel.mailservers.activeMailserver || qsTrId("---")
+        text: activeMailserver.name || qsTr("Disconnected")
         anchors.left: parent.left
         anchors.leftMargin: 24
         anchors.top: switchLbl.bottom

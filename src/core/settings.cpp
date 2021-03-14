@@ -66,6 +66,7 @@ void Settings::init(QString loginError)
 	m_installedStickers = settings[settingsMap[SettingTypes::Stickers_PacksInstalled]].toObject();
 	m_recentStickers = settings[settingsMap[SettingTypes::Stickers_Recent]].toArray();
 	m_usernames = Utils::toStringVector(settings[settingsMap[SettingTypes::Usernames]].toArray());
+	m_pinnedMailservers = settings[settingsMap[SettingTypes::PinnedMailservers]].toObject();
 
 	// defaults:
 	if(m_fleet == "")
@@ -363,6 +364,8 @@ QString Settings::currentNetwork() const
 
 QString Settings::fleet() const
 {
+	QReadLocker locker(&lock);
+
 	if(!m_initialized)
 	{
 		return QString();
@@ -558,4 +561,21 @@ void Settings::removeRecentStickerPack(int packId)
 	saveSettings(SettingTypes::Stickers_Recent, m_recentStickers);
 	lock.unlock();
 	emit recentStickersChanged();
+}
+
+QString Settings::pinnedMailserver() const
+{
+	QReadLocker locker(&lock);
+	if(!m_initialized) return QString();
+	return m_pinnedMailservers[m_fleet].toString();
+}
+
+
+void Settings::setPinnedMailserver(const QString& value)
+{
+	lock.lockForWrite();
+	m_pinnedMailservers[m_fleet] = QJsonValue(value);
+	saveSettings(SettingTypes::PinnedMailservers, m_pinnedMailservers);
+	lock.unlock();
+	emit pinnedMailserverChanged();
 }

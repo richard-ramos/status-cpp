@@ -167,24 +167,40 @@ void MailserverCycle::run()
 {
 	QMutexLocker locker(&m_mutex);
 
-	// TODO: if there's a pinned mailserver, return
+	QString pinnedMailserver = Settings::instance()->pinnedMailserver();
 
-	if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Connected)
+	// TODO: refactor this
+	if(pinnedMailserver == "")
 	{
-		qDebug() << "Mailserver is already connected. Skipping iteration";
-		return;
+		if(nodes.contains(get_activeMailserver()) && nodes[get_activeMailserver()] == MailserverStatus::Connected)
+		{
+			qDebug() << "Mailserver is already connected. Skipping iteration";
+			return;
+		}
+
+		qDebug() << "Automatically switching mailserver";
+
+		if(get_activeMailserver() != "") disconnectActiveMailserver();
+
+		findNewMailserver();
 	}
+	else
+	{
+		if(nodes.contains(pinnedMailserver) && nodes[pinnedMailserver] == MailserverStatus::Connected)
+		{
+			qDebug() << "Pinned mailserver already connected. Skipping iteration";
+			return;
+		}
 
-	qDebug() << "Automatically switching mailserver";
+		disconnectActiveMailserver();
 
-	if(get_activeMailserver() != "") disconnectActiveMailserver();
-
-	findNewMailserver();
+		qDebug() << "Connecting to pinned mailserver:" << pinnedMailserver;
+		connect(pinnedMailserver);
+	}
 }
 
 void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 {
-	qCritical() << "PEER SUMMARY CHANGE";
 	QMutexLocker locker(&m_mutex);
 
 	// When a node is added as a peer, or disconnected
@@ -534,4 +550,10 @@ bool MailserverCycle::isMailserverAvailable()
 {
 	// TODO: does this require a mutex?  consider replace this for read locker
 	return m_activeMailserver != "" && nodes.contains(m_activeMailserver) && nodes[m_activeMailserver] == MailserverStatus::Connected;
+}
+
+QString MailserverCycle::getActiveMailserver() const
+{
+	QMutexLocker locker(&m_mutex);
+	return m_activeMailserver;
 }

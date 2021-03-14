@@ -22,7 +22,6 @@ class MailserverCycle : public QThread
 	Q_OBJECT
 
 	QML_READONLY_PROPERTY(QString, activeMailserver)
-
 public:
 	MailserverCycle(QObject* parent = nullptr);
 	~MailserverCycle();
@@ -34,6 +33,8 @@ public:
 	Q_INVOKABLE void requestMessages(QString chatId, bool isOneToOne, int earliestKnownMessageTimestamp);
 	Q_INVOKABLE void requestMessagesInLast(QString chatId, bool isOneToOne, int fetchRange);
 
+
+	QString getActiveMailserver() const;
 
 	void timeoutConnection(QString enode);
 	void requestMessages(QVector<QString> topicList, qint64 fromValue = 0, qint64 toValue = 0, bool force = false);
@@ -48,6 +49,7 @@ public:
 
 private:
 	void findNewMailserver();
+
 	void disconnectActiveMailserver();
 	void connect(QString enode);
 	void trustPeer(QString enode);
@@ -59,7 +61,7 @@ private:
 	QHash<QString, MailserverStatus> nodes;
 
 	QVector<QString> getMailservers();
-	QMutex m_mutex;
+	mutable QMutex m_mutex;
 
 	QString generateSymKeyFromPassword();
 
