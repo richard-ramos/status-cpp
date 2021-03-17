@@ -36,7 +36,7 @@ public:
 
 	QString getActiveMailserver() const;
 
-	void timeoutConnection(QString enode);
+	Q_INVOKABLE void timeoutConnection(QString enode);
 	void requestMessages(QVector<QString> topicList, qint64 fromValue = 0, qint64 toValue = 0, bool force = false);
 	void removeMailserverTopicForChat(QString chatId);
 
@@ -77,6 +77,7 @@ signals:
 	void loopStopped();
 	void mailserverAvailable();
 	void requestSent();
+	void checkTimeout(QString enode);
 
 protected:
 	void run() override;

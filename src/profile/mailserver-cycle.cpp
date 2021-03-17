@@ -30,6 +30,7 @@ MailserverCycle::MailserverCycle(QObject* parent)
 	: QThread(parent)
 {
 	QObject::connect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
+	QObject::connect(this, &MailserverCycle::checkTimeout, this, &MailserverCycle::timeoutConnection);
 }
 
 MailserverCycle::~MailserverCycle()
@@ -84,9 +85,9 @@ void MailserverCycle::connect(QString enode)
 
 		// TODO: try to reconnect 3 times before switching mailserver
 
-		QtConcurrent::run([=] {
+		QtConcurrent::run([=]() {
 			QThread::sleep(10); // Timeout connection attempt at 10 seconds
-			timeoutConnection(enode);
+			emit checkTimeout(enode);
 		});
 	}
 
@@ -99,7 +100,9 @@ void MailserverCycle::connect(QString enode)
 
 void MailserverCycle::timeoutConnection(QString enode)
 {
+	qDebug() << "Verifying timeout for" << enode;
 	QMutexLocker locker(&m_mutex);
+	if(!nodes.contains(enode)) return;
 	if(nodes[enode] != MailserverStatus::Connecting) return;
 
 	qDebug() << "Connection attempt failed due to timeout";
