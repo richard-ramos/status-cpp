@@ -228,7 +228,6 @@ void TokenModel::push(Token token)
 
 void TokenModel::insert(Token token)
 {
-	qDebug() << token.name;
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	m_tokens << token;
 	endInsertRows();

@@ -32,6 +32,7 @@ MailserverModel::MailserverModel(QObject* parent)
 	QObject::connect(mailserverCycle, &MailserverCycle::activeMailserverChanged, this, &MailserverModel::activeMailserverChanged);
 
 	loadMailservers();
+	loadCustomMailservers();
 	startMailserverCycle();
 }
 
@@ -52,6 +53,7 @@ MailserverCycle* MailserverModel::getCycle()
 QHash<int, QByteArray> MailserverModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
+	roles[Id] = "mailserverId";
 	roles[Name] = "name";
 	roles[Endpoint] = "endpoint";
 	return roles;
@@ -73,6 +75,7 @@ QVariant MailserverModel::data(const QModelIndex& index, int role) const
 
 	switch(role)
 	{
+	case Id: return QVariant(mailserver.id);
 	case Name: return QVariant(mailserver.name);
 	case Endpoint: return QVariant(mailserver.endpoint);
 	}
@@ -90,11 +93,9 @@ void MailserverModel::loadMailservers()
 		auto mail = fleetJson["mail"].toObject();
 		foreach(const QString& key, mail.keys())
 		{
-			Mailserver m{.name = key, .endpoint = mail[key].toString()};
+			Mailserver m{.id = "", .name = key, .endpoint = mail[key].toString()};
 			emit mailserverLoaded(m);
 		}
-
-		// TODO: getting custom mailservers
 	});
 }
 
@@ -115,6 +116,40 @@ void MailserverModel::pinMailserver(QString endpoint)
 	timer->stop();
 	Settings::instance()->setPinnedMailserver(endpoint);
 	startMailserverCycle();
+}
+
+void MailserverModel::add(QString name, QString endpoint)
+{
+	QString fleet = Settings::instance()->fleet();
+	QString id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+	const auto response =
+		Status::instance()
+			->callPrivateRPC("mailservers_addMailserver",
+							 QJsonArray{QJsonObject{{"id", id}, {"name", name}, {"address", endpoint}, {"fleet", fleet}}}.toVariantList())
+			.toJsonObject();
+	// TODO: error handling
+	Mailserver m{.id = id, .name = name, .endpoint = endpoint};
+	emit mailserverLoaded(m);
+}
+
+void MailserverModel::loadCustomMailservers()
+{
+	QtConcurrent::run([=] {
+		const auto response = Status::instance()->callPrivateRPC("mailservers_getMailservers", QJsonArray{}.toVariantList()).toJsonObject();
+
+		if(response["result"].isNull()) return;
+
+		QString fleet = Settings::instance()->fleet();
+
+		foreach(const QJsonValue& value, response["result"].toArray())
+		{
+			const QJsonObject obj = value.toObject();
+			if(obj["fleet"].toString() != fleet) continue;
+
+			Mailserver t{.id = obj["id"].toString(), .name = obj["name"].toString(), .endpoint = obj["endpoint"].toString()};
+			emit mailserverLoaded(t);
+		}
+	});
 }
 
 void MailserverModel::push(Mailserver mailserver)

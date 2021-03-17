@@ -117,8 +117,21 @@ int poolSize(int fleetSize)
 
 QVector<QString> MailserverCycle::getMailservers()
 {
-	return Utils::toStringVector(Settings::instance()->getNodeConfig()["ClusterConfig"].toObject()["TrustedMailServers"].toArray());
-	// TODO: get custom mailservers
+	QVector<QString> mailservers =
+		Utils::toStringVector(Settings::instance()->getNodeConfig()["ClusterConfig"].toObject()["TrustedMailServers"].toArray());
+
+	// TODO: error handling
+	const auto response = Status::instance()->callPrivateRPC("mailservers_getMailservers", QJsonArray{}.toVariantList()).toJsonObject();
+	if(response["result"].isNull()) return mailservers;
+
+	QString fleet = Settings::instance()->fleet();
+	foreach(const QJsonValue& value, response["result"].toArray())
+	{
+		const QJsonObject obj = value.toObject();
+		mailservers << obj["endpoint"].toString();
+	}
+
+	return mailservers;
 }
 
 void MailserverCycle::findNewMailserver()

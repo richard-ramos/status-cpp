@@ -116,7 +116,8 @@ Item {
                     if (!addMailserverPopup.validate()) {
                         return;
                     }
-                    profileModel.mailservers.save(nameInput.text, enodeInput.text)
+
+                    mailserverModel.add(nameInput.text, enodeInput.text)
                     addMailserverPopup.close()
                 }
             }

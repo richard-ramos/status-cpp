@@ -9,9 +9,11 @@
 
 struct Mailserver
 {
+	QString id;
 	QString name;
 	QString endpoint;
 
+	Q_PROPERTY(QString id MEMBER id)
 	Q_PROPERTY(QString name MEMBER name)
 	Q_PROPERTY(QString endpoint MEMBER endpoint)
 	Q_GADGET
@@ -24,8 +26,9 @@ class MailserverModel : public QAbstractListModel
 public:
 	enum MailserverRoles
 	{
-		Name = Qt::UserRole + 1,
-		Endpoint = Qt::UserRole + 2
+		Id = Qt::UserRole + 1,
+		Name = Qt::UserRole + 2,
+		Endpoint = Qt::UserRole + 3
 	};
 
 	explicit MailserverModel(QObject* parent = nullptr);
@@ -38,11 +41,11 @@ public:
 	Q_INVOKABLE void startMailserverCycle();
 	Q_INVOKABLE void enableAutomaticSelection(bool enable);
 	Q_INVOKABLE void pinMailserver(QString endpoint);
-
-	//	Q_INVOKABLE void add(QString name, QString endpoint);
+	Q_INVOKABLE void add(QString name, QString endpoint);
 
 	Q_PROPERTY(MailserverCycle* cycle READ getCycle)
 	MailserverCycle* getCycle();
+	void loadCustomMailservers();
 
 	Q_PROPERTY(Mailserver ActiveMailserver READ getActiveMailserver NOTIFY activeMailserverChanged)
 	Mailserver getActiveMailserver();
