@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QHash>
-#include <QMutex>
 #include <QObject>
 #include <QQmlHelpers>
+#include <QReadWriteLock>
 #include <QString>
 #include <QThread>
 #include <QVector>
@@ -33,7 +33,6 @@ public:
 	Q_INVOKABLE void requestMessages(QString chatId, bool isOneToOne, int earliestKnownMessageTimestamp);
 	Q_INVOKABLE void requestMessagesInLast(QString chatId, bool isOneToOne, int fetchRange);
 
-
 	QString getActiveMailserver() const;
 
 	Q_INVOKABLE void timeoutConnection(QString enode);
@@ -61,7 +60,7 @@ private:
 	QHash<QString, MailserverStatus> nodes;
 
 	QVector<QString> getMailservers();
-	mutable QMutex m_mutex;
+	mutable QReadWriteLock lock;
 
 	QString generateSymKeyFromPassword();
 

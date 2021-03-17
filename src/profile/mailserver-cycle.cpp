@@ -5,14 +5,14 @@
 #include "utils.hpp"
 #include <QDebug>
 #include <QHash>
-#include <QMutex>
 #include <QRandomGenerator>
+#include <QReadLocker>
+#include <QReadWriteLock>
 #include <QThread>
+#include <QWriteLocker>
 #include <QtConcurrent>
 #include <algorithm>
 #include <cmath>
-
-#include <QMutexLocker>
 
 // How mailserver should work ?
 //
@@ -101,7 +101,7 @@ void MailserverCycle::connect(QString enode)
 void MailserverCycle::timeoutConnection(QString enode)
 {
 	qDebug() << "Verifying timeout for" << enode;
-	QMutexLocker locker(&m_mutex);
+	QWriteLocker locker(&lock);
 	if(!nodes.contains(enode)) return;
 	if(nodes[enode] != MailserverStatus::Connecting) return;
 
@@ -168,7 +168,7 @@ void MailserverCycle::disconnectActiveMailserver()
 
 void MailserverCycle::run()
 {
-	QMutexLocker locker(&m_mutex);
+	QWriteLocker locker(&lock);
 
 	QString pinnedMailserver = Settings::instance()->pinnedMailserver();
 
@@ -204,7 +204,7 @@ void MailserverCycle::run()
 
 void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 {
-	QMutexLocker locker(&m_mutex);
+	QWriteLocker locker(&lock);
 
 	// When a node is added as a peer, or disconnected
 	// a DiscoverySummary signal is emitted. In here we
@@ -212,7 +212,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 	// Connected / Disconnected
 
 	bool available = false;
-
+	bool disconnectActiveMailserver = false;
 	for(QHash<QString, MailserverStatus>::const_iterator it = nodes.cbegin(), end = nodes.cend(); it != end; ++it)
 	{
 		if(!peers.contains(it.key()) && nodes[it.key()] == MailserverStatus::Connected)
@@ -222,8 +222,7 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 			nodes[it.key()] = MailserverStatus::Disconnected;
 			if(get_activeMailserver() == it.key())
 			{
-				qWarning() << "Active mailserver disconnected! " << it.key();
-				update_activeMailserver("");
+				disconnectActiveMailserver = true;
 			}
 		}
 	}
@@ -243,6 +242,14 @@ void MailserverCycle::peerSummaryChange(QVector<QString> peers)
 				available = true;
 			}
 		}
+	}
+
+	locker.unlock();
+
+	if(disconnectActiveMailserver)
+	{
+		qWarning() << "Active mailserver disconnected! " << m_activeMailserver;
+		update_activeMailserver("");
 	}
 
 	if(available)
@@ -514,7 +521,7 @@ void MailserverCycle::requestMessagesInLast(QString chatId, bool isOneToOne, int
 
 void MailserverCycle::addChannelTopic(Topic t)
 {
-	QMutexLocker locker(&m_mutex);
+	QWriteLocker locker(&lock);
 
 	QVector<Topic> topics = getMailserverTopics();
 	bool found = false;
@@ -557,6 +564,6 @@ bool MailserverCycle::isMailserverAvailable()
 
 QString MailserverCycle::getActiveMailserver() const
 {
-	QMutexLocker locker(&m_mutex);
+	QReadLocker locker(&lock);
 	return m_activeMailserver;
 }
