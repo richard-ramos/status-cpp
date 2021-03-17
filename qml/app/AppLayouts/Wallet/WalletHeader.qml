@@ -5,6 +5,7 @@ import "../../../imports"
 import "../../../shared"
 import "../../../shared/status"
 import "./components"
+import im.status.desktop 1.0
 
 Item {
     property var currentAccount: walletModel.currentAccount
@@ -171,7 +172,6 @@ Item {
                     icon.height: 16
                     onTriggered: {
                         openPopup(tokenSettingsModalComponent)
-                        walletModel.loadCustomTokens()
                     }
                 }
                 Action {
@@ -182,7 +182,7 @@ Item {
                     icon.height: 16
                     onTriggered: {
                         openPopup(setCurrencyModalComponent, { 
-                            defaultCurrency: walletModel.defaultCurrency
+                            defaultCurrency: StatusSettings.Currency
                         })
                     }
                 }

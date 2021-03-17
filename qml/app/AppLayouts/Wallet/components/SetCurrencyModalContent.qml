@@ -4,9 +4,10 @@ import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "../data/"
-
+import im.status.desktop 1.0
 Item {
     property string currency: "USD"
+    property string selectedCurrency: currency
     id: modalBody
     anchors.fill: parent
 
@@ -59,7 +60,9 @@ Item {
                     anchors.rightMargin: Style.current.padding
                     anchors.verticalCenter: parent.verticalCenter
                     ButtonGroup.group: currencyGroup
-                    onClicked: { walletModel.setDefaultCurrency(key) }
+                    onClicked: { 
+                        selectedCurrency = key;
+                    }
                 }
 
                 MouseArea {
@@ -73,9 +76,8 @@ Item {
                         wrapper.hovered = false
                     }
                     onClicked: {
-                        currencyRadioBtn.checked = !currencyRadioBtn.checked
-                        modalBody.currency = key
-                        walletModel.setDefaultCurrency(key)
+                        currencyRadioBtn.checked = !currencyRadioBtn.checked;
+                        selectedCurrency = key;
                     }
                 }
             }

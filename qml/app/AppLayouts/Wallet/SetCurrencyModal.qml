@@ -6,6 +6,7 @@ import "../../../imports"
 import "../../../shared"
 import "../../../shared/status"
 import "./components"
+import im.status.desktop 1.0
 
 ModalPopup {
     id: popup
@@ -29,7 +30,7 @@ ModalPopup {
         //% "Save"
         text: qsTrId("save")
         onClicked: {
-            console.log("TODO: apply all accounts")
+            StatusSettings.Currency = setCurrencyModalContent.selectedCurrency
             popup.close()
         }
     }

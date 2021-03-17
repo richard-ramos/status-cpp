@@ -17,8 +17,7 @@ Settings* Settings::theInstance;
 
 Settings* Settings::instance()
 {
-	if(theInstance == 0)
-		theInstance = new Settings();
+	if(theInstance == 0) theInstance = new Settings();
 	return theInstance;
 }
 
@@ -41,8 +40,7 @@ Settings::~Settings()
 
 void Settings::init(QString loginError)
 {
-	if(loginError != "")
-		return;
+	if(loginError != "") return;
 
 	QWriteLocker locker(&lock);
 
@@ -67,10 +65,10 @@ void Settings::init(QString loginError)
 	m_recentStickers = settings[settingsMap[SettingTypes::Stickers_Recent]].toArray();
 	m_usernames = Utils::toStringVector(settings[settingsMap[SettingTypes::Usernames]].toArray());
 	m_pinnedMailservers = settings[settingsMap[SettingTypes::PinnedMailservers]].toObject();
+	m_visibleTokens = settings[settingsMap[SettingTypes::VisibleTokens]].toObject();
 
 	// defaults:
-	if(m_fleet == "")
-		m_fleet = QStringLiteral("eth.prod");
+	if(m_fleet == "") m_fleet = QStringLiteral("eth.prod");
 
 	m_initialized = true;
 
@@ -220,7 +218,8 @@ QString Settings::installationId() const
 
 void Settings::setAppearance(int value)
 {
-	if(saveSetting(SettingTypes::Appearance, m_appearance, value)){
+	if(saveSetting(SettingTypes::Appearance, m_appearance, value))
+	{
 		emit appearanceChanged();
 	}
 }
@@ -313,8 +312,7 @@ QJsonObject Settings::getNodeConfig() const
 
 	foreach(const QJsonValue& network, m_networks)
 	{
-		if(network["id"].toString() != m_currentNetwork)
-			continue;
+		if(network["id"].toString() != m_currentNetwork) continue;
 
 		nodeConfigJson["DataDir"] = network["config"]["DataDir"].toString();
 		ShhextConfig["VerifyENSURL"] = network["config"]["UpstreamConfig"]["URL"].toString();
@@ -395,6 +393,36 @@ QJsonArray Settings::networks() const
 	}
 
 	return m_networks;
+}
+
+bool Settings::tokenVisibilitySet() const
+{
+	QReadLocker locker(&lock);
+	if(!m_initialized)
+	{
+		return false;
+	}
+	return !m_visibleTokens[m_currentNetwork].isUndefined();
+}
+
+QVector<QString> Settings::visibleTokens() const
+{
+	QReadLocker locker(&lock);
+	if(!m_initialized)
+	{
+		return QVector<QString>{};
+	}
+
+	if(m_visibleTokens[m_currentNetwork].isUndefined()) return QVector<QString>{};
+	return Utils::toStringVector(m_visibleTokens[m_currentNetwork].toArray());
+}
+
+void Settings::setVisibleTokens(QVector<QString> value)
+{
+	QWriteLocker locker(&lock);
+	m_visibleTokens[m_currentNetwork] = Utils::toJsonArray(value);
+	saveSettings(SettingTypes::VisibleTokens, m_visibleTokens);
+	emit visibleTokensChanged();
 }
 
 QVector<QString> Settings::usernames() const
@@ -569,7 +597,6 @@ QString Settings::pinnedMailserver() const
 	if(!m_initialized) return QString();
 	return m_pinnedMailservers[m_fleet].toString();
 }
-
 
 void Settings::setPinnedMailserver(const QString& value)
 {

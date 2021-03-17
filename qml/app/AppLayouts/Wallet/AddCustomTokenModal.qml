@@ -1,6 +1,8 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
+import QtQuick.Dialogs 1.3
+
 import "../../../imports"
 import "../../../shared"
 import "../../../shared/status"
@@ -138,6 +140,13 @@ ModalPopup {
         height: addBtn.height
         visible: editable
 
+        MessageDialog {
+            id: changeError
+            title: ""
+            icon: StandardIcon.Critical
+            standardButtons: StandardButton.Ok
+        }
+
         StatusButton {
             id: addBtn
             anchors.top: parent.top
@@ -149,16 +158,15 @@ ModalPopup {
             enabled: validationError === "" && addressInput.text !== "" && nameInput.text !== "" && symbolInput.text !== "" && decimalsInput.text !== ""
 
             onClicked : {
-                const error = walletModel.addCustomToken(addressInput.text, nameInput.text, symbolInput.text, decimalsInput.text);
+                const error = tokenModel.add(addressInput.text, nameInput.text, symbolInput.text, decimalsInput.text);
 
                 if (error) {
                     errorSound.play()
-                    changeError.text = error
+                    changeError.text = qsTrId(error) // token-exists
                     changeError.open()
                     return
                 }
-
-                walletModel.loadCustomTokens()                
+              
                 popup.close();
             }
         }

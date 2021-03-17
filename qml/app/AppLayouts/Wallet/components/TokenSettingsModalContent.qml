@@ -1,12 +1,13 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
-
+import im.status.desktop 1.0
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
 import "../../Chat/ContactsColumn"
 import "../data/"
+import SortFilterProxyModel 0.2
 
 Item {
     id: modalBody
@@ -62,10 +63,10 @@ Item {
             }
             StatusCheckBox  {
                 id: assetCheck
-                checked: walletModel.hasAsset("0x123", symbol)
+                checked: isTokenVisible
                 anchors.right: parent.right
                 anchors.rightMargin: Style.current.smallPadding
-                onClicked: walletModel.toggleAsset(symbol)
+                onClicked: tokenModel.toggle(address, isCustom)
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -79,7 +80,7 @@ Item {
                         return contextMenu.popup(assetSymbol.x - 100, assetSymbol.y + 25)
                     }
                     assetCheck.checked = !assetCheck.checked
-                    walletModel.toggleAsset(symbol)
+                    tokenModel.toggle(address, isCustom)
                 }
                 onEntered: {
                     tokenContainer.hovered = true
@@ -101,7 +102,7 @@ Item {
                         enabled: isCustom
                         //% "Remove token"
                         text: qsTrId("remove-token")
-                        onTriggered: walletModel.removeCustomToken(address)
+                        onTriggered: tokenModel.remove(address)
                     }
                 }
             }
@@ -127,8 +128,21 @@ Item {
             id: tokenList
             height: childrenRect.height
 
+            SortFilterProxyModel {
+                id: customTokensModel
+                sourceModel: tokenModel
+                filters: [
+                    ValueFilter {
+                        enabled: true
+                        roleName: "isCustom"
+                        value: true
+                    }
+                ]
+            }
+
             Column {
                 id: customTokens
+                visible: customTokensModel.count > 0
                 spacing: Style.current.halfPadding
 
                 StyledText {
@@ -142,18 +156,23 @@ Item {
 
                 Repeater {
                     id: customTokensRepeater
-                    model: walletModel.customTokenList
+                    model: customTokensModel
                     delegate: tokenComponent
                     anchors.top: customLbl.bottom
                     anchors.topMargin: Style.current.smallPadding
                 }
+            }
 
-                Connections {
-                    target: walletModel.customTokenList
-                    onTokensLoaded: {
-                        customLbl.visible = cnt > 0
+            SortFilterProxyModel {
+                id: defaultTokensModel
+                sourceModel: tokenModel
+                filters: [
+                    ValueFilter {
+                        enabled: true
+                        roleName: "isCustom"
+                        value: false
                     }
-                }
+                ]
             }
 
             Column {
@@ -172,7 +191,7 @@ Item {
                 }
 
                 Repeater {
-                    model: walletModel.defaultTokenList
+                    model: defaultTokensModel
                     delegate: tokenComponent
                     anchors.top: defaultLbl.bottom
                     anchors.topMargin: Style.current.smallPadding

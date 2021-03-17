@@ -121,6 +121,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/chat)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/ens)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/login)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/profile)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/wallet)
 
 set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
@@ -152,6 +153,7 @@ target_link_libraries(status-cpp
         ens
         login
         profile
+        wallet
         OpenSSL::OpenSSL
         # std::filesystem
         status

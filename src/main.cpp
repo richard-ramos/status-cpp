@@ -9,17 +9,19 @@
 #include "devices-model.hpp"
 #include "ens-model.hpp"
 #include "ens-utils.hpp"
+#include "ipfs-image-provider.hpp"
 #include "libstatus.h"
 #include "login-model.hpp"
 #include "logs.hpp"
-#include "mailserver-model.hpp"
 #include "mailserver-cycle.hpp"
+#include "mailserver-model.hpp"
 #include "messages-model.hpp"
 #include "onboarding-model.hpp"
 #include "settings.hpp"
 #include "status.hpp"
 #include "stickerpack.hpp"
 #include "stickers-model.hpp"
+#include "token-model.hpp"
 #include "utils.hpp"
 #include <QApplication>
 #include <QDateTime>
@@ -43,7 +45,6 @@
 #include <iostream>
 #include <openssl/ssl.h>
 #include <string>
-#include "ipfs-image-provider.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -121,7 +122,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-
 	IPFSAsyncImageProvider* imageProvider = new IPFSAsyncImageProvider(Constants::cachePath("/ipfs"), Constants::StatusIPFS);
 	engine.addImageProvider("ipfs-cache", imageProvider);
 
@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<DevicesModel>("im.status.desktop", 1, 0, "DevicesModel");
 	qmlRegisterType<StickerPacksModel>("im.status.desktop", 1, 0, "StickerPacksModel");
 	qmlRegisterType<MailserverModel>("im.status.desktop", 1, 0, "MailserverModel");
+	qmlRegisterType<TokenModel>("im.status.desktop", 1, 0, "TokenModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
@@ -166,6 +167,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<Mailserver>("Mailserver");
 	qRegisterMetaType<CustomNetwork>("CustomNetwork");
 	qRegisterMetaType<Topic>("Topic");
+	qRegisterMetaType<Token>("Token");
 	qRegisterMetaType<ChatMember>("ChatMember");
 
 	qRegisterMetaType<ChatType>("ChatType");

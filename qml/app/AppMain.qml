@@ -323,6 +323,10 @@ RowLayout {
         id: stickerPacksModel
     }
 
+    TokenModel {
+        id: tokenModel
+    }
+
     TabBar {
         id: tabBar
         width: 78
@@ -499,7 +503,6 @@ RowLayout {
             isActive: sLayout.children[sLayout.currentIndex] === chatLayoutContainer
         }
 
-
         WalletLayout {
             id: walletLayoutContainer
             Layout.fillWidth: true
@@ -507,6 +510,11 @@ RowLayout {
             Layout.fillHeight: true
         }
 
+        Loader {
+            id: browserLayoutContainer
+            sourceComponent: Item {}
+        }
+/*
         Component {
             id: browserLayoutComponent
             BrowserLayout { }
@@ -525,7 +533,7 @@ RowLayout {
             property var _walletModel: walletModel
             property var _utilsModel: utilsModel
             property var _web3Provider: web3Provider
-        }
+        }*/
 
         Loader {
             id: timelineLayoutContainer

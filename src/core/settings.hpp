@@ -107,6 +107,7 @@ public:
 	QString signingPhrase() const;
 	QString installationId() const;
 	QString pinnedMailserver() const;
+	QVector<QString> visibleTokens() const;
 
 	void setCurrency(const QString& value);
 	void setPreferredName(const QString& value);
@@ -118,8 +119,10 @@ public:
 	void setAppearance(int value);
 	void setUsernames(QVector<QString> value);
 	void setPinnedMailserver(const QString& value);
+	void setVisibleTokens(QVector<QString> value);
 
 	QJsonObject getNodeConfig() const;
+	bool tokenVisibilitySet() const;
 
 	void addRecentSticker(int packId, QString stickerHash);
 	void removeRecentStickerPack(int packId);
@@ -137,6 +140,7 @@ signals:
 	void installedStickerPacksChanged();
 	void recentStickersChanged();
 	void pinnedMailserverChanged();
+	void visibleTokensChanged();
 
 private:
 	static Settings* theInstance;
@@ -158,6 +162,7 @@ private:
 	QJsonObject m_installedStickers;
 	QJsonObject m_pinnedMailservers;
 	QJsonArray m_recentStickers;
+	QJsonObject m_visibleTokens;
 
 	int m_appearance;
 
