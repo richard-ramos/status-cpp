@@ -30,7 +30,6 @@ MailserverCycle::MailserverCycle(QObject* parent)
 	: QThread(parent)
 {
 	QObject::connect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
-	QObject::connect(this, &MailserverCycle::checkTimeout, this, &MailserverCycle::timeoutConnection);
 }
 
 MailserverCycle::~MailserverCycle()
@@ -85,10 +84,12 @@ void MailserverCycle::connect(QString enode)
 
 		// TODO: try to reconnect 3 times before switching mailserver
 
-		QtConcurrent::run([=]() {
+		auto future = QtConcurrent::run([=]() {
 			QThread::sleep(10); // Timeout connection attempt at 10 seconds
-			emit checkTimeout(enode);
 		});
+		auto watcher = new QFutureWatcher<void>;
+		QObject::connect(watcher, &QFutureWatcher<void>::finished, this, [&]() { this->timeoutConnection(enode); });
+		watcher->setFuture(future);
 	}
 
 	if(mailserverConnected)
@@ -416,6 +417,7 @@ void MailserverCycle::initialMailserverRequest()
 {
 	qDebug() << "Initial request";
 
+	// Disconnect signal because to avoid requesting the same messages again
 	QObject::disconnect(this, &MailserverCycle::mailserverAvailable, this, &MailserverCycle::initialMailserverRequest);
 
 	QVector<Topic> mailserverTopics = getMailserverTopics();

@@ -83,7 +83,7 @@ QVariant StickerPacksModel::data(const QModelIndex& index, int role) const
 
 void StickerPacksModel::loadStickerPacks()
 {
-	QtConcurrent::run([=] {
+	QtConcurrent::run([&] {
 		m_installedStickersLock.lockForWrite();
 		foreach(const QString& packId, Settings::instance()->installedStickerPacks().keys())
 		{
@@ -102,6 +102,8 @@ void StickerPacksModel::loadStickerPacks()
 		for(int i = 0; i < numPacks; i++)
 		{
 			StickerPack* stickerPack = StickerPackUtils::getPackData(i);
+			if(stickerPack == nullptr) continue;
+			
 			stickerPack->loadContent(manager);
 			stickerPack->moveToThread(QApplication::instance()->thread());
 			emit stickerPackLoaded(stickerPack);

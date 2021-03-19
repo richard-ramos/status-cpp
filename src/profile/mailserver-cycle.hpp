@@ -76,7 +76,6 @@ signals:
 	void loopStopped();
 	void mailserverAvailable();
 	void requestSent();
-	void checkTimeout(QString enode);
 
 protected:
 	void run() override;

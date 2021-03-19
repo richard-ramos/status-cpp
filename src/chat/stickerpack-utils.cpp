@@ -45,6 +45,8 @@ StickerPack* StickerPackUtils::getPackData(int packId)
 	bool ok = false;
 	QString data = response["result"].toString().right(response["result"].toString().size() - 2);
 
+	if(data.isEmpty()) return nullptr; // TODO: throw exception or std::optional?
+
 	QStringList category;
 	int category_idx = data.mid(0, 64).toInt(&ok, 16);
 	int category_cnt = data.mid(category_idx * 2, 64).toInt(&ok, 16);
@@ -62,6 +64,9 @@ StickerPack* StickerPackUtils::getPackData(int packId)
 
 	int contentHash_idx = data.mid(320, 64).toInt(&ok, 16);
 	int contentHash_length = data.mid(contentHash_idx * 2, 64).toInt(&ok, 16);
+
+	qCritical() << data;
+
 	QString contentHash = Utils::decodeHash(data.mid(contentHash_idx * 2 + 64, contentHash_length * 2));
 
 	return new StickerPack(packId, category, owner, mintable, timestamp, price, contentHash);
