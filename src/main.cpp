@@ -45,6 +45,8 @@
 #include <iostream>
 #include <openssl/ssl.h>
 #include <string>
+#include "wallet-model.hpp"
+#include "wallet.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -151,6 +153,7 @@ int main(int argc, char* argv[])
 	qmlRegisterType<StickerPacksModel>("im.status.desktop", 1, 0, "StickerPacksModel");
 	qmlRegisterType<MailserverModel>("im.status.desktop", 1, 0, "MailserverModel");
 	qmlRegisterType<TokenModel>("im.status.desktop", 1, 0, "TokenModel");
+	qmlRegisterType<Wallet::WalletModel>("im.status.desktop", 1, 0, "WalletModel");
 
 	qmlRegisterUncreatableType<Chat>("im.status.desktop", 1, 0, "Chat", "Chat class uncreatable");
 	qmlRegisterUncreatableType<Contact>("im.status.desktop", 1, 0, "Contact", "Contact class uncreatable");
@@ -158,6 +161,8 @@ int main(int argc, char* argv[])
 
 	qRegisterMetaType<Contact*>("Contact *");
 	qRegisterMetaType<Message*>("Message *");
+	qRegisterMetaType<Message*>("Wallet *");
+
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
 	qRegisterMetaType<StickerPack*>("StickerPack *");

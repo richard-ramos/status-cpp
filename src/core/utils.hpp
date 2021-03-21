@@ -24,8 +24,8 @@ public:
 	Q_INVOKABLE static QString plainText(const QString& value);
 	Q_INVOKABLE static QString wei2Token(QString input, int decimals = 18);
 
-	static QString jsonToStr(QJsonObject& obj);
-	static QString jsonToStr(QJsonArray& arr);
+	static QString jsonToStr(QJsonObject obj);
+	static QString jsonToStr(QJsonArray arr);
 	static QJsonArray toJsonArray(const QVector<QString>& value);
 	static QVector<QString> toStringVector(const QJsonArray& arr);
 };

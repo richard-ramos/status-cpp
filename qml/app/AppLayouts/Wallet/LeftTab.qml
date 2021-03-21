@@ -196,8 +196,7 @@ Item {
                 }
             }
 
-            model: walletModel.accounts
-            //        model: exampleWalletModel
+            model: walletModel
         }
     }
 }

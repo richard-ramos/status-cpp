@@ -141,7 +141,7 @@ ModalPopup {
                 return loading = false
             }
 
-            const error = walletModel.addAccountsFromSeed(accountSeedInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
+            const error = walletModel.addAccountFromSeed(accountSeedInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
             loading = false
             if (error) {
                 errorSound.play()

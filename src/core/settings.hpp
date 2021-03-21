@@ -25,6 +25,7 @@ class Settings : public QObject
 	Q_PROPERTY(QJsonObject InstalledStickerPacks READ installedStickerPacks WRITE setInstalledStickerPacks NOTIFY installedStickerPacksChanged)
 	Q_PROPERTY(QJsonArray RecentStickers READ recentStickers WRITE setRecentStickers NOTIFY recentStickersChanged)
 	Q_PROPERTY(QString PinnedMailserver READ pinnedMailserver WRITE setPinnedMailserver NOTIFY pinnedMailserverChanged);
+
 public:
 	static Settings* instance();
 	~Settings();
@@ -108,6 +109,7 @@ public:
 	QString installationId() const;
 	QString pinnedMailserver() const;
 	QVector<QString> visibleTokens() const;
+	int latestDerivedPath() const;
 
 	void setCurrency(const QString& value);
 	void setPreferredName(const QString& value);
@@ -120,6 +122,7 @@ public:
 	void setUsernames(QVector<QString> value);
 	void setPinnedMailserver(const QString& value);
 	void setVisibleTokens(QVector<QString> value);
+	void setLatestDerivedPath(int value);
 
 	QJsonObject getNodeConfig() const;
 	bool tokenVisibilitySet() const;
@@ -141,6 +144,7 @@ signals:
 	void recentStickersChanged();
 	void pinnedMailserverChanged();
 	void visibleTokensChanged();
+	void latestDerivedPathChanged();
 
 private:
 	static Settings* theInstance;
@@ -163,21 +167,19 @@ private:
 	QJsonObject m_pinnedMailservers;
 	QJsonArray m_recentStickers;
 	QJsonObject m_visibleTokens;
-
+	int m_latestDerivedPath;
 	int m_appearance;
 
 	mutable QReadWriteLock lock;
 
-
 	void saveSettings(SettingTypes setting, const QJsonArray& value);
 	void saveSettings(SettingTypes setting, const QJsonObject& value);
 	void saveSettings(SettingTypes setting, const QVector<QString>& value);
-	
+
 	bool saveSetting(SettingTypes setting, QString& member, const QString& value);
 	bool saveSetting(SettingTypes setting, int& member, const int& value);
 
 	void save(const QJsonArray& input);
 
 	QTranslator* m_translator;
-
 };

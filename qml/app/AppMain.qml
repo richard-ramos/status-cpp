@@ -327,6 +327,10 @@ RowLayout {
         id: tokenModel
     }
 
+    WalletModel {
+        id: walletModel
+    }
+
     TabBar {
         id: tabBar
         width: 78

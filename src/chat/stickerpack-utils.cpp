@@ -65,8 +65,6 @@ StickerPack* StickerPackUtils::getPackData(int packId)
 	int contentHash_idx = data.mid(320, 64).toInt(&ok, 16);
 	int contentHash_length = data.mid(contentHash_idx * 2, 64).toInt(&ok, 16);
 
-	qCritical() << data;
-
 	QString contentHash = Utils::decodeHash(data.mid(contentHash_idx * 2 + 64, contentHash_length * 2));
 
 	return new StickerPack(packId, category, owner, mintable, timestamp, price, contentHash);

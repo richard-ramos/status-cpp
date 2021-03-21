@@ -66,6 +66,7 @@ void Settings::init(QString loginError)
 	m_usernames = Utils::toStringVector(settings[settingsMap[SettingTypes::Usernames]].toArray());
 	m_pinnedMailservers = settings[settingsMap[SettingTypes::PinnedMailservers]].toObject();
 	m_visibleTokens = settings[settingsMap[SettingTypes::VisibleTokens]].toObject();
+	m_latestDerivedPath = settings[settingsMap[SettingTypes::LatestDerivedPath]].toInt();
 
 	// defaults:
 	if(m_fleet == "") m_fleet = QStringLiteral("eth.prod");
@@ -224,6 +225,14 @@ void Settings::setAppearance(int value)
 	}
 }
 
+void Settings::setLatestDerivedPath(int value)
+{
+	if(saveSetting(SettingTypes::LatestDerivedPath, m_appearance, value))
+	{
+		emit latestDerivedPathChanged();
+	}
+}
+
 int Settings::appearance() const
 {
 	QReadLocker locker(&lock);
@@ -233,6 +242,17 @@ int Settings::appearance() const
 	}
 
 	return m_appearance;
+}
+
+int Settings::latestDerivedPath() const
+{
+	QReadLocker locker(&lock);
+	if(!m_initialized)
+	{
+		return 0;
+	}
+
+	return m_latestDerivedPath;
 }
 
 void Settings::removeMnemonic()
