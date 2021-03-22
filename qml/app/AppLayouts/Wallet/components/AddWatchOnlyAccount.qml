@@ -45,6 +45,10 @@ ModalPopup {
         addressInput.forceActiveFocus(Qt.MouseFocusReason)
     }
 
+    onClosed: {
+        destroy();
+    }
+
     Input {
         id: addressInput
         // TODO add QR code reader for the address
@@ -75,6 +79,22 @@ ModalPopup {
         anchors.right: parent.right
     }
 
+    Item {
+        Connections {
+            target: walletModel
+            onAccountCreated: {
+                if(success){
+                    popup.close();
+                } else {
+                    loading = false;
+                    errorSound.play()
+                    accountError.text = qsTr("Could not add this watch-only account");
+                    return accountError.open();
+                }
+            }
+        }
+    }
+
     footer: StatusButton {
         anchors.top: parent.top
         anchors.right: parent.right
@@ -101,15 +121,8 @@ ModalPopup {
                 return loading = false
             }
 
-            const error = walletModel.addWatchOnlyAccount(addressInput.text, accountNameInput.text, accountColorInput.selectedColor);
+            walletModel.addWatchOnlyAccount(addressInput.text, accountNameInput.text, accountColorInput.selectedColor);
             loading = false
-            if (error) {
-                errorSound.play()
-                accountError.text = error
-                return accountError.open()
-            }
-
-            popup.close();
         }
     }
 }

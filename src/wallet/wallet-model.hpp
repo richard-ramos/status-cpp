@@ -23,7 +23,8 @@ public:
 		Name = Qt::UserRole + 1,
 		Address = Qt::UserRole + 2,
 		Color = Qt::UserRole + 3,
-		WalletType = Qt::UserRole + 4
+		WalletType = Qt::UserRole + 4,
+		Path = Qt::UserRole + 5
 	};
 
 	explicit WalletModel(QObject* parent = nullptr);
@@ -45,6 +46,9 @@ public:
 
 signals:
 	void walletLoaded(Wallet* wallet);
+	void invalidPassword();
+	void accountCreated(bool success, QString message = "");
+
 
 private:
 	void loadWallets();

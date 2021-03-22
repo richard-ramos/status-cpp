@@ -47,6 +47,9 @@ Item {
         if (selectedAccount.address) {
             textSelectedAddress.text = selectedAccount.address  + " • "
         }
+
+        // TODO:
+        /*
         if (selectedAccount.fiatBalance) {
             textSelectedAddressFiatBalance.text = selectedAccount.fiatBalance + " " + currency.toUpperCase()
         }
@@ -56,19 +59,21 @@ Item {
                 //% "Cannot find asset '%1'. Ensure this asset has been added to the token list."
                 console.warn(qsTrId("cannot-find-asset---1---ensure-this-asset-has-been-added-to-the-token-list-").arg(showBalanceForAssetSymbol))
             }
-        }
+        }*/
         if (!selectedAccount.type) {
             selectedAccount.type = RecipientSelector.Type.Account
         }
         validate()
     }
 
+    // TODO:
+    /*
     onAssetFoundChanged: {
         if (!assetFound) {
             return
         }
         txtAssetBalance.text = "Balance: " + (parseFloat(assetFound.value) === 0.0 ? "0" : Utils.stripTrailingZeros(assetFound.value)) + " " + assetFound.symbol
-    }
+    }*/
 
     StyledText {
         id: txtAssetBalance
@@ -162,7 +167,8 @@ Item {
 
             Component.onCompleted: {
                 if (!root.selectedAccount && isFirstItem) {
-                    root.selectedAccount = { address, name, iconColor, assets, fiatBalance }
+                    // TODO:
+                    root.selectedAccount = { address, name, iconColor, /* assets, fiatBalance*/ }
                 }
             }
 
@@ -259,7 +265,8 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: itemContainer
                 onClicked: {
-                    root.selectedAccount = { address, name, iconColor, assets, fiatBalance }
+                    // TODO:
+                    root.selectedAccount = { address, name, iconColor /*, assets, fiatBalance*/ }
                     select.menu.close()
                 }
             }

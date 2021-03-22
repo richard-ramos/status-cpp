@@ -45,6 +45,10 @@ ModalPopup {
         passwordInput.forceActiveFocus(Qt.MouseFocusReason)
     }
 
+    onClosed: {
+        destroy();
+    }
+
     Input {
         id: passwordInput
         //% "Enter your password…"
@@ -76,6 +80,28 @@ ModalPopup {
         anchors.right: parent.right
     }
 
+    Item {
+        Connections {
+            target: walletModel
+            onInvalidPassword: {
+                loading = false;
+                errorSound.play()
+                accountError.text = qsTr("Invalid password");
+                return accountError.open();
+            }
+            onAccountCreated: {
+                if(success){
+                    popup.close();
+                } else {
+                    loading = false;
+                    errorSound.play()
+                    accountError.text = qsTr("Could not generate an account");
+                    return accountError.open();
+                }
+            }
+        }
+    }
+
     footer: StatusButton {
         anchors.top: parent.top
         anchors.right: parent.right
@@ -102,15 +128,8 @@ ModalPopup {
                 return loading = false
             }
 
-            const error = walletModel.generateNewAccount(passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
+            walletModel.generateNewAccount(passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
             loading = false
-            if (error) {
-                errorSound.play()
-                accountError.text = error
-                return accountError.open()
-            }
-
-            popup.close();
         }
     }
 }

@@ -18,17 +18,24 @@ StatusRoundButton {
         newAccountMenu.popup(x, btnAdd.icon.height + 10)
     }
 
-    GenerateAccountModal {
+    Component {
         id: generateAccountModal
+        GenerateAccountModal { }
     }
-    AddAccountWithSeed {
+
+    Component {
         id: addAccountWithSeedModal
+        AddAccountWithSeed { }
     }
-    AddAccountWithPrivateKey {
+    
+    Component {
         id: addAccountWithPrivateKeydModal
+        AddAccountWithPrivateKey { }
     }
-    AddWatchOnlyAccount {
+
+    Component {
         id: addWatchOnlyAccountModal
+        AddWatchOnlyAccount { }
     }
 
     PopupMenu {
@@ -41,7 +48,7 @@ StatusRoundButton {
             icon.width: 19
             icon.height: 19
             onTriggered: {
-                generateAccountModal.open()
+                openPopup(generateAccountModal)
             }
         }
         Action {
@@ -51,7 +58,7 @@ StatusRoundButton {
             icon.width: 19
             icon.height: 19
             onTriggered: {
-                addWatchOnlyAccountModal.open()
+                openPopup(addWatchOnlyAccountModal)
             }
         }
         Action {
@@ -61,7 +68,7 @@ StatusRoundButton {
             icon.width: 19
             icon.height: 19
             onTriggered: {
-                addAccountWithSeedModal.open()
+                openPopup(addAccountWithSeedModal)
             }
         }
         Action {
@@ -71,7 +78,7 @@ StatusRoundButton {
             icon.width: 19
             icon.height: 19
             onTriggered: {
-                addAccountWithPrivateKeydModal.open()
+                openPopup(addAccountWithPrivateKeydModal)
             }
         }
         onAboutToHide: {

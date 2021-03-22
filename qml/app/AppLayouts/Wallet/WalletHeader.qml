@@ -8,8 +8,11 @@ import "./components"
 import im.status.desktop 1.0
 
 Item {
-    property var currentAccount: walletModel.currentAccount
     property var changeSelectedAccount
+
+    property string address: "0x"
+    property string name: "-"
+    property string iconColor: "#ff0000";
 
     id: walletHeader
     height: walletAddress.y + walletAddress.height
@@ -24,7 +27,7 @@ Item {
 
     StyledText {
         id: title
-        text: currentAccount.name
+        text: walletHeader.name
         anchors.top: parent.top
         anchors.topMargin: 56
         anchors.left: parent.left
@@ -37,7 +40,7 @@ Item {
         id: separatorDot
         width: 8
         height: 8
-        color: currentAccount.iconColor
+        color: iconColor
         anchors.top: title.verticalCenter
         anchors.topMargin: -3
         anchors.left: title.right
@@ -56,7 +59,7 @@ Item {
 
     StatusExpandableAddress {
         id: walletAddress
-        address: currentAccount.address
+        address: walletHeader.address
         anchors.top: title.bottom
         anchors.left: title.left
         addressWidth: 180
@@ -66,11 +69,16 @@ Item {
 
     Component {
         id: receiveModalComponent
-        ReceiveModal{
+        ReceiveModal {
             onClosed: {
                 destroy();
             }
-            selectedAccount: currentAccount
+            selectedAccount:  ({
+                "address": walletHeader.address,
+                "name": walletHeader.name,
+                "iconColor": walletHeader.iconColor,
+                /* TODO: assets, fiatBalance*/
+            })
         }
     }
 

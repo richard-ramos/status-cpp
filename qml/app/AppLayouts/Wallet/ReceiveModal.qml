@@ -2,6 +2,7 @@ import QtQuick 2.13
 import QtQuick.Controls 2.13
 import "../../../imports"
 import "../../../shared"
+import im.status.desktop 1.0
 
 ModalPopup {
     property alias selectedAccount: accountSelector.selectedAccount
@@ -40,7 +41,7 @@ ModalPopup {
         id: accountSelector
         label: ""
         showAccountDetails: false
-        accounts: walletModel.accounts
+        accounts: walletModel
         currency: walletModel.defaultCurrency
         anchors.top: qrCodeBox.bottom
         anchors.topMargin: Style.current.padding
@@ -50,7 +51,7 @@ ModalPopup {
         dropdownAlignment: Select.MenuAlignment.Center
         onSelectedAccountChanged: {
             if (selectedAccount.address) {
-                qrCodeImage.source = profileModel.qrCode(selectedAccount.address)
+                qrCodeImage.source = StatusUtils.generateQRCode(selectedAccount.address)
                 txtWalletAddress.text = selectedAccount.address
             }
         }

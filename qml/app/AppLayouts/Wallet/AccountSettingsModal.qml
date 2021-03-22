@@ -7,7 +7,6 @@ import "../../../shared"
 import "../../../shared/status"
 
 ModalPopup {
-    property var currentAccount: walletModel.currentAccount
     property var changeSelectedAccount
     id: popup
     // TODO add icon when we have that feature
@@ -39,13 +38,13 @@ ModalPopup {
         placeholderText: qsTrId("enter-an-account-name...")
         //% "Account name"
         label: qsTrId("account-name")
-        text: currentAccount.name
+        text: name
         validationError: popup.accountNameValidationError
     }
 
     StatusWalletColorSelect {
         id: accountColorInput
-        selectedColor: currentAccount.iconColor.toUpperCase()
+        selectedColor: iconColor.toUpperCase()
         model: Constants.accountColors
         anchors.top: accountNameInput.bottom
         anchors.topMargin: marginBetweenInputs
@@ -59,7 +58,7 @@ ModalPopup {
         label: qsTrId("type")
         text: {
             var result = ""
-            switch (currentAccount.walletType) {
+            switch (walletType) {
                 //% "Watch-only"
                 case Constants.watchWalletType: result = qsTrId("watch-only"); break;
                 case Constants.keyWalletType:
@@ -78,7 +77,7 @@ ModalPopup {
         id: addressText
         //% "Wallet address"
         label: qsTrId("wallet-address")
-        text: currentAccount.address
+        text: address
         fontFamily: Style.current.fontHexRegular.name
         anchors.top: typeText.bottom
         anchors.topMargin: marginBetweenInputs
@@ -86,17 +85,17 @@ ModalPopup {
 
     TextWithLabel {
         id: pathText
-        visible: currentAccount.walletType !== Constants.watchWalletType && currentAccount.walletType !== Constants.keyWalletType
+        visible: walletType !== Constants.watchWalletType && walletType !== Constants.keyWalletType
         //% "Derivation path"
         label: qsTrId("derivation-path")
-        text: currentAccount.path
+        text: path
         anchors.top: addressText.bottom
         anchors.topMargin: marginBetweenInputs
     }
 
     TextWithLabel {
         id: storageText
-        visible: currentAccount.walletType !== Constants.watchWalletType
+        visible: walletType !== Constants.watchWalletType
         //% "Storage"
         label: qsTrId("storage")
         //% "This device"
@@ -110,7 +109,7 @@ ModalPopup {
         height: saveBtn.height
 
         StatusButton {
-            visible:  currentAccount.walletType === Constants.watchWalletType
+            visible:  walletType === Constants.watchWalletType
             anchors.top: parent.top
             anchors.right: saveBtn.left
             anchors.rightMargin: Style.current.padding

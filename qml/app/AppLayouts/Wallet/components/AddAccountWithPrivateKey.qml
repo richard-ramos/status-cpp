@@ -59,6 +59,10 @@ ModalPopup {
         passwordInput.forceActiveFocus(Qt.MouseFocusReason)
     }
 
+    onClosed: {
+        destroy();
+    }
+
     Input {
         id: passwordInput
         //% "Enter your password…"
@@ -102,6 +106,28 @@ ModalPopup {
         anchors.right: parent.right
     }
 
+    Item {
+        Connections {
+            target: walletModel
+            onInvalidPassword: {
+                loading = false;
+                errorSound.play()
+                accountError.text = qsTr("Invalid password");
+                return accountError.open();
+            }
+            onAccountCreated: {
+                if(success){
+                    popup.close();
+                } else {
+                    loading = false;
+                    errorSound.play()
+                    accountError.text = qsTr("Could not store this private key");
+                    return accountError.open();
+                }
+            }
+        }
+    }
+
     footer: StatusButton {
         anchors.top: parent.top
         anchors.right: parent.right
@@ -127,16 +153,8 @@ ModalPopup {
                 return loading = false
             }
 
-            const error = walletModel.addAccountFromPrivateKey(accountPKeyInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
-            
+            walletModel.addAccountFromPrivateKey(accountPKeyInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
             loading = false
-            if (error) {
-                errorSound.play()
-                accountError.text = error
-                return accountError.open()
-            }
-
-            popup.close();
         }
     }
 }

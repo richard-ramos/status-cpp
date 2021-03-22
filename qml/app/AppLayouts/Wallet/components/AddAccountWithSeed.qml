@@ -15,12 +15,6 @@ ModalPopup {
     property string accountNameValidationError: ""
     property bool loading: false
 
-    function reset() {
-        passwordInput.text = ""
-        accountNameInput.text = ""
-        accountSeedInput.text = ""
-    }
-
     function validate() {
         if (passwordInput.text === "") {
             //% "You need to enter a password"
@@ -61,6 +55,10 @@ ModalPopup {
         accountNameValidationError = "";
         accountColorInput.selectedColor = Constants.accountColors[Math.floor(Math.random() * Constants.accountColors.length)]
         passwordInput.forceActiveFocus(Qt.MouseFocusReason)
+    }
+
+    onClosed: {
+        destroy();
     }
 
     //% "Add account with a seed phrase"
@@ -115,6 +113,28 @@ ModalPopup {
         anchors.right: parent.right
     }
 
+    Item {
+        Connections {
+            target: walletModel
+            onInvalidPassword: {
+                loading = false;
+                errorSound.play()
+                accountError.text = qsTr("Invalid password");
+                return accountError.open();
+            }
+            onAccountCreated: {
+                if(success){
+                    popup.close();
+                } else {
+                    loading = false;
+                    errorSound.play()
+                    accountError.text = qsTr("Could not generate an account");
+                    return accountError.open();
+                }
+            }
+        }
+    }
+
     footer: StatusButton {
         anchors.top: parent.top
         anchors.right: parent.right
@@ -141,15 +161,8 @@ ModalPopup {
                 return loading = false
             }
 
-            const error = walletModel.addAccountFromSeed(accountSeedInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
+            walletModel.addAccountFromSeed(accountSeedInput.text, passwordInput.text, accountNameInput.text, accountColorInput.selectedColor)
             loading = false
-            if (error) {
-                errorSound.play()
-                accountError.text = error
-                return accountError.open()
-            }
-            popup.reset()
-            popup.close();
         }
     }
 }

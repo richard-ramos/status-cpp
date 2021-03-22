@@ -36,6 +36,7 @@ QHash<int, QByteArray> WalletModel::roleNames() const
 	roles[Address] = "address";
 	roles[Color] = "iconColor";
 	roles[WalletType] = "walletType";
+	roles[Path] = "path";
 	return roles;
 }
 
@@ -56,6 +57,7 @@ QVariant WalletModel::data(const QModelIndex& index, int role) const
 	switch(role)
 	{
 	case Name: return QVariant(t->get_name());
+	case Path: return QVariant(t->get_path());
 	case Address: return QVariant(t->get_address());
 	case Color: return QVariant(t->get_iconColor());
 	case WalletType: return QVariant(t->get_walletType());
@@ -68,7 +70,6 @@ void WalletModel::loadWallets()
 {
 	QtConcurrent::run([=] {
 		const auto response = Status::instance()->callPrivateRPC("accounts_getAccounts", QJsonArray{}.toVariantList()).toJsonObject();
-
 		foreach(QJsonValue accountJson, response["result"].toArray())
 		{
 			const QJsonObject accountObj = accountJson.toObject();
@@ -110,13 +111,15 @@ void WalletModel::addWatchOnlyAccount(QString address, QString name, QString col
 {
 	const QJsonObject response = saveAccountsRPCCall(name, color, address, "", Watch, Constants::PathDefaultWallet);
 
-	if(!response["error"].isUndefined())
+	if(Status::isError(response))
 	{
-		// TODO: throw exception
+		qCritical() << Status::errorMessage(response);
+		emit accountCreated(false, Status::errorMessage(response));
+		return;
 	}
 
-	Wallet* wallet = new Wallet(name, address, Watch, color);
-	emit walletLoaded(wallet);
+	emit walletLoaded(new Wallet(name, address, Watch, color, Constants::PathDefaultWallet));
+	emit accountCreated(true);
 }
 
 QString WalletModel::getDefaultAccount()
@@ -143,39 +146,62 @@ void WalletModel::addAccountFromSeed(QString seed, QString password, QString nam
 
 	if(!validatePassword(hashedPassword))
 	{
-		qCritical() << "INVALID PASSWORD";
+		emit invalidPassword();
 		return;
 	}
-
-	// TODO: error handling
 
 	const char* importResult =
 		MultiAccountImportMnemonic(Utils::jsonToStr(QJsonObject{{"mnemonicPhrase", seed}, {"Bip39Passphrase", ""}}).toUtf8().data());
 
 	QJsonObject importResultObj = QJsonDocument::fromJson(importResult).object();
 
+	if(Status::isError(importResultObj))
+	{
+		qCritical() << Status::errorMessage(importResultObj);
+		emit accountCreated(false, Status::errorMessage(importResultObj));
+		return;
+	}
+
 	const char* deriveResult = MultiAccountDeriveAddresses(
 		Utils::jsonToStr(QJsonObject{{"accountID", importResultObj["id"]}, {"paths", QJsonArray{Constants::PathDefaultWallet}}}).toUtf8().data());
 	QJsonObject deriveResultObj = QJsonDocument::fromJson(deriveResult).object();
 
-	MultiAccountStoreDerivedAccounts(
+	if(Status::isError(deriveResultObj))
+	{
+		qCritical() << Status::errorMessage(deriveResultObj);
+		emit accountCreated(false, Status::errorMessage(deriveResultObj));
+		return;
+	}
+
+	const char* storeDerivedResult = MultiAccountStoreDerivedAccounts(
 		Utils::jsonToStr(
 			QJsonObject{{"accountID", importResultObj["id"]}, {"paths", QJsonArray{Constants::PathDefaultWallet}}, {"password", hashedPassword}})
 			.toUtf8()
 			.data());
 
+	QJsonObject storeDerivedResultObj = QJsonDocument::fromJson(storeDerivedResult).object();
+
+	if(Status::isError(storeDerivedResultObj))
+	{
+		qCritical() << Status::errorMessage(storeDerivedResultObj);
+		emit accountCreated(false, Status::errorMessage(storeDerivedResultObj));
+		return;
+	}
+
 	QString publicKey = deriveResultObj[Constants::PathDefaultWallet].toObject()["publicKey"].toString();
 	QString address = deriveResultObj[Constants::PathDefaultWallet].toObject()["address"].toString();
 
-	const QJsonObject response = saveAccountsRPCCall(name, color, address, publicKey, Key, Constants::PathDefaultWallet);
+	const QJsonObject saveAccountsResponseObj = saveAccountsRPCCall(name, color, address, publicKey, Seed, Constants::PathDefaultWallet);
 
-	if(!response["error"].isUndefined())
+	if(Status::isError(saveAccountsResponseObj))
 	{
-		// TODO: throw exception
+		qCritical() << Status::errorMessage(saveAccountsResponseObj);
+		emit accountCreated(false, Status::errorMessage(saveAccountsResponseObj));
+		return;
 	}
 
-	Wallet* wallet = new Wallet(name, address, Key, color);
-	emit walletLoaded(wallet);
+	emit walletLoaded(new Wallet(name, address, Seed, color, Constants::PathDefaultWallet));
+	emit accountCreated(true);
 }
 
 void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password, QString name, QString color)
@@ -184,31 +210,45 @@ void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password,
 
 	if(!validatePassword(hashedPassword))
 	{
-		qCritical() << "INVALID PASSWORD";
+		emit invalidPassword();
 		return;
 	}
 
-	// TODO: error handling
-
 	const char* importResult = MultiAccountImportPrivateKey(Utils::jsonToStr(QJsonObject{{"privateKey", privateKey}}).toUtf8().data());
 	QJsonObject importResultObj = QJsonDocument::fromJson(importResult).object();
+
+	if(Status::isError(importResultObj))
+	{
+		qCritical() << Status::errorMessage(importResultObj);
+		emit accountCreated(false, Status::errorMessage(importResultObj));
+		return;
+	}
 
 	const char* storeResult =
 		MultiAccountStoreAccount(Utils::jsonToStr(QJsonObject{{"accountID", importResultObj["id"]}, {"password", hashedPassword}}).toUtf8().data());
 	QJsonObject storeResultObj = QJsonDocument::fromJson(storeResult).object();
 
+	if(Status::isError(storeResultObj))
+	{
+		qCritical() << Status::errorMessage(storeResultObj);
+		emit accountCreated(false, Status::errorMessage(storeResultObj));
+		return;
+	}
+
 	QString publicKey = importResultObj["publicKey"].toString();
 	QString address = importResultObj["address"].toString();
 
-	const QJsonObject response = saveAccountsRPCCall(name, color, address, publicKey, Key, Constants::PathDefaultWallet);
+	const QJsonObject saveAccountsResultObj = saveAccountsRPCCall(name, color, address, publicKey, Key, Constants::PathDefaultWallet);
 
-	if(!response["error"].isUndefined())
+	if(Status::isError(saveAccountsResultObj))
 	{
-		// TODO: throw exception
+		qCritical() << Status::errorMessage(saveAccountsResultObj);
+		emit accountCreated(false, Status::errorMessage(saveAccountsResultObj));
+		return;
 	}
 
-	Wallet* wallet = new Wallet(name, address, Key, color);
-	emit walletLoaded(wallet);
+	emit walletLoaded(new Wallet(name, address, Key, color, Constants::PathDefaultWallet));
+	emit accountCreated(true);
 }
 
 void WalletModel::generateNewAccount(QString password, QString name, QString color)
@@ -217,7 +257,7 @@ void WalletModel::generateNewAccount(QString password, QString name, QString col
 
 	if(!validatePassword(hashedPassword))
 	{
-		qCritical() << "INVALID PASSWORD";
+		emit invalidPassword();
 		return;
 	}
 
@@ -228,33 +268,55 @@ void WalletModel::generateNewAccount(QString password, QString name, QString col
 		MultiAccountLoadAccount(Utils::jsonToStr(QJsonObject{{"address", walletRootAddress}, {"password", hashedPassword}}).toUtf8().data());
 	QJsonObject loadAccountResultObj = QJsonDocument::fromJson(loadAccountResult).object();
 
+	if(Status::isError(loadAccountResultObj))
+	{
+		qCritical() << Status::errorMessage(loadAccountResultObj);
+		emit accountCreated(false, Status::errorMessage(loadAccountResultObj));
+		return;
+	}
+
 	QString mPath = "m/" + QString::number(walletIndex);
 
 	const char* multiaccountDeriveResult = MultiAccountDeriveAddresses(
 		Utils::jsonToStr(QJsonObject{{"accountID", loadAccountResultObj["id"]}, {"paths", QJsonArray{mPath}}}).toUtf8().data());
-
 	QJsonObject multiaccountDeriveResultObj = QJsonDocument::fromJson(multiaccountDeriveResult).object();
 
-	// generate account
+	if(Status::isError(multiaccountDeriveResultObj))
+	{
+		qCritical() << Status::errorMessage(multiaccountDeriveResultObj);
+		emit accountCreated(false, Status::errorMessage(multiaccountDeriveResultObj));
+		return;
+	}
+
 	const char* multiaccountStoreDeriveResult = MultiAccountStoreDerivedAccounts(
 		Utils::jsonToStr(QJsonObject{{"accountID", loadAccountResultObj["id"]}, {"paths", QJsonArray{mPath}}, {"password", hashedPassword}})
 			.toUtf8()
 			.data());
+	QJsonObject multiaccountStoreDeriveResultObj = QJsonDocument::fromJson(multiaccountStoreDeriveResult).object();
+
+	if(Status::isError(multiaccountStoreDeriveResultObj))
+	{
+		qCritical() << Status::errorMessage(multiaccountStoreDeriveResultObj);
+		emit accountCreated(false, Status::errorMessage(multiaccountStoreDeriveResultObj));
+		return;
+	}
 
 	QString publicKey = multiaccountDeriveResultObj[mPath].toObject()["publicKey"].toString();
 	QString address = multiaccountDeriveResultObj[mPath].toObject()["address"].toString();
+	QString path = "m/44'/60'/0'/0/" + QString::number(walletIndex);
 
-	const QJsonObject response = saveAccountsRPCCall(name, color, address, publicKey, Generated, "m/44'/60'/0'/0/" + walletIndex);
-
-	if(!response["error"].isUndefined())
+	const QJsonObject saveAccountResponseObj = saveAccountsRPCCall(name, color, address, publicKey, Generated, path);
+	if(Status::isError(saveAccountResponseObj))
 	{
-		// TODO: throw exception
+		qCritical() << Status::errorMessage(saveAccountResponseObj);
+		emit accountCreated(false, Status::errorMessage(saveAccountResponseObj));
+		return;
 	}
 
 	Settings::instance()->setLatestDerivedPath(walletIndex);
 
-	Wallet* wallet = new Wallet(name, address, Generated, color);
-	emit walletLoaded(wallet);
+	emit walletLoaded(new Wallet(name, address, Generated, color, path));
+	emit accountCreated(true);
 }
 
 } // namespace Wallet

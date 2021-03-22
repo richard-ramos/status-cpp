@@ -8,15 +8,12 @@ import "./components"
 
 Item {
     property int selectedAccount: 0
+    property alias list: listView
+
     property var changeSelectedAccount: function(newIndex) {
-        if (newIndex > walletModel.accounts) {
-            return
-        }
         selectedAccount = newIndex
-        walletModel.setCurrentAccountByIndex(newIndex)
-        walletTabBar.currentIndex = 0;
+        listView.currentIndex = newIndex;
     }
-    id: walletInfoContainer
 
 
 

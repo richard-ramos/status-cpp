@@ -134,6 +134,15 @@ void Status::closeSession()
 	});
 }
 
+bool Status::isError(const QJsonObject response){
+	return !response["error"].isUndefined() || !response["error"].toString().isEmpty();
+}
+
+QString Status::errorMessage(const QJsonObject response){
+	return response["error"].toString();
+}
+
+
 QVariant Status::callPrivateRPC(QString method, QVariantList params)
 {
 	qDebug() << method;

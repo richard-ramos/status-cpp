@@ -46,6 +46,9 @@ public:
 	Q_INVOKABLE void callPrivateRPC(QString method, QVariantList params, const QJSValue& callback);
 	Q_INVOKABLE void closeSession();
 
+	static bool isError(const QJsonObject response);
+	static QString errorMessage(const QJsonObject response);
+
 	Q_PROPERTY(QString SettingsPath READ settingsPath CONSTANT)
 	QString settingsPath();
 
@@ -72,7 +75,7 @@ private:
 	static void signalCallback(const char* data);
 	void processSignal(QString ev);
 	void processDiscoverySummarySignal(const QJsonObject& signalEvent);
-
+	
 	bool isOnline();
 
 	bool m_online;

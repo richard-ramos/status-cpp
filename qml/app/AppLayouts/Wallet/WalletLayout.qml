@@ -43,95 +43,108 @@ ColumnLayout {
             SplitView.maximumWidth: Style.current.leftTabMaximumWidth
         }
         
-        Item {
-            id: walletContainer
-            anchors.top: parent.top
-            anchors.topMargin: 0
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 0
-            anchors.right: parent.right
-            anchors.rightMargin: 0
-            anchors.left: leftTab.right
-            anchors.leftMargin: 0
-
-            WalletHeader {
-                id: walletHeader
-                changeSelectedAccount: leftTab.changeSelectedAccount
+        StackLayout {
+            id: walletStackLayout
+            currentIndex: leftTab.list.currentIndex
+            onCurrentIndexChanged: {
+                this.children[this.currentIndex].resetTab()
             }
-
-            RowLayout {
-                id: walletInfoContainer
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.top: walletHeader.bottom
-                anchors.topMargin: 23
-
+            Repeater {
+                model: walletModel
                 Item {
-                    id: walletInfoContent
+                    id: walletContainer
+
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    Layout.minimumWidth: 300
 
-                    TabBar {
-                        id: walletTabBar
-                        anchors.right: parent.right
-                        anchors.rightMargin: Style.current.bigPadding
-                        anchors.left: parent.left
-                        anchors.leftMargin: Style.current.bigPadding
-                        anchors.top: parent.top
-                        anchors.topMargin: Style.current.padding
-                        height: assetBtn.height
-                        background: Rectangle {
-                            color: Style.current.transparent
-                        }
-
-                        StatusTabButton {
-                            id: assetBtn
-                            tabColor: walletModel.currentAccount.iconColor
-                            //% "Assets"
-                            btnText: qsTrId("wallet-assets")
-                        }
-                        StatusTabButton {
-                            id: collectiblesBtn
-                            tabColor: walletModel.currentAccount.iconColor
-                            anchors.left: assetBtn.right
-                            anchors.leftMargin: 32
-                            //% "Collectibles"
-                            btnText: qsTrId("wallet-collectibles")
-                        }
-                        StatusTabButton {
-                            id: historyBtn
-                            tabColor: walletModel.currentAccount.iconColor
-                            anchors.left: collectiblesBtn.right
-                            anchors.leftMargin: 32
-                            //% "History"
-                            btnText: qsTrId("history")
-                            onClicked: historyTab.checkIfHistoryIsBeingFetched()
-                        }
+                    function resetTab(){
+                        walletTabBar.currentIndex = 0;
                     }
 
-                    StackLayout {
-                        id: stackLayout
-                        anchors.rightMargin: Style.current.bigPadding
-                        anchors.leftMargin: Style.current.bigPadding
-                        anchors.top: walletTabBar.bottom
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.topMargin: Style.current.bigPadding
-                        currentIndex: walletTabBar.currentIndex
+                    WalletHeader {
+                        id: walletHeader
+                        changeSelectedAccount: leftTab.changeSelectedAccount
+                        address: model.address
+                        name: model.name
+                        iconColor: model.iconColor
+                    }
 
-                        AssetsTab {
-                            id: assetsTab
-                        }
-                        CollectiblesTab {
-                            id: collectiblesTab
-                        }
-                        HistoryTab {
-                            id: historyTab
+                    RowLayout {
+                        id: walletInfoContainer
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 0
+                        anchors.left: parent.left
+                        anchors.leftMargin: 0
+                        anchors.right: parent.right
+                        anchors.rightMargin: 0
+                        anchors.top: walletHeader.bottom
+                        anchors.topMargin: 23
+
+                        Item {
+                            id: walletInfoContent
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+
+                            TabBar {
+                                id: walletTabBar
+                                anchors.right: parent.right
+                                anchors.rightMargin: Style.current.bigPadding
+                                anchors.left: parent.left
+                                anchors.leftMargin: Style.current.bigPadding
+                                anchors.top: parent.top
+                                anchors.topMargin: Style.current.padding
+                                height: assetBtn.height
+                                background: Rectangle {
+                                    color: Style.current.transparent
+                                }
+
+                                StatusTabButton {
+                                    id: assetBtn
+                                    tabColor: walletModel.currentAccount.iconColor
+                                    //% "Assets"
+                                    btnText: qsTrId("wallet-assets")
+                                }
+                                StatusTabButton {
+                                    id: collectiblesBtn
+                                    tabColor: walletModel.currentAccount.iconColor
+                                    anchors.left: assetBtn.right
+                                    anchors.leftMargin: 32
+                                    //% "Collectibles"
+                                    btnText: qsTrId("wallet-collectibles")
+                                }
+                                StatusTabButton {
+                                    id: historyBtn
+                                    tabColor: walletModel.currentAccount.iconColor
+                                    anchors.left: collectiblesBtn.right
+                                    anchors.leftMargin: 32
+                                    //% "History"
+                                    btnText: qsTrId("history")
+                                    onClicked: historyTab.checkIfHistoryIsBeingFetched()
+                                }
+                            }
+
+                            StackLayout {
+                                id: stackLayout
+                                anchors.rightMargin: Style.current.bigPadding
+                                anchors.leftMargin: Style.current.bigPadding
+                                anchors.top: walletTabBar.bottom
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.topMargin: Style.current.bigPadding
+                                currentIndex: walletTabBar.currentIndex
+
+                                AssetsTab {
+                                    id: assetsTab
+                                }
+                                CollectiblesTab {
+                                    id: collectiblesTab
+                                }
+                                HistoryTab {
+                                    id: historyTab
+                                }
+                            }
                         }
                     }
                 }
