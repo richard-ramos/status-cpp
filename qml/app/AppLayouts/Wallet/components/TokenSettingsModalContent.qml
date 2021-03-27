@@ -66,7 +66,7 @@ Item {
                 checked: isTokenVisible
                 anchors.right: parent.right
                 anchors.rightMargin: Style.current.smallPadding
-                onClicked: tokenModel.toggle(address, isCustom)
+                onClicked: tokenModel.toggle(symbol, address, isCustom)
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -80,7 +80,7 @@ Item {
                         return contextMenu.popup(assetSymbol.x - 100, assetSymbol.y + 25)
                     }
                     assetCheck.checked = !assetCheck.checked
-                    tokenModel.toggle(address, isCustom)
+                    tokenModel.toggle(symbol, address, isCustom)
                 }
                 onEntered: {
                     tokenContainer.hovered = true
@@ -102,7 +102,7 @@ Item {
                         enabled: isCustom
                         //% "Remove token"
                         text: qsTrId("remove-token")
-                        onTriggered: tokenModel.remove(address)
+                        onTriggered: tokenModel.remove(symbol, address)
                     }
                 }
             }

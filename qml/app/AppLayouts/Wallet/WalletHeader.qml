@@ -50,7 +50,18 @@ Item {
 
     StyledText {
         id: walletBalance
-        text: currentAccount.balance.toUpperCase()
+        text: {
+            if(!walletModel.pricesLoaded || !walletModel.balancesLoaded) return "...";
+            let accountBalance = 0;
+            for(let i = 0; i < balances.length; i++){
+                const price = walletModel.prices[balances[i].symbol];
+                if(price == undefined){
+                    continue;
+                }
+                accountBalance += parseFloat(balances[i].balance) * price;
+            }
+            return Utils.toLocaleString(accountBalance, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase();
+        }
         anchors.left: separatorDot.right
         anchors.leftMargin: 8
         anchors.verticalCenter: title.verticalCenter

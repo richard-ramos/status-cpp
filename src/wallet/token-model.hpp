@@ -39,9 +39,10 @@ public:
 
 	Q_INVOKABLE void push(Token token);
 	Q_INVOKABLE QString add(QString address, QString name, QString symbol, int decimals);
-	Q_INVOKABLE void remove(QString address);
-    Q_INVOKABLE void toggle(QString tokenAddress, bool isCustom);
+	Q_INVOKABLE void remove(QString tokenSymbol, QString address);
+    Q_INVOKABLE void toggle(QString tokenSymbol, QString tokenAddress, bool isCustom);
 
+	std::optional<Token> token(QString tokenSymbol);
 
 signals:
 	void tokenLoaded(Token token);
@@ -52,4 +53,5 @@ private:
 	void insert(Token token);
 
 	QVector<Token> m_tokens;
+	QMap<QString, Token> m_tokensMap;
 };

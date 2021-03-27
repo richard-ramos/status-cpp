@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegExp>
 #include <QString>
 #include <QTextDocumentFragment>
 #include <QVector>
@@ -19,15 +20,13 @@ Utils::Utils(QObject* parent)
 
 QString Utils::generateAlias(QString publicKey)
 {
-	if(publicKey.isEmpty())
-		return "";
+	if(publicKey.isEmpty()) return "";
 	return QString(GenerateAlias(publicKey.toUtf8().data()));
 }
 
 QString Utils::generateIdenticon(QString publicKey)
 {
-	if(publicKey.isEmpty())
-		return "";
+	if(publicKey.isEmpty()) return "";
 	return QString(Identicon(publicKey.toUtf8().data()));
 }
 
@@ -84,8 +83,7 @@ QString Utils::generateQRCode(QString publicKey)
 			   .arg(sz + border * 2);
 	for(int y = 0; y < sz; y++)
 		for(int x = 0; x < sz; x++)
-			if(qr.getModule(x, y))
-				svg << QString("M%1,%2h1v1h-1z").arg(x + border).arg(y + border);
+			if(qr.getModule(x, y)) svg << QString("M%1,%2h1v1h-1z").arg(x + border).arg(y + border);
 
 	svg << QString("\" fill=\"#000000\"/></svg>");
 
@@ -154,5 +152,13 @@ QString Utils::wei2Token(QString input, int decimals)
 	uint256_t inp = uint256_t(input.toStdString(), 10);
 	uint256_t eth = inp / one_eth;
 	uint256_t remainder = inp % one_eth;
-	return QString::fromStdString(eth.str()) + "." + QString::fromStdString(remainder.str(10, decimals));
+
+	QString decimalPart = QString::fromStdString(remainder.str(10, decimals));
+	decimalPart.remove(QRegExp("0*$"));
+	if(decimalPart != "")
+	{
+		decimalPart = "." + decimalPart;
+	}
+
+	return QString::fromStdString(eth.str()) + decimalPart;
 }

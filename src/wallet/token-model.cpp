@@ -85,14 +85,14 @@ void TokenModel::loadTokens()
 
 			if(obj["network"].toString() != currentNetwork) continue;
 
-			bool isVisible = visibleTokens.contains(tokenAddress);
+			bool isVisible = visibleTokens.contains(tokenSymbol);
 			if(!tokenVisibilitySet)
 			{
 				// Enable SNT/STT
 				if((tokenSymbol == "SNT" && currentNetwork == "mainnet_rpc") || (tokenSymbol == "STT" && currentNetwork != "mainnet_rpc"))
 				{
 					isVisible = true;
-					visibleTokens << tokenAddress;
+					visibleTokens <<  (currentNetwork == "mainnet_rpc" ? "SNT" : "STT");
 					Settings::instance()->setVisibleTokens(visibleTokens);
 				}
 			}
@@ -125,7 +125,7 @@ void TokenModel::loadCustomTokens()
 			QString tokenAddress = obj["address"].toString();
 			QString tokenSymbol = obj["symbol"].toString();
 
-			bool isVisible = visibleTokens.contains(tokenAddress);
+			bool isVisible = visibleTokens.contains(tokenSymbol);
 
 			Token t{.name = obj["name"].toString(),
 					.symbol = obj["symbol"].toString(),
@@ -140,14 +140,14 @@ void TokenModel::loadCustomTokens()
 	});
 }
 
-void TokenModel::remove(QString tokenAddress)
+void TokenModel::remove(QString tokenSymbol, QString tokenAddress)
 {
 	const auto response = Status::instance()->callPrivateRPC("wallet_deleteCustomToken", QJsonArray{tokenAddress}.toVariantList()).toJsonObject();
 
 	// TODO: error handling
 
 	QVector<QString> visibleTokens = Settings::instance()->visibleTokens();
-	int idx = visibleTokens.indexOf(tokenAddress);
+	int idx = visibleTokens.indexOf(tokenSymbol);
 	if(idx > -1)
 	{
 		visibleTokens.remove(idx);
@@ -159,6 +159,7 @@ void TokenModel::remove(QString tokenAddress)
 		if(m_tokens[i].address == tokenAddress && m_tokens[i].isCustom == true)
 		{
 			beginRemoveRows(QModelIndex(), i, i);
+			m_tokensMap.remove(m_tokens[i].symbol);
 			m_tokens.remove(i);
 			endRemoveRows();
 			break;
@@ -166,19 +167,19 @@ void TokenModel::remove(QString tokenAddress)
 	}
 }
 
-void TokenModel::toggle(QString tokenAddress, bool isCustom)
+void TokenModel::toggle(QString tokenSymbol, QString tokenAddress, bool isCustom)
 {
 	QVector<QString> visibleTokens = Settings::instance()->visibleTokens();
 
 	bool visible = false;
-	int idx = visibleTokens.indexOf(tokenAddress);
+	int idx = visibleTokens.indexOf(tokenSymbol);
 	if(idx > -1)
 	{
 		visibleTokens.remove(idx);
 	}
 	else
 	{
-		visibleTokens << tokenAddress;
+		visibleTokens << tokenSymbol;
 		visible = true;
 	}
 
@@ -230,5 +231,14 @@ void TokenModel::insert(Token token)
 {
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
 	m_tokens << token;
+	m_tokensMap[token.symbol] = token;
 	endInsertRows();
 }
+
+std::optional<Token> TokenModel::token(QString tokenSymbol){
+	if(m_tokensMap.contains(tokenSymbol)){
+		return m_tokensMap[tokenSymbol];
+	}
+	return {};
+}
+

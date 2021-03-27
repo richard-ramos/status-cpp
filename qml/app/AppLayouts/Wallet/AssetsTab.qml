@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.14
 import "../../../imports"
 import "../../../shared"
+import im.status.desktop 1.0
 
 Item {
     height: assetListView.height
@@ -19,7 +20,7 @@ Item {
                 id: assetInfoImage
                 width: 36
                 height: 36
-                source: symbol ? "../../img/tokens/" + symbol + ".png" : ""
+                source: modelData.symbol ? "../../img/tokens/" + modelData.symbol + ".png" : ""
                 anchors.left: parent.left
                 anchors.leftMargin: 0
                 anchors.verticalCenter: parent.verticalCenter
@@ -31,7 +32,7 @@ Item {
             }
             StyledText {
                 id: assetSymbol
-                text: symbol
+                text: modelData.symbol
                 anchors.left: assetInfoImage.right
                 anchors.leftMargin: Style.current.smallPadding
                 anchors.top: assetInfoImage.top
@@ -40,7 +41,7 @@ Item {
             }
             StyledText {
                 id: assetFullTokenName
-                text: name
+                text: modelData.symbol === "ETH" ? "Ethereum" : modelData.name
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
                 anchors.left: assetInfoImage.right
@@ -50,7 +51,7 @@ Item {
             }
             StyledText {
                 id: assetValue
-                text: value.toUpperCase() + " " + symbol
+                text: modelData.balance + " " + modelData.symbol
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 font.pixelSize: 15
@@ -59,7 +60,14 @@ Item {
             StyledText {
                 id: assetFiatValue
                 color: Style.current.darkGrey
-                text: Utils.toLocaleString(fiatBalance, appSettings.locale) + " " + walletModel.defaultCurrency.toUpperCase()
+                text: {
+                    const price = walletModel.prices[modelData.symbol];
+                    if(price == undefined){
+                        return "";
+                    }
+                    
+                    return Utils.toLocaleString(parseFloat(modelData.balance) * price, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase()
+                }
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 anchors.bottom: parent.bottom
@@ -70,7 +78,7 @@ Item {
     }
 
     ListModel {
-        id: exampleModel
+        id: assetModel
 
         ListElement {
             value: "123 USD"
@@ -92,8 +100,7 @@ Item {
             id: assetListView
             spacing: Style.current.padding * 2
             anchors.fill: parent
-    //        model: exampleModel
-            model: walletModel.assets
+            model: balances
             delegate: assetViewDelegate
             boundsBehavior: Flickable.StopAtBounds
         }

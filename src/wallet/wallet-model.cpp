@@ -1,8 +1,10 @@
 #include "wallet-model.hpp"
 #include "constants.hpp"
 #include "libstatus.h"
+#include "price-watcher.hpp"
 #include "settings.hpp"
 #include "status.hpp"
+#include "token-model.hpp"
 #include "utils.hpp"
 #include <QAbstractListModel>
 #include <QApplication>
@@ -14,6 +16,7 @@
 #include <QJsonValue>
 #include <QQmlApplicationEngine>
 #include <QSharedPointer>
+#include <QTimer>
 #include <QUuid>
 #include <QtConcurrent/QtConcurrent>
 #include <algorithm>
@@ -25,8 +28,122 @@ namespace Wallet
 WalletModel::WalletModel(QObject* parent)
 	: QAbstractListModel(parent)
 {
-	QObject::connect(this, &WalletModel::walletLoaded, this, &WalletModel::push);
 	loadWallets();
+
+	QObject::connect(this, &WalletModel::walletsLoaded, this, &WalletModel::populateModel);
+	QObject::connect(this, &WalletModel::walletLoaded, this, &WalletModel::push);
+	QObject::connect(this, &WalletModel::tokensChanged, this, &WalletModel::setupWatchers);
+
+	connect(this, &QAbstractListModel::rowsInserted, this, &WalletModel::rowCountChanged);
+	connect(this, &QAbstractListModel::rowsRemoved, this, &WalletModel::rowCountChanged);
+	connect(this, &QAbstractListModel::dataChanged, this, &WalletModel::rowCountChanged);
+	connect(this, &QAbstractListModel::modelReset, this, &WalletModel::rowCountChanged);
+}
+
+void WalletModel::setupWatchers()
+{
+	priceWatcher = new PriceWatcher(this);
+	priceWatcherTimer = new QTimer(this);
+	balanceWatcher = new BalanceWatcher(m_tokens, this);
+	balanceWatcherTimer = new QTimer(this);
+
+	// TODO: fetch when sending
+	QObject::connect(this, &WalletModel::accountCreated, this, &WalletModel::fetchPrices);
+	QObject::connect(this, &WalletModel::accountCreated, this, &WalletModel::fetchBalances);
+	QObject::connect(Status::instance(), &Status::logout, priceWatcherTimer, &QTimer::stop);
+	QObject::connect(Status::instance(), &Status::logout, balanceWatcherTimer, &QTimer::stop);
+	QObject::connect(Settings::instance(), &Settings::currencyChanged, this, &WalletModel::fetchPrices);
+	QObject::connect(Settings::instance(), &Settings::currencyChanged, this, &WalletModel::fetchBalances);
+	QObject::connect(Settings::instance(), &Settings::visibleTokensChanged, this, &WalletModel::fetchPrices);
+	QObject::connect(Settings::instance(), &Settings::visibleTokensChanged, this, &WalletModel::fetchBalances);
+
+	QObject::connect(balanceWatcher, &BalanceWatcher::balanceFetched, this, &WalletModel::updateBalance);
+	QObject::connect(priceWatcher, &PriceWatcher::priceUpdated, this, &WalletModel::updatePrices);
+	QObject::connect(balanceWatcher, &BalanceWatcher::balanceFetched, this, &WalletModel::rowCountChanged);
+	QObject::connect(priceWatcher, &PriceWatcher::priceUpdated, this, &WalletModel::rowCountChanged);
+}
+
+void WalletModel::fetchPrices()
+{
+	// Fire immediately
+	priceWatcher->fetch();
+	QObject::connect(priceWatcherTimer, &QTimer::timeout, priceWatcher, &PriceWatcher::fetch);
+	priceWatcherTimer->start(300000); //
+}
+
+void WalletModel::fetchBalances()
+{
+	// Fire immediately
+	balanceWatcher->fetch();
+	QObject::connect(balanceWatcherTimer, &QTimer::timeout, balanceWatcher, &BalanceWatcher::fetch);
+	priceWatcherTimer->start(300000);
+}
+
+QVector<Asset> WalletModel::getAssetList(QMap<QString, QString> balances)
+{
+	QVector<Asset> b;
+	for(auto symbol : balances.keys())
+	{
+		auto tokenData = m_tokens->token(symbol);
+		QString tokenName = tokenData.has_value() ? tokenData.value().name : "";
+		Asset a{.symbol = symbol, .balance = balances[symbol], .name = tokenName};
+		if(symbol == "ETH")
+		{
+			b.insert(0, a);
+		}
+		else if(symbol == "SNT" || symbol == "STT")
+		{
+			if(b.size() > 1)
+			{
+				b.insert(b[0].symbol == "ETH" ? 1 : 0, a);
+			}
+			else
+			{
+				b << a;
+			}
+		}
+		else
+		{
+			b << a;
+		}
+	}
+	return b;
+}
+
+void WalletModel::updateBalance(QString address, QMap<QString, QString> balances)
+{
+	m_balances[address] = getAssetList(balances);
+
+	for(int i = 0; i < m_wallets.size(); i++)
+	{
+		if(m_wallets[i]->get_address() == address)
+		{
+			QModelIndex idx = createIndex(i, 0);
+			dataChanged(idx, idx);
+		}
+	}
+
+	update_balancesLoaded(true);
+}
+
+void WalletModel::updatePrices(QString currency, QMap<QString, double> prices)
+{
+	QMap<QString, QVariant> newPrices;
+	if(QString::compare(currency, Settings::instance()->currency(), Qt::CaseInsensitive) == 0)
+	{
+		for(auto symbol : prices.keys())
+		{
+			newPrices[symbol] = QVariant(prices[symbol]);
+		}
+	}
+	m_prices = newPrices;
+	emit pricesChanged();
+	update_pricesLoaded(true);
+}
+
+QMap<QString, QVariant> WalletModel::getPrices()
+{
+	return m_prices;
 }
 
 QHash<int, QByteArray> WalletModel::roleNames() const
@@ -37,10 +154,11 @@ QHash<int, QByteArray> WalletModel::roleNames() const
 	roles[Color] = "iconColor";
 	roles[WalletType] = "walletType";
 	roles[Path] = "path";
+	roles[Balances] = "balances";
 	return roles;
 }
 
-int WalletModel::rowCount(const QModelIndex& parent = QModelIndex()) const
+int WalletModel::rowCount(const QModelIndex& parent) const
 {
 	return m_wallets.size();
 }
@@ -61,15 +179,23 @@ QVariant WalletModel::data(const QModelIndex& index, int role) const
 	case Address: return QVariant(t->get_address());
 	case Color: return QVariant(t->get_iconColor());
 	case WalletType: return QVariant(t->get_walletType());
+	case Balances: return QVariant::fromValue(m_balances[t->get_address()]);
 	}
 
 	return QVariant();
+}
+
+QVariant WalletModel::balances(int i) const
+{
+	QSharedPointer<Wallet> t = m_wallets[i];
+	return QVariant::fromValue(m_balances[t->get_address()]);
 }
 
 void WalletModel::loadWallets()
 {
 	QtConcurrent::run([=] {
 		const auto response = Status::instance()->callPrivateRPC("accounts_getAccounts", QJsonArray{}.toVariantList()).toJsonObject();
+		QVector<Wallet*> wallets;
 		foreach(QJsonValue accountJson, response["result"].toArray())
 		{
 			const QJsonObject accountObj = accountJson.toObject();
@@ -77,10 +203,21 @@ void WalletModel::loadWallets()
 			if(accountObj["chat"].toBool() == true) continue; // Might need a better condition
 			Wallet* wallet = new Wallet(accountObj);
 			wallet->moveToThread(QApplication::instance()->thread());
-
-			emit walletLoaded(wallet);
+			wallets << wallet;
 		}
+		emit walletsLoaded(wallets);
 	});
+}
+
+void WalletModel::populateModel(QVector<Wallet*> wallets)
+{
+	foreach(Wallet* w, wallets)
+	{
+		push(w);
+	}
+
+	fetchPrices();
+	fetchBalances();
 }
 
 void WalletModel::push(Wallet* wallet)

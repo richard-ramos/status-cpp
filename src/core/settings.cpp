@@ -434,7 +434,13 @@ QVector<QString> Settings::visibleTokens() const
 	}
 
 	if(m_visibleTokens[m_currentNetwork].isUndefined()) return QVector<QString>{};
-	return Utils::toStringVector(m_visibleTokens[m_currentNetwork].toArray());
+	
+	QVector<QString> result = Utils::toStringVector(m_visibleTokens[m_currentNetwork].toArray());
+	std::sort(result.begin(), result.end(), [](QString a, QString b) {
+		return a < b;
+	});
+	
+	return result;
 }
 
 void Settings::setVisibleTokens(QVector<QString> value)
@@ -442,6 +448,7 @@ void Settings::setVisibleTokens(QVector<QString> value)
 	QWriteLocker locker(&lock);
 	m_visibleTokens[m_currentNetwork] = Utils::toJsonArray(value);
 	saveSettings(SettingTypes::VisibleTokens, m_visibleTokens);
+	locker.unlock();
 	emit visibleTokensChanged();
 }
 

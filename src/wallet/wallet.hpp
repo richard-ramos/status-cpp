@@ -9,9 +9,14 @@
 #include <QString>
 #include <QVariant>
 #include <QVector>
+#include <QMap>
 
 namespace Wallet
 {
+
+
+typedef QMap<QString, QString> Balance;
+
 class Wallet : public QObject
 {
 	Q_OBJECT

@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.13
 import "../../../imports"
 import "../../../shared"
 import "./components"
+import im.status.desktop 1.0
 
 Item {
     property int selectedAccount: 0
@@ -15,8 +16,6 @@ Item {
         listView.currentIndex = newIndex;
     }
 
-
-
     StyledText {
         id: title
         //% "Wallet"
@@ -26,6 +25,29 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         font.weight: Font.Bold
         font.pixelSize: 17
+    }
+
+    function calculateTotal(){
+        if(!walletModel.pricesLoaded || !walletModel.balancesLoaded) return "...";
+        let accountBalance = 0;
+        for(let i = 0; i < walletModel.rowCount; i++){
+            const balances = walletModel.balances(i);
+            for(let j = 0; j < balances.length; j++){
+                const price = walletModel.prices[balances[j].symbol];
+                if(price == undefined){
+                    continue;
+                }
+                accountBalance += parseFloat(balances[j].balance) * price;
+            }
+        }
+        return Utils.toLocaleString(accountBalance, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase();
+    }
+
+    Connections {
+        target: walletModel
+        onRowCountChanged: {
+            walletAmountValue.text = calculateTotal();
+        }
     }
 
     Item {
@@ -41,7 +63,7 @@ Item {
         StyledTextEdit {
             id: walletAmountValue
             color: Style.current.textColor
-            text: Utils.toLocaleString(walletModel.totalFiatBalance, appSettings.locale) + " " + walletModel.defaultCurrency.toUpperCase()
+            text: calculateTotal()
             selectByMouse: true
             cursorVisible: true
             readOnly: true
@@ -131,7 +153,18 @@ Item {
             }
             StyledText {
                 id: walletBalance
-                text: isLoading ? "..." : Utils.toLocaleString(fiatBalance, appSettings.locale) + " " + walletModel.defaultCurrency.toUpperCase()
+                text: {
+                    if(!walletModel.pricesLoaded || !walletModel.balancesLoaded) return "...";
+                    let accountBalance = 0;
+                    for(let i = 0; i < balances.length; i++){
+                        const price = walletModel.prices[balances[i].symbol];
+                        if(price == undefined){
+                            continue;
+                        }
+                        accountBalance += parseFloat(balances[i].balance) * price;
+                    }
+                    return Utils.toLocaleString(accountBalance, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase();
+                }
                 anchors.top: parent.top
                 anchors.topMargin: Style.current.smallPadding
                 anchors.right: parent.right

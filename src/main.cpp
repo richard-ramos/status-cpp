@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
 
 	qRegisterMetaType<Contact*>("Contact *");
 	qRegisterMetaType<Message*>("Message *");
-	qRegisterMetaType<Message*>("Wallet *");
+	qRegisterMetaType<Wallet::Wallet*>("Wallet *");
 
 	qRegisterMetaType<Chat*>("Chat *");
 	qRegisterMetaType<MessagesModel*>("MessagesModel *");
@@ -174,6 +174,7 @@ int main(int argc, char* argv[])
 	qRegisterMetaType<Topic>("Topic");
 	qRegisterMetaType<Token>("Token");
 	qRegisterMetaType<ChatMember>("ChatMember");
+	qRegisterMetaType<QVector<Wallet::Wallet*>>("QVector<Wallet *>");
 
 	qRegisterMetaType<ChatType>("ChatType");
 	qmlRegisterUncreatableType<ChatTypeClass>("im.status.desktop", 1, 0, "ChatType", "Not creatable as it is an enum type");
