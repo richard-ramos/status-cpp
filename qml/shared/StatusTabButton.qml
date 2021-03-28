@@ -21,12 +21,12 @@ TabButton {
         text: btnText
         font.weight: Font.Medium
         font.pixelSize: 15
-        color: parent.checked || parent.hovered ? Style.current.textColor : Style.current.darkGrey
+        color: parent.checked || parent.hovered ? Style.current.textColor : Style.current.secondaryText
     }
 
     Rectangle {
         visible: parent.checked || parent.hovered
-        color: parent.checked ? tabColor : Style.current.secondaryBackground 
+        color: parent.checked ? tabColor : Style.current.secondaryBackground
         anchors.bottom: parent.bottom
         width: 40
         anchors.horizontalCenter: parent.horizontalCenter

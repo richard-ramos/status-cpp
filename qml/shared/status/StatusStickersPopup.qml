@@ -192,6 +192,7 @@ Popup {
             StatusRoundButton {
                 id: btnAddStickerPack
                 size: "medium"
+                type: "secondary"
                 icon.name: "plusSign"
                 implicitWidth: 24
                 implicitHeight: 24
@@ -203,7 +204,6 @@ Popup {
                     footerContent.visible = false
                 }
             }
-
             StatusStickerPackIconWithIndicator {
                 id: btnHistory
                 width: 24

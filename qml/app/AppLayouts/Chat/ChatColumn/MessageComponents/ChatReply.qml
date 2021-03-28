@@ -11,8 +11,8 @@ Loader {
     property color elementsColor: isCurrentUser ? Style.current.chatReplyCurrentUser : Style.current.secondaryText
     property var container
     property int chatHorizontalPadding
-
-    property var replyMessage: chat.messages.get(responseTo)
+    property var chat
+    property var replyMessage: chat != undefined ? chat.messages.get(responseTo) : null
 
     id: root
     active: responseTo !== "" && replyMessage !== null
@@ -34,7 +34,7 @@ Loader {
 
             StyledTextEdit {
                 id: lblReplyAuthor
-                text: "↳" + Utils.getUsernameLabel(replyMessage.contact, isCurrentUser)
+                text: "↳" + (replyMessage != null ? Utils.getUsernameLabel(replyMessage.contact, isCurrentUser) : "")
                 color: root.elementsColor
                 readOnly: true
                 selectByMouse: true
@@ -45,7 +45,7 @@ Loader {
 
             ChatImage {
                 id: imgReplyImage
-                visible: replyMessage.contentType == Constants.imageType
+                visible: replyMessage != null && replyMessage.contentType == Constants.imageType
                 imageWidth: 50
                 imageSource: replyMessage.image
                 anchors.top: lblReplyAuthor.bottom
@@ -57,7 +57,7 @@ Loader {
 
             StyledTextEdit {
                 id: lblReplyMessage
-                visible: replyMessage.contentType != Constants.imageType
+                visible: replyMessage != null && replyMessage.contentType != Constants.imageType
                 Component.onCompleted: textFieldImplicitWidth = implicitWidth
                 anchors.top: lblReplyAuthor.bottom
                 anchors.topMargin: 5
@@ -86,7 +86,7 @@ Loader {
             }
 
             Separator {
-                anchors.top: replyMessage.contentType == Constants.imageType ? imgReplyImage.bottom : lblReplyMessage.bottom
+                anchors.top: replyMessage != null && replyMessage.contentType == Constants.imageType ? imgReplyImage.bottom : lblReplyMessage.bottom
                 anchors.topMargin: replyMessage.contentType == Constants.imageType ? 15 : 8
                 anchors.left: lblReplyMessage.left
                 anchors.right: lblReplyMessage.right

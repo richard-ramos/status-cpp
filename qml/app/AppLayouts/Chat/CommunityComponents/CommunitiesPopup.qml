@@ -15,8 +15,75 @@ ModalPopup {
         searchBox.forceActiveFocus(Qt.MouseFocusReason)
     }
 
-    //% "Communities"
-    title: qsTrId("communities")
+    header: Item {
+        height: childrenRect.height
+        width: parent.width
+
+        StyledText {
+            id: groupName
+            text: qsTr("Communities")
+            anchors.top: parent.top
+            anchors.left: parent.left
+            font.bold: true
+            font.pixelSize: 17
+        }
+
+        Rectangle {
+            id: moreActionsBtnContainer
+            width: 32
+            height: 32
+            radius: Style.current.radius
+            color: Style.current.transparent
+            anchors.right: parent.right
+            anchors.rightMargin: 40
+            anchors.top: parent.top
+            anchors.topMargin: -5
+
+            StyledText {
+                id: moreActionsBtn
+                text: "..."
+                font.letterSpacing: 0.5
+                font.bold: true
+                lineHeight: 1.4
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: 25
+            }
+
+            MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: {
+                    parent.color = Style.current.border
+                }
+                onExited: {
+                    parent.color = Style.current.transparent
+                }
+                onClicked: contextMenu.popup(-contextMenu.width + moreActionsBtn.width, moreActionsBtn.height - Style.current.smallPadding)
+            }
+
+            PopupMenu {
+                id: contextMenu
+                Action {
+                    icon.source: "../../../img/import.svg"
+                    icon.width: 16
+                    icon.height: 16
+                    text: qsTr("Access exisitng community")
+                    onTriggered: openPopup(importCommunitiesPopupComponent)
+                }
+            }
+        }
+
+        Separator {
+            anchors.top: groupName.bottom
+            anchors.topMargin: Style.current.padding
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.rightMargin: -Style.current.padding
+            anchors.leftMargin: -Style.current.padding
+        }
+    }
 
     SearchBox {
         id: searchBox
@@ -39,7 +106,7 @@ ModalPopup {
 
         ListView {
             anchors.fill: parent
-            model: chatsModel.communities
+            model: communitiesDelegateModel
             spacing: 4
             clip: true
             id: communitiesList
@@ -50,7 +117,7 @@ ModalPopup {
                 width: parent.width
                 height: childrenRect.height + Style.current.halfPadding
                 StyledText {
-                    text: section
+                    text: section.toUpperCase()
                 }
                 Separator {
                     anchors.left: popup.left
@@ -58,8 +125,19 @@ ModalPopup {
                 }
             }
 
+        }
+
+        DelegateModelGeneralized {
+            id: communitiesDelegateModel
+            lessThan: [
+                function(left, right) {
+                    return left.name.toLowerCase() < right.name.toLowerCase()
+                }
+            ]
+
+            model: chatsModel.communities.list
             delegate: Item {
-                // TODO add the serach for the name and category once they exist
+                // TODO add the search for the name and category once they exist
                 visible: {
                     if (!searchBox.text) {
                         return true
@@ -70,12 +148,28 @@ ModalPopup {
                 height: visible ? communityImage.height + Style.current.padding : 0
                 width: parent.width
 
-                RoundedImage {
+                Loader {
                     id: communityImage
-                    width: 40
-                    height: 40
-                    // TODO get the real image once it's available
-                    source: "../../../img/ens-header-dark@2x.png"
+                    sourceComponent: !!thumbnailImage ? commmunityImgCmp : letterIdenticonCmp
+                }
+
+                Component {
+                    id: commmunityImgCmp
+                    RoundedImage {
+                        source: thumbnailImage
+                        width: 40
+                        height: 40
+                    }
+                }
+
+                Component {
+                    id: letterIdenticonCmp
+                    StatusLetterIdenticon {
+                        width: 40
+                        height: 40
+                        chatName: name
+                        color: communityColor || Style.current.blue
+                    }
                 }
 
                 StyledText {
@@ -100,11 +194,9 @@ ModalPopup {
 
                 StyledText {
                     id: communityMembers
-                    text: nbMembers === 1 ? 
-                          //% "1 member"
-                          qsTrId("1-member") : 
-                          //% "%1 members"
-                          qsTrId("-1-members").arg(nbMembers)
+                    text: nbMembers === 1 ?
+                              qsTr("1 member") :
+                              qsTr("%1 members").arg(nbMembers)
                     anchors.left: communityDesc.left
                     anchors.right: parent.right
                     anchors.top: communityDesc.bottom
@@ -117,10 +209,10 @@ ModalPopup {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (joined) {
-                            chatsModel.setActiveCommunity(id)
+                        if (joined && isMember) {
+                            chatsModel.communities.setActiveCommunity(id)
                         } else {
-                            chatsModel.setObservedCommunity(id)
+                            chatsModel.communities.setObservedCommunity(id)
                             openPopup(communityDetailPopup)
                         }
                         popup.close()
@@ -130,31 +222,13 @@ ModalPopup {
         }
     }
 
-    footer: Item {
-        width: parent.width
-        height: importBtn.height
-
-        StatusButton {
-            id: importBtn
-            //% "Import a community"
-            text: qsTrId("import-community")
-            anchors.right: createBtn.left
-            anchors.rightMargin: Style.current.smallPadding
-            onClicked: {
-                openPopup(importCommunitiesPopupComponent)
-                popup.close()
-            }
-        }
-
-        StatusButton {
-            id: createBtn
-            //% "Create a community"
-            text: qsTrId("create-community")
-            anchors.right: parent.right
-            onClicked: {
-                openPopup(createCommunitiesPopupComponent)
-                popup.close()
-            }
+    footer: StatusButton {
+        id: createBtn
+        text: qsTr("Create a community")
+        anchors.right: parent.right
+        onClicked: {
+            openPopup(createCommunitiesPopupComponent)
+            popup.close()
         }
     }
 }

@@ -10,6 +10,7 @@ Item {
     property int contentType: 2
     property var container
     property bool headerRepeatCondition: (authorCurrentMsg != authorPrevMsg || shouldRepeatHeader || dateGroupLbl.visible)
+    property var chat
 
     id: root
     anchors.top: parent.top
@@ -128,6 +129,7 @@ Item {
             anchors.rightMargin: chatBox.chatHorizontalPadding
             container: root.container
             chatHorizontalPadding: chatBox.chatHorizontalPadding
+            chat: root.chat
         }
 
         ChatText {

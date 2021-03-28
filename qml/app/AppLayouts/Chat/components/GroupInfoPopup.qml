@@ -58,6 +58,7 @@ ModalPopup {
           height: 36
           anchors.top: parent.top
           color: popup.channel.color
+          chatId: popup.channel.id
           chatName: popup.channel.name
       }
     
@@ -139,13 +140,6 @@ ModalPopup {
     Item {
         id: addMembersItem
         anchors.fill: parent
-
-        Connections {
-            target: channel
-            onGroupDataChanged: {
-                resetSelectedMembers();
-            }
-        }
 
         SearchBox {
             id: searchBox

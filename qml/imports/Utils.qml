@@ -31,6 +31,81 @@ QtObject {
                                 (!startsWith0x(value) && value.length === 64))
     }
 
+    function getCurrentThemeAccountColor(color) {
+        const upperCaseColor = color.toUpperCase()
+        if (Style.current.accountColors.indexOf(upperCaseColor) > -1) {
+            return upperCaseColor
+        }
+
+        let colorIndex
+        if (Style.current.name === Constants.lightThemeName) {
+            colorIndex = Style.darkTheme.accountColors.indexOf(upperCaseColor)
+        } else {
+             colorIndex = Style.lightTheme.accountColors.indexOf(upperCaseColor)
+        }
+        if (colorIndex === -1) {
+            // Unknown color
+            return false
+        }
+        return Style.current.accountColors[colorIndex]
+    }
+
+    function getMessageWithStyle(msg, useCompactMode, isCurrentUser) {
+        return `<style type="text/css">` +
+                    `p, img, a, del, code, blockquote { margin: 0; padding: 0; }` +
+                    `code {` +
+                        `background-color: ${Style.current.codeBackground};` +
+                        `color: ${Style.current.white};` +
+                        `white-space: pre;` +
+                    `}` +
+                    `p {` +
+                        `line-height: 22px;` +
+                    `}` +
+                    `a {` +
+                        `color: ${isCurrentUser && !useCompactMode ? Style.current.white : Style.current.textColor};` +
+                    `}` +
+                    `a.mention {` +
+                        `color: ${Style.current.mentionColor};` +
+                        `background-color: ${Style.current.mentionBgColor};` +
+                        `text-decoration: none;` +
+                    `}` +
+                    `del {` +
+                        `text-decoration: line-through;` +
+                    `}` +
+                    `table.blockquote td {` +
+                        `padding-left: 10px;` +
+                        `color: ${isCurrentUser ? Style.current.chatReplyCurrentUser : Style.current.secondaryText};` +
+                    `}` +
+                    `table.blockquote td.quoteline {` +
+                        `background-color: ${isCurrentUser ? Style.current.chatReplyCurrentUser : Style.current.secondaryText};` +
+                        `height: 100%;` +
+                        `padding-left: 0;` +
+                    `}` +
+                    `.emoji {` +
+                        `vertical-align: bottom;` +
+                    `}` +
+                `</style>` +
+                `${msg}`
+    }
+
+    function getAppSectionIndex(section) {
+        let sectionId = -1
+        switch (section) {
+        case Constants.chat: sectionId = 0; break;
+        case Constants.wallet: sectionId = 1; break;
+        case Constants.browser: sectionId = 2; break;
+        case Constants.timeline: sectionId = 3; break;
+        case Constants.profile: sectionId = 4; break;
+        case Constants.node: sectionId = 5; break;
+        case Constants.ui: sectionId = 6; break;
+        case Constants.community: sectionId = 99; break;
+        }
+        if (sectionId === -1) {
+            throw new Exception ("Unknown section name. Check the Constants to know the available ones")
+        }
+        return sectionId
+    }
+
     function isMnemonic(value) {
         if(!value.match(/^([a-z\s]+)$/)){
             return false;
@@ -48,7 +123,7 @@ QtObject {
 
     function linkifyAndXSS(inputText) {
         //URLs starting with http://, https://, or ftp://
-        var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        var replacePattern1 = /(\b(https?|ftp|statusim):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
         var replacedText = inputText.replace(replacePattern1, "<a href='$1'>$1</a>");
 
         //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
@@ -254,6 +329,88 @@ QtObject {
         return (/( |\t|\n|\r)/.test(c))
     }
 
+    function getLinkTitleAndCb(link) {
+        const result = {
+            title: "Status",
+            callback: null
+        }
+
+        // Link to send a direct message
+        let index = link.indexOf("/u/")
+        if (index === -1) {
+            // Try /p/ as well
+            index = link.indexOf("/p/")
+        }
+        if (index > -1) {
+            const pk = link.substring(index + 3)
+            result.title = qsTr("Start a 1 on 1 chat with %1").arg(utilsModel.generateAlias(pk))
+            result.callback = function () {
+                chatsModel.joinChat(pk, Constants.chatTypeOneToOne);
+            }
+            return result
+        }
+
+        // Community
+        // TODO this will probably change
+        index = link.lastIndexOf("/cc/")
+        if (index > -1) {
+            const communityId = link.substring(index + 4)
+
+            const communityName = chatsModel.communities.getCommunityNameById(communityId)
+
+            if (!communityName) {
+                // Unknown community
+                // TODO use a function to fetch that community?
+                return result
+            }
+
+            result.title = qsTr("Join the %1 community").arg(communityName)
+            result.communityId = communityId
+            result.callback = function () {
+                const isUserMemberOfCommunity = chatsModel.communities.isUserMemberOfCommunity(communityId)
+                if (isUserMemberOfCommunity) {
+                    chatsModel.communities.setActiveCommunity(communityId)
+                    return
+                }
+                chatsModel.communities.joinCommunity(communityId, true)
+            }
+            return result
+        }
+
+        // Public chat
+        // This needs to be the last check because it is as VERY loose check
+        index = link.lastIndexOf("/")
+        if (index > -1) {
+            const chatId = link.substring(index + 1)
+            result.title = qsTr("Join the %1 public channel").arg(chatId)
+            result.callback = function () {
+                chatsModel.joinChat(chatId, Constants.chatTypePublic);
+            }
+            return result
+        }
+
+        return result
+    }
+
+    function getLinkDataForStatusLinks(link) {
+        if (!link.includes(Constants.deepLinkPrefix) && !link.includes(Constants.joinStatusLink)) {
+            return
+        }
+
+        const result = getLinkTitleAndCb(link)
+
+        return {
+            site: qsTr("Status app link"),
+            title: result.title,
+            communityId: result.communityId,
+            thumbnailUrl: "../../../../img/status.png",
+            contentType: "",
+            height: 0,
+            width: 0,
+            callback: result.callback
+        }
+    }
+
     function isPunct(c) {
         return /(!|\@|#|\$|%|\^|&|\*|\(|\)|_|\+|\||-|=|\\|{|}|[|]|"|;|'|<|>|\?|,|\.|\/)/.test(c)
     }
@@ -330,12 +487,25 @@ QtObject {
     function getHostname(url) {
         const rgx = /\:\/\/(?:[a-zA-Z0-9\-]*\.{1,}){1,}[a-zA-Z0-9]*/i
         const matches = rgx.exec(url)
-        if (!matches || !matches.length) return  ""
+        if (!matches || !matches.length) {
+            if (url.includes(Constants.deepLinkPrefix)) {
+                return Constants.deepLinkPrefix
+            }
+            return  ""
+        }
         return matches[0].substring(3)
     }
 
     function hasImageExtension(url) {
-        return [".png", ".jpg", ".jpeg", ".svg", ".gif"].some(ext => url.includes(ext))
+        return Constants.acceptedImageExtensions.some(ext => url.includes(ext))
+    }
+
+    function hasDragNDropImageExtension(url) {
+        return Constants.acceptedDragNDropImageExtensions.some(ext => url.includes(ext))
+    }
+
+    function deduplicate(array) {
+        return Array.from(new Set(array))
     }
 
     function getUsernameLabel(contact, isCurrentUser){

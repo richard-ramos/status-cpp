@@ -18,7 +18,7 @@ ScrollView {
     id: root
 
     property alias chatLogView: chatLogView
-
+    property var chat
     property bool isActiveChat: false
     property int unreadMessagesWhileInactive: 0
     property int lastVisibleIndex: -1
@@ -224,7 +224,26 @@ ScrollView {
                 }
             }
         }
+/* TODO:
+        Connections {
+            target: chatsModel.communities
 
+             onMembershipRequestChanged: function (communityName, accepted) {
+                systemTray.showMessage("Status",
+                                       accepted ? qsTr("You have been accepted into the ‘%1’ community").arg(communityName) :
+                                                  qsTr("Your request to join the ‘%1’ community was declined").arg(communityName),
+                                       SystemTrayIcon.NoIcon,
+                                       Constants.notificationPopupTTL)
+            }
+
+            onMembershipRequestPushed: function (communityName, pubKey) {
+                systemTray.showMessage(qsTr("New membership request"),
+                                       qsTr("%1 asks to join ‘%2’").arg(Utils.getDisplayName(pubKey)).arg(communityName),
+                                       SystemTrayIcon.NoIcon,
+                                       Constants.notificationPopupTTL)
+            }
+        }
+*/
         Connections {
             target: systemTray
             onMessageClicked: {
@@ -249,6 +268,7 @@ ScrollView {
         model: messageListModel
         delegate: Message {
             id: msgDelegate
+            chat: root.chat
             contact: model.contact
             chatId: model.chatId
             message: model.parsedText

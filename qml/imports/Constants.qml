@@ -24,12 +24,17 @@ QtObject {
 
     readonly property int notificationPopupTTL: 5000
 
+    readonly property string lightThemeName: "light"
+    readonly property string darkThemeName: "dark"
+
     readonly property string chat: "chat"
     readonly property string wallet: "wallet"
+    readonly property string timeline: "timeline"
     readonly property string browser: "browser"
     readonly property string profile: "profile"
     readonly property string node: "node"
     readonly property string ui: "ui"
+    readonly property string community: "community"
 
     readonly property int fontSizeXS: 0
     readonly property int fontSizeS: 1
@@ -119,4 +124,42 @@ QtObject {
     readonly property int browserEthereumExplorerBlockchair: 3
 
     readonly property int repeatHeaderInterval: 2
+
+    readonly property string deepLinkPrefix: 'statusim://'
+    readonly property string joinStatusLink: 'join.status.im'
+    readonly property string communityLinkPrefix: 'https://join.status.im/cc/'
+    readonly property string userLinkPrefix: 'https://join.status.im/u/'
+
+    readonly property int maxUploadFiles: 5
+    readonly property double maxUploadFilesizeMB: 0.5
+
+    readonly property var acceptedImageExtensions: [".png", ".jpg", ".jpeg", ".svg", ".gif"]
+    readonly property var acceptedDragNDropImageExtensions: [".png", ".jpg", ".jpeg", ".heif", "tif", ".tiff"]
+
+    readonly property string mentionSpanTag: `<span style="color:${Style.current.mentionColor}; background-color: ${Style.current.mentionBgColor};">`
+
+    readonly property string ens_taken: "taken"
+    readonly property string ens_taken_custom: "taken-custom"
+    readonly property string ens_owned: "owned"
+    readonly property string ens_availabe: "available"
+    readonly property string ens_already_connected: "already-connected"
+    readonly property string ens_connected: "connected"
+    readonly property string ens_connected_dkey: "connected-different-key"
+
+    readonly property var ensState: {
+        //% "Username already taken :("
+        "taken": qsTrId("ens-username-taken"),
+        //% "Username doesn’t belong to you :("
+        "taken-custom": qsTrId("ens-custom-username-taken"),
+        //% "Continuing will connect this username with your chat key."
+        "owned": qsTrId("ens-username-owned-continue"),
+        //% "✓ Username available!"
+        "available": qsTrId("ens-username-available"),
+        //% "Username is already connected with your chat key and can be used inside Status."
+        "already-connected": qsTrId("ens-username-already-added"),
+        //% "This user name is owned by you and connected with your chat key. Continue to set `Show my ENS username in chats`."
+        "connected": qsTrId("this-user-name-is-owned-by-you-and-connected-with-your-chat-key--continue-to-set--show-my-ens-username-in-chats--"),
+        //% "Continuing will require a transaction to connect the username with your current chat key."
+        "connected-different-key": qsTrId("ens-username-connected-with-different-key"),
+    }
 }

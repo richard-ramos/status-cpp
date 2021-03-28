@@ -9,13 +9,14 @@ MouseArea {
     z: 50
     onClicked: {
         if(mouse.button & Qt.RightButton) {
-            clickMessage(false, isSticker, false);
+            messageContextMenu = clickMessage(false, isSticker, false);
             if (typeof isMessageActive !== "undefined") {
                 isMessageActive = true
             }
             return;
         }
-        if (mouse.button & Qt.LeftButton) {                
+        if (mouse.button & Qt.LeftButton && isSticker /*&& stickersLoaded*/) { // TODO: open sticker market on click
+            // openPopup(statusStickerPackClickPopup, {packId: stickerPackId} ) // TODO:
             return;
         }
     }

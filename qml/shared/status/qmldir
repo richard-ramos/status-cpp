@@ -22,3 +22,6 @@ StatusStickerPackDetails 1.0 StatusStickerPackDetails.qml
 StatusStickerPackPurchaseModal 1.0 StatusStickerPackPurchaseModal.qml
 StatusStickersPopup 1.0 StatusStickersPopup.qml
 StatusToolTip 1.0 StatusToolTip.qml
+StatusChatImageExtensionValidator 1.0 StatusChatImageExtensionValidator.qml
+StatusChatImageSizeValidator 1.0 StatusChatImageSizeValidator.qml
+StatusChatImageQtyValidator 1.0 StatusChatImageQtyValidator.qml

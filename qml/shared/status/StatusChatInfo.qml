@@ -12,6 +12,13 @@ Item {
     property string chatId
     property string chatName
     property int chatType
+    property int realChatType: {
+        if (chatType == Constants.chatTypeCommunity) {
+            // TODO add a check for private community chats once it is created
+            return Constants.chatTypePublic
+        }
+        return chatType
+    }
     property string identicon
     property string chatColor
     property int identiconSize: 40
@@ -19,14 +26,15 @@ Item {
     property bool muted: false
     property var contact
 
-    property string profileImage: chatType == ChatType.OneToOne ? appMain.getProfileImage(contact, true) || ""  : ""
+    property string profileImage: realChatType == ChatType.OneToOne ? appMain.getProfileImage(contact, true) || ""  : ""
 
     height: 48
     width: nameAndInfo.width + chatIdenticon.width + Style.current.smallPadding
 
     StatusIdenticon {
         id: chatIdenticon
-        chatType: root.chatType
+        chatType: root.realChatType
+        chatId: root.chatId
         chatName: root.chatName
         chatColor: root.chatColor
         identicon: root.profileImage
@@ -46,7 +54,7 @@ Item {
         StyledText {
             id: chatName
             text: {
-                switch(root.chatType) {
+                switch(root.realChatType) {
                     case ChatType.Public: return "#" + root.chatName;
                     case ChatType.OneToOne: return Utils.getUsernameLabel(contact)
                     default: return Emoji.parse(Utils.filterXSS(root.chatName))
@@ -89,9 +97,9 @@ Item {
 
         StyledText {
             id: chatInfo
-            color: Style.current.darkGrey
+            color: Style.current.secondaryText
             text: {
-                switch(root.chatType){
+                switch(root.realChatType){
                     //% "Public chat"
                     case ChatType.Public: return qsTrId("public-chat")
                     case ChatType.OneToOne: return (contact.isAdded ?

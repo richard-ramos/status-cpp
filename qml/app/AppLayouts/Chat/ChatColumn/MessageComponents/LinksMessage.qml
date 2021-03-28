@@ -36,7 +36,8 @@ Column {
             property bool fetched: false
             property var linkData
             property int linkWidth: linksRepeater.width
-            active: true           
+
+            active: true
             
             Connections {
                 target: appSettings
@@ -108,6 +109,7 @@ Column {
                 this.height = 0
                 return undefined
             }
+
             Component.onCompleted: {
                 // putting this is onCompleted prevents automatic binding, where
                 // QML warns of a binding loop detected
@@ -134,6 +136,15 @@ Column {
                     clickMessage(false, false, true, linkImage.imageAlias)
                 }
             }
+        }
+    }
+
+    Component {
+        id: invitationBubble
+        InvitationBubble {
+            communityId: linkData.communityId
+            isLink: true
+            anchors.left: parent.left
         }
     }
 
@@ -186,12 +197,16 @@ Column {
                 anchors.right: linkImage.right
                 anchors.bottom: linkSite.bottom
                 cursorShape: Qt.PointingHandCursor
-                onClicked:  appMain.openLink(linkData.address)
+                onClicked:  {
+                    if (!!linkData.callback) {
+                        return linkData.callback()
+                    }
+
+                    appMain.openLink(linkData.address)
+                }
             }
         }
     }
-        
-    
 
     Component {
         id: enableLinkComponent

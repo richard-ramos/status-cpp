@@ -157,6 +157,7 @@ ModalPopup {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             icon.name: "arrow-right"
+            type: "secondary"
             icon.width: 20
             icon.height: 16
             enabled: !!pubKeys.length

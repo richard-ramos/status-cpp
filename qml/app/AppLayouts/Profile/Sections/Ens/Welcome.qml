@@ -5,28 +5,17 @@ import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
 import im.status.desktop 1.0
+
 Item {
     signal startBtnClicked()
-
-    StyledText {
-        id: sectionTitle
-        //% "ENS usernames"
-        text: qsTrId("ens-usernames")
-        anchors.left: parent.left
-        anchors.leftMargin: 24
-        anchors.top: parent.top
-        anchors.topMargin: 24
-        font.weight: Font.Bold
-        font.pixelSize: 20
-    }
 
     ScrollView {
         id: sview
         clip: true
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         contentHeight: contentItem.childrenRect.height
-        anchors.top: sectionTitle.bottom
-        anchors.topMargin: Style.current.padding
+        anchors.top: parent.top
+        anchors.topMargin: 24
         anchors.bottom: startBtn.top
         anchors.bottomMargin: Style.current.padding
         anchors.left: parent.left
@@ -34,15 +23,15 @@ Item {
 
         Item {
             id: contentItem
-            anchors.right: parent.right;
-            anchors.left: parent.left;
+            width: 624
+            anchors.horizontalCenter: parent.horizontalCenter
 
             Image {
                 id: image
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 fillMode: Image.PreserveAspectFit
-                source: "../../../../img/ens-header@2x.png"
+                source: `../../../../img/ens-header-${Style.current.name}@2x.png`
             }
 
             StyledText {

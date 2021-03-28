@@ -3,11 +3,12 @@ import "../../../imports"
 import "../../../shared"
 import "./LeftTab"
 
-Item {
+Rectangle {
     property alias currentTab: profileMenu.profileCurrentIndex
     property alias changeProfileSection: profileMenu.changeProfileSection
 
     id: profileInfoContainer
+    color: Style.current.secondaryMenuBackground
 
     StyledText {
         id: title
@@ -29,6 +30,7 @@ Item {
         anchors.top: title.bottom
         anchors.topMargin: Style.current.bigPadding
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: Style.current.padding
     }
 }
 

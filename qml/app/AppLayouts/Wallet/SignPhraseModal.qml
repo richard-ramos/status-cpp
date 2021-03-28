@@ -16,6 +16,8 @@ ModalPopup {
 
     Column {
         anchors.horizontalCenter: parent.horizontalCenter
+        anchors.left: parent.left
+        anchors.right: parent.right
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -41,8 +43,7 @@ ModalPopup {
         Rectangle {
             color: Style.current.inputBackground
             height: 44
-            width: signPhrasePopup.width
-            anchors.left: signPhrasePopup.left
+            width: parent.width
             StyledText {
                 id: signingPhrase
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -72,6 +73,7 @@ ModalPopup {
             text: qsTrId("three-words-description-2")
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
+            width: parent.width
             font.pixelSize: 13
             height: 18
             color: Style.current.danger

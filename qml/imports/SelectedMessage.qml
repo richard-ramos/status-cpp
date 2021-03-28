@@ -11,8 +11,7 @@ QtObject {
     author = "";
   }
 
-  function set(_messageId, _author){
+  function set(_messageId){
     messageId = _messageId;
-    author = _author;
   }
 }

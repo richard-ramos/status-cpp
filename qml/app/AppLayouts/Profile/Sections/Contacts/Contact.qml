@@ -75,26 +75,12 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    StatusContextMenuButton {
         property int iconSize: 14
-        property bool isHovered: false
-        readonly property color hoveredBg: Utils.setColorAlpha(Style.current.black, 0.1)
         id: menuButton
-        height: 32
-        width: 32
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: Style.current.padding
-        radius: 8
-        color: isHovered ? hoveredBg : Style.current.transparent
-
-        SVGImage {
-            source: "../../../../img/dots-icon.svg"
-            width: 18
-            height: 4
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-        }
 
         MouseArea {
             id: mouseArea
@@ -122,7 +108,7 @@ Rectangle {
                     icon.height: menuButton.iconSize
                     //% "View Profile"
                     text: qsTrId("view-profile")
-                    onTriggered: {
+                     onTriggered: {
                         openPopup(profilePopupComponent, {
                             contact: contactsModel.get(contactId)
                         });

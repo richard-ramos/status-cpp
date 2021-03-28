@@ -50,18 +50,17 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
         id: noSearchResults
         anchors.top: parent.top
         height: visible ? 300 : 0
-        color: "transparent"
         visible: !chatGroupsListView.visible && channelListContent.searchStr !== ""
         anchors.left: parent.left
         anchors.right: parent.right
 
         StyledText {
             font.pixelSize: 15
-            color: Style.current.darkGrey
+            color: Style.current.secondaryText
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
             //% "No search results"
@@ -95,7 +94,6 @@ Item {
             chatColumn.isReply = false;
         }
     }
-
 }
 
 

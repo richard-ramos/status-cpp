@@ -12,8 +12,7 @@ Item {
     property string pubkey
 
     id: profileHeaderContent
-    height: parent.height
-    Layout.fillWidth: true
+    anchors.fill: parent
 
     Component.onCompleted: {
         username = StatusUtils.generateAlias(StatusSettings.PublicKey);
@@ -29,10 +28,8 @@ Item {
         id: profileImgNameContainer
         anchors.top: parent.top
         anchors.topMargin: 64
-        anchors.right: parent.right
-        anchors.rightMargin: contentMargin
-        anchors.left: parent.left
-        anchors.leftMargin: contentMargin
+        width: contentMaxWidth
+        anchors.horizontalCenter: parent.horizontalCenter
 
         height: this.childrenRect.height
 

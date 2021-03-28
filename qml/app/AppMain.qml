@@ -16,6 +16,7 @@ import SortFilterProxyModel 0.2
 
 RowLayout {
     id: appMain
+    property int currentView: sLayout.currentIndex
     spacing: 0
     Layout.fillHeight: true
     Layout.fillWidth: true
@@ -77,10 +78,11 @@ RowLayout {
         property bool nodeManagementEnabled: false
         property bool browserEnabled: false
         property bool displayChatImages: false
-        property bool useCompactMode: false
+        property bool useCompactMode: true
         property bool timelineEnabled: true
         property string locale: "en"
         property var recentEmojis: []
+        property var hiddenCommunityWelcomeBanners: []
         property real volume: 0.2
         property int notificationSetting: Constants.notifyAllMessages
         property bool notificationSoundsEnabled: true
@@ -93,14 +95,15 @@ RowLayout {
         property int fontSize: Constants.fontSizeM
         property bool hideSignPhraseModal: false
         property bool onlyShowContactsProfilePics: true
+        property bool quitOnClose: false
 
         // Browser settings
         property bool showBrowserSelector: true
         property bool openLinksInStatus: true
-        property bool showFavoritesBar: false
+        property bool shouldShowFavoritesBar: true
         property string browserHomepage: ""
-        property int browserSearchEngine: Constants.browserSearchEngineNone
-        property int browserEthereumExplorer: Constants.browserEthereumExplorerNone
+        property int shouldShowBrowserSearchEngine: Constants.browserSearchEngineDuckDuckGo
+        property int useBrowserEthereumExplorer: Constants.browserEthereumExplorerEtherscan
         property bool autoLoadImages: true
         property bool javaScriptEnabled: true
         property bool errorPageEnabled: true
@@ -112,7 +115,6 @@ RowLayout {
         property bool pdfViewerEnabled: true
         property bool compatibilityMode: true
     }
-    
 
     ErrorSound {
         id: errorSound
@@ -126,26 +128,52 @@ RowLayout {
         muted: !appSettings.notificationSoundsEnabled
     }
 
-    // TODO: 
+    // TODO:
     /*
     Connections {
         target: profileModel
         onProfileSettingsFileChanged: {
+            profileModel.changeLocale(appSettings.locale)
+
+            // Since https://github.com/status-im/status-desktop/commit/93668ff75
+            // we're hiding the setting to change appearance for compact normal mode
+            // of the UI. For now, compact mode is the new default.
+            //
+            // Prior to this change, most likely many users are still using the
+            // normal mode configuration, so we have to enforce compact mode for
+            // those.
+            if (!appSettings.useCompactMode) {
+                appSettings.useCompactMode = true
+            }
+
             const whitelist = profileModel.getLinkPreviewWhitelist()
             try {
                 const whiteListedSites = JSON.parse(whitelist)
                 let settingsUpdated = false
+
+                // Add Status links to whitelist
+                whiteListedSites.push({title: "Status", address: Constants.deepLinkPrefix, imageSite: false})
+                whiteListedSites.push({title: "Status", address: Constants.joinStatusLink, imageSite: false})
+
                 const settings = appSettings.whitelistedUnfurlingSites
+
+                // Set Status links as true. We intercept thoseURLs so it is privacy-safe
+                if (!settings[Constants.deepLinkPrefix] || !settings[Constants.joinStatusLink]) {
+                    settings[Constants.deepLinkPrefix] = true
+                    settings[Constants.joinStatusLink] = true
+                    settingsUpdated = true
+                }
+
                 const whitelistedHostnames = []
 
                 // Add whitelisted sites in to app settings that are not already there
                 whiteListedSites.forEach(site => {
-                    if (!settings.hasOwnProperty(site.address))  {
-                        settings[site.address] = false
-                        settingsUpdated = true
-                    }
-                    whitelistedHostnames.push(site.address)
-                })
+                                             if (!settings.hasOwnProperty(site.address))  {
+                                                 settings[site.address] = false
+                                                 settingsUpdated = true
+                                             }
+                                             whitelistedHostnames.push(site.address)
+                                         })
                 // Remove any whitelisted sites from app settings that don't exist in the
                 // whitelist from status-go
                 Object.keys(settings).forEach(settingsHostname => {
@@ -162,7 +190,8 @@ RowLayout {
             }
             appMain.settingsLoaded()
         }
-    }*/
+    }
+    */
 
     Component.onCompleted: {
         if(appSettings.locale !== "en"){
@@ -268,19 +297,7 @@ RowLayout {
     }
 
     function changeAppSection(section) {
-        let sectionId = -1
-        switch (section) {
-        case Constants.chat: sectionId = 0; break;
-        case Constants.wallet: sectionId = 1; break;
-        case Constants.browser: sectionId = 2; break;
-        case Constants.profile: sectionId = 4; break;
-        case Constants.node: sectionId = 5; break;
-        case Constants.ui: sectionId = 6; break;
-        }
-        if (sectionId === -1) {
-            throw new Exception ("Unknown section name. Check the Constants to know the available ones")
-        }
-        tabBar.setCurrentIndex(sectionId)
+        sLayout.currentIndex = Utils.getAppSectionIndex(section)
     }
 
     IdentityImage {
@@ -332,148 +349,109 @@ RowLayout {
         tokens: tokenModel
     }
 
-    TabBar {
-        id: tabBar
-        width: 78
-        Layout.maximumWidth: 80
-        Layout.preferredWidth: 80
-        Layout.minimumWidth: 80
-        currentIndex: 0
-        topPadding: 57
-        rightPadding: 19
-        leftPadding: 19
-        transformOrigin: Item.Top
-        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+
+    Rectangle {
+        id: leftTab
+        Layout.maximumWidth: 78
+        Layout.minimumWidth: 78
+        Layout.preferredWidth: 78
         Layout.fillHeight: true
-        spacing: 5
-        background: Rectangle {
-            color: "#00000000"
-            border.color: Style.current.border
-        }
+        height: parent.height
+        color: Style.current.mainMenuBackground
 
-        StatusIconTabButton {
-              id: chatBtn
-              anchors.horizontalCenter: parent.horizontalCenter
-              icon.name: "message"
-              anchors.topMargin: 0
+        ScrollView {
+            id: scrollView
+            width: leftTab.width
+            anchors.top: parent.top
+            anchors.topMargin: 50
+            anchors.bottom: leftTabButtons.visible ? leftTabButtons.top : parent.bottom
+            anchors.bottomMargin: tabBar.spacing
+            clip: true
 
-              Rectangle {
-                  id: chatBadge
-                  visible: chatsModel.unreadMessagesCount > 0
-                  anchors.top: parent.top
-                  anchors.left: parent.right
-                  anchors.leftMargin: -17
-                  anchors.topMargin: 1
-                  radius: height / 2
-                  color: Style.current.blue
-                  border.color: chatBtn.hovered ? Style.current.secondaryBackground : Style.current.background
-                  border.width: 2
-                  width: chatsModel.unreadMessagesCount < 10 ? 22 : messageCount.width + 14
-                  height: 22
-                  Text {
-                      id: messageCount
-                      font.pixelSize: chatsModel.unreadMessagesCount > 99 ? 10 : 12
-                      color: Style.current.white
-                      anchors.centerIn: parent
-                      text: chatsModel.unreadMessagesCount > 99 ? "99+" : chatsModel.unreadMessagesCount
-                  }
-              }
-        }
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-        StatusIconTabButton {
-              id: walletBtn
-              anchors.top: chatBtn.top
-              enabled: isExperimental === "1" || appSettings.walletEnabled
-              icon.name: "wallet"
-        }
+            Column {
+                id: tabBar
+                spacing: 12
+                width: scrollView.width
 
-        StatusIconTabButton {
-              id: browserBtn
-              anchors.top: walletBtn.top
-              enabled: isExperimental === "1" || appSettings.browserEnabled
-              icon.name: "compass"
-        }
+                StatusIconTabButton {
+                    id: chatBtn
+                    icon.name: "message"
+                    section: Constants.chat
+                    doNotHandleClick: true
+                    onClicked: {
+                        // TODO:
+                        //chatsModel.communities.activeCommunity.active = false
+                        appMain.changeAppSection(Constants.chat)
+                    }
 
-        StatusIconTabButton {
-              id: timelineBtn
-              anchors.top: browserBtn.enabled ? browserBtn.top : walletBtn.top
-              enabled: isExperimental === "1" || appSettings.timelineEnabled
-              icon.name: "timeline"
-        }
+                    // TODO: checked: !chatsModel.communities.activeCommunity.active  && sLayout.currentIndex === Utils.getAppSectionIndex(Constants.chat)
+                    checked: sLayout.currentIndex === Utils.getAppSectionIndex(Constants.chat)
+                    Rectangle {
+                        id: chatBadge
+                        visible: chatsModel.unreadMessagesCount > 0
+                        anchors.top: parent.top
+                        anchors.left: parent.right
+                        anchors.leftMargin: -17
+                        anchors.topMargin: 1
+                        radius: height / 2
+                        color: Style.current.blue
+                        border.color: chatBtn.hovered ? Style.current.secondaryBackground : Style.current.background
+                        border.width: 2
+                        width: chatsModel.unreadMessagesCount < 10 ? 22 : messageCount.width + 14
+                        height: 22
+                        Text {
+                            id: messageCount
+                            font.pixelSize: chatsModel.unreadMessagesCount > 99 ? 10 : 12
+                            color: Style.current.white
+                            anchors.centerIn: parent
+                            text: chatsModel.unreadMessagesCount > 99 ? "99+" : chatsModel.unreadMessagesCount
+                        }
+                    }
+                }
 
-        StatusIconTabButton {
-              id: profileBtn
-              anchors.top: timelineBtn.enabled ? timelineBtn.top : browserBtn.top
-              icon.name: "profile"
+                Loader {
+                    id: communitiesListLoader
+                    active: appSettings.communitiesEnabled
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    height: {
+                        if (item && active) {
+                            return item.height
+                        }
 
-              Rectangle {
-                id: profileBadge
-                visible: !StatusSettings.isMnemonicBackedUp && sLayout.children[sLayout.currentIndex] !== profileLayoutContainer
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.rightMargin: 4
-                anchors.topMargin: 5
-                radius: height / 2
-                color: Style.current.blue
-                border.color: profileBtn.hovered ? Style.current.secondaryBackground : Style.current.background
-                border.width: 2
-                width: 14
-                height: 14
+                        return 0
+                    }
+                    sourceComponent: Item {}
+                    /* TODO: Component {
+                        CommunityList {}
+                    }*/
+                }
+
+                Loader {
+                    active: !leftTabButtons.visible
+                    width: parent.width
+                    height: {
+                        if (item && active) {
+                            return item.height
+                        }
+                        return 0
+                    }
+                    sourceComponent: LeftTabBottomButtons {}
+                }
             }
         }
 
-        StatusIconTabButton {
-              id: nodeBtn
-              enabled: isExperimental === "1" && appSettings.nodeManagementEnabled
-              anchors.top: profileBtn.top
-              icon.name: "node"
-        }
-
-        StatusIconTabButton {
-              id: uiComponentBtn
-              enabled: isExperimental === "1"
-              anchors.top: nodeBtn.top
-              icon.name: "node"
+        LeftTabBottomButtons {
+            id: leftTabButtons
+            visible: scrollView.contentHeight > leftTab.height
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Style.current.padding
         }
     }
 
-    Loader {
-        id: loadingMessagesIndicator
-        active: false
-        sourceComponent: loadingIndicator
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: Style.current.padding
-        anchors.bottomMargin: Style.current.padding * 5
-    }
 
-    /** Begin: Extract to component **/
-
-    Component {
-        id: loadingIndicator
-        LoadingAnimation {}
-    }
-
-
-    Timer {
-        id: timer
-    }
-
-    property var mailserverRequestTimer: null
-
-    Connections {
-        target: mailserverModel
-        onMailserverRequestSent: {
-            loadingMessagesIndicator.active = true;
-            
-            if(mailserverRequestTimer != null && mailserverRequestTimer.running){
-                mailserverRequestTimer.stop();
-            }
-            mailserverRequestTimer = timer.setTimeout(function(){ 
-                loadingMessagesIndicator.active = false;
-            }, 5000);
-        }
-    }
 
     /** End: Extract to component **/
 
@@ -483,7 +461,7 @@ RowLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
         Layout.fillHeight: true
-        currentIndex: tabBar.currentIndex
+        currentIndex: 0
         onCurrentIndexChanged: {
             if (typeof this.children[currentIndex].onActivated === "function") {
                 this.children[currentIndex].onActivated()
@@ -493,7 +471,7 @@ RowLayout {
                 browserLayoutContainer.active = true;
             }
 
-            timelineLayoutContainer.active = this.children[currentIndex] == timelineLayoutContainer
+            timelineLayoutContainer.active = this.children[currentIndex] === timelineLayoutContainer
 
             if(this.children[currentIndex] === walletLayoutContainer){
                 walletLayoutContainer.showSigningPhrasePopup();
@@ -514,7 +492,6 @@ RowLayout {
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillHeight: true
         }
-
         Loader {
             id: browserLayoutContainer
             sourceComponent: Item {}

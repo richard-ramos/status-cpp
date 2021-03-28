@@ -55,55 +55,17 @@ ModalPopup {
             color: Style.current.danger
         }
 
-        ModalPopup {
+        ImageCropperModal {
             id: cropImageModal
-            width: image.width + 50
-            height: image.height + 170
-            //% "Crop your image (optional)"
-            title: qsTrId("crop-your-image--optional-")
 
-            Image {
-                id: image
-                width: 400
-                source: popup.selectedImage
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-                fillMode: Image.PreserveAspectFit
-            }
-
-            ImageCropper {
-                id: imageCropper
-                x: image.x
-                y: image.y
-                image: image
-            }
-
-            footer: StatusButton {
-                id: doUploadBtn
-                //% "Finish"
-                text: qsTrId("finish")
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                onClicked: {
-                    const aXPercent = imageCropper.selectorRectangle.x / image.width
-                    const aYPercent = imageCropper.selectorRectangle.y / image.height
-                    const bXPercent = (imageCropper.selectorRectangle.x + imageCropper.selectorRectangle.width) / image.width
-                    const bYPercent = (imageCropper.selectorRectangle.y + imageCropper.selectorRectangle.height) / image.height
-
-
-                    const aX = Math.round(aXPercent * image.sourceSize.width)
-                    const aY = Math.round(aYPercent * image.sourceSize.height)
-
-                    const bX = Math.round(bXPercent * image.sourceSize.width)
-                    const bY = Math.round(bYPercent * image.sourceSize.height)
-
-                    try {
+            selectedImage: popup.selectedImage
+            ratio: "1:1"
+            onCropFinished: {
+                try {
                         identityImage.upload(selectedImage, aX, aY, bX, bY);
                     } catch (err) {
                         uploadError = qsTr("Error storing identity image");
                     }
-                    cropImageModal.close()
-                }
             }
         }
     }

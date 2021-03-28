@@ -47,7 +47,6 @@ Item {
         if (selectedAccount.address) {
             textSelectedAddress.text = selectedAccount.address  + " • "
         }
-
         // TODO:
         /*
         if (selectedAccount.fiatBalance) {

@@ -17,18 +17,6 @@ Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    StyledText {
-        id: sectionTitle
-        //% "Devices"
-        text: qsTrId("devices")
-        anchors.left: parent.left
-        anchors.leftMargin: 24
-        anchors.top: parent.top
-        anchors.topMargin: 24
-        font.weight: Font.Bold
-        font.pixelSize: 20
-    }
-
     DevicesModel {
         id: devicesModel
     }
@@ -37,8 +25,8 @@ Item {
         id: firstTimeSetup
         anchors.left: syncContainer.left
         anchors.leftMargin: Style.current.padding
-        anchors.top: sectionTitle.bottom
-        anchors.topMargin: Style.current.padding
+        anchors.top: parent.top
+        anchors.topMargin: 24
         anchors.right: syncContainer.right
         anchors.rightMargin: Style.current.padding
         visible: !devicesModel.isSetup
@@ -73,7 +61,7 @@ Item {
         id: advertiseDeviceItem
         anchors.left: syncContainer.left
         anchors.leftMargin: Style.current.padding
-        anchors.top: sectionTitle.bottom
+        anchors.top: parent.top
         anchors.topMargin: Style.current.padding
         anchors.right: syncContainer.right
         anchors.rightMargin: Style.current.padding
@@ -220,6 +208,8 @@ Item {
         anchors.bottom: syncContainer.bottom
         anchors.bottomMargin: Style.current.padding
         anchors.horizontalCenter: parent.horizontalCenter
+        visible: devicesModel.isSetup
+
         text: isSyncing ?
         //% "Syncing..."
         qsTrId("sync-in-progress") :

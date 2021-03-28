@@ -47,6 +47,7 @@ ColumnLayout {
             id: walletStackLayout
             currentIndex: leftTab.list.currentIndex
             onCurrentIndexChanged: {
+                if (this.children[this.currentIndex] instanceof Repeater) return;
                 this.children[this.currentIndex].resetTab()
             }
             Repeater {
@@ -101,13 +102,13 @@ ColumnLayout {
 
                                 StatusTabButton {
                                     id: assetBtn
-                                    tabColor: walletModel.currentAccount.iconColor
+                                    tabColor: model.iconColor
                                     //% "Assets"
                                     btnText: qsTrId("wallet-assets")
                                 }
                                 StatusTabButton {
                                     id: collectiblesBtn
-                                    tabColor: walletModel.currentAccount.iconColor
+                                    tabColor: model.iconColor
                                     anchors.left: assetBtn.right
                                     anchors.leftMargin: 32
                                     //% "Collectibles"
@@ -115,7 +116,7 @@ ColumnLayout {
                                 }
                                 StatusTabButton {
                                     id: historyBtn
-                                    tabColor: walletModel.currentAccount.iconColor
+                                    tabColor: model.iconColor
                                     anchors.left: collectiblesBtn.right
                                     anchors.leftMargin: 32
                                     //% "History"

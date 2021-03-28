@@ -41,7 +41,7 @@ ModalPopup {
         accountNameValidationError = "";
         passwordInput.text = "";
         accountNameInput.text = "";
-        accountColorInput.selectedColor = Constants.accountColors[Math.floor(Math.random() * Constants.accountColors.length)]
+        accountColorInput.selectedColor = Style.current.accountColors[Math.floor(Math.random() * Style.current.accountColors.length)]
         passwordInput.forceActiveFocus(Qt.MouseFocusReason)
     }
 
@@ -72,12 +72,11 @@ ModalPopup {
 
     StatusWalletColorSelect {
         id: accountColorInput
-        selectedColor: Constants.accountColors[0]
+        selectedColor: Style.current.accountColors[0]
         model: Constants.accountColors
         anchors.top: accountNameInput.bottom
         anchors.topMargin: marginBetweenInputs
-        anchors.left: parent.left
-        anchors.right: parent.right
+        width: parent.width
     }
 
     Item {

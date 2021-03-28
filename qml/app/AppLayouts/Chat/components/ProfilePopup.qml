@@ -56,6 +56,8 @@ ModalPopup {
             anchors.topMargin: Style.current.padding
             anchors.left: profilePic.right
             anchors.leftMargin: Style.current.halfPadding
+            anchors.right: qrCodeButton.left
+            anchors.rightMargin: Style.current.padding
             font.bold: true
             font.pixelSize: 17
             readOnly: true
@@ -171,11 +173,11 @@ ModalPopup {
             id: valueShareURL
             //% "Share Profile URL"
             label: qsTrId("share-profile-url")
-            text: "https://join.status.im/u/" + (contact ? (contact.id.substr(
+            text: Constants.userLinkPrefix + (contact ? (contact.id.substr(
                       0, 4) + "..." + contact.id.substr(contact.id.length - 5)) : "")
             anchors.top: separator.top
             anchors.topMargin: popup.innerMargin
-            textToCopy: "https://join.status.im/u/" + (contact ? contact.id : "")
+            textToCopy: Constants.userLinkPrefix + (contact ? contact.id : "")
         }
 
         Separator {
@@ -209,6 +211,7 @@ ModalPopup {
             anchors.bottom: chatSettings.bottom
             anchors.bottomMargin: 5
             width: 13
+            height: 7
             fillMode: Image.PreserveAspectFit
             visible: !isCurrentUser
             ColorOverlay {

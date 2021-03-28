@@ -34,6 +34,9 @@ Contact::Contact(QString id, QString ensName, QObject* parent)
 	, m_identicon(Utils::generateIdenticon(id))
 	, m_name(ensName)
 {
+	if(!m_name.isEmpty()){
+		m_ensVerified = true;
+	}
 	qDebug() << "Contact does not exist:" << m_alias;
 }
 

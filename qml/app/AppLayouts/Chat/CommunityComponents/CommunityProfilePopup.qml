@@ -1,4 +1,5 @@
 import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.3
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
@@ -8,55 +9,75 @@ import "../../../../shared/status"
 import "../ContactsColumn"
 
 ModalPopup {
-    property QtObject community: chatsModel.activeCommunity
+    property QtObject community: chatsModel.communities.activeCommunity
     property string communityId: community.id
     property string name: community.name
     property string description: community.description
     property int access: community.access
-    // TODO get the real image once it's available
-    property string source: "../../../img/ens-header-dark@2x.png"
+    property string source: ""
+    property string communityColor: ""
     property int nbMembers: community.nbMembers
-    property bool isAdmin: true // TODO: 
-    height: isAdmin ? 640 : 509
-
+    property bool isAdmin: false
+    height: stack.currentItem.height + modalHeader.height + modalFooter.height + Style.current.padding * 3
     id: popup
 
+    onClosed: {
+        while (stack.depth > 1) {
+            stack.pop()
+        }
+    }
+
     header: Item {
+        id: modalHeader
         height: childrenRect.height
         width: parent.width
 
-        RoundedImage {
+        property string title: stack.currentItem.headerTitle
+        property string description: stack.currentItem.headerDescription
+        property string imageSource: stack.currentItem.headerImageSource
+        property bool useLetterIdenticon: !!stack.currentItem.useLetterIdenticon
+
+        Loader {
             id: communityImg
-            source: popup.source
-            width: 40
-            height: 40
+            sourceComponent: !modalHeader.useLetterIdenticon ? commmunityImgCmp : letterIdenticonCmp
+            active: !!modalHeader.imageSource || modalHeader.useLetterIdenticon
+        }
+
+        Component {
+            id: commmunityImgCmp
+            RoundedImage {
+                source: modalHeader.imageSource
+                width: 40
+                height: 40
+                visible: !!modalHeader.imageSource
+            }
+        }
+
+        Component {
+            id: letterIdenticonCmp
+            StatusLetterIdenticon {
+                width: 40
+                height: 40
+                chatName: popup.name
+                color: popup.communityColor || Style.current.blue
+            }
         }
 
         StyledTextEdit {
             id: communityName
-            text:  popup.name
+            text: modalHeader.title
             anchors.top: parent.top
             anchors.topMargin: 2
-            anchors.left: communityImg.right
-            anchors.leftMargin: Style.current.smallPadding
+            anchors.left: communityImg.active ? communityImg.right : parent.left
+            anchors.leftMargin: communityImg.active ? Style.current.smallPadding : 0
             font.bold: true
             font.pixelSize: 17
             readOnly: true
         }
 
         StyledText {
-            text: {
-                switch(access) {
-                //% "Public community"
-                case Constants.communityChatPublicAccess: return qsTrId("public-community");
-                //% "Invitation only community"
-                case Constants.communityChatInvitationOnlyAccess: return qsTrId("invitation-only-community");
-                //% "On request community"
-                case Constants.communityChatOnRequestAccess: return qsTrId("on-request-community");
-                //% "Unknown community"
-                default: return qsTrId("unknown-community");
-                }
-            }
+            id: headerDescription
+            text: modalHeader.description
             anchors.left: communityName.left
             anchors.top: communityName.bottom
             anchors.topMargin: 2
@@ -64,229 +85,73 @@ ModalPopup {
             font.weight: Font.Thin
             color: Style.current.secondaryText
         }
-    }
-
-    StyledText {
-        id: descriptionText
-        text: popup.description
-        wrapMode: Text.Wrap
-        width: parent.width
-        font.pixelSize: 15
-        font.weight: Font.Thin
-    }
-
-
-    Separator {
-        id: sep1
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: descriptionText.bottom
-        anchors.topMargin: Style.current.smallPadding
-        anchors.leftMargin: -Style.current.padding
-        anchors.rightMargin: -Style.current.padding
-    }
-
-    TextWithLabel {
-        id: shareCommunity
-        anchors.top: sep1.bottom
-        anchors.topMargin: Style.current.bigPadding
-        //% "Share community"
-        label: qsTrId("share-community")
-        text: "https://join.status.im/u/TODO"
-        textToCopy: text
-    }
-
-    Separator {
-        id: sep2
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: shareCommunity.bottom
-        anchors.topMargin: Style.current.smallPadding
-        anchors.leftMargin: -Style.current.padding
-        anchors.rightMargin: -Style.current.padding
-    }
-
-    Column {
-        anchors.top: sep2.bottom
-        anchors.topMargin: Style.current.padding
-        width: parent.width
-        spacing: Style.current.padding
-        
-        
-        Loader {
-            active: isAdmin
-            width: parent.width
-            sourceComponent: CommunityPopupButton {
-                //% "Members"
-                label: qsTrId("members-title")
-                iconName: "members"
-                txtColor: Style.current.textColor
-                onClicked: openPopup(communityMembersPopup)
-                Component {
-                    id: communityMembersPopup
-                    CommunityMembersPopup { }
-                }
-                Item {
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    width: 100
-                    StyledText {
-                        text: nbMembers.toString()
-                        anchors.right: caret.left
-                        anchors.rightMargin: Style.current.smallPadding
-                        anchors.top: parent.top
-                        anchors.topMargin: 10
-                        padding: 0
-                        font.pixelSize: 15
-                        color: Style.current.secondaryText
-                    }
-
-                    SVGImage {
-                        id: caret
-                        anchors.right: parent.right
-                        anchors.topMargin: Style.current.padding
-                        anchors.top: parent.top
-                        source: "../../../img/caret.svg"
-                        width: 13
-                        height: 7
-                        rotation: -90
-                        ColorOverlay {
-                            anchors.fill: parent
-                            source: parent
-                            color: Style.current.secondaryText
-                        }
-                    }
-                }
-            }
-        }
-
-        Loader {
-            active: isAdmin
-            width: parent.width
-            sourceComponent: CommunityPopupButton {
-                //% "Roles"
-                label: qsTrId("roles")
-                iconName: "roles"
-                width: parent.width
-                onClicked: console.log("TODO:")
-                txtColor: Style.current.textColor
-                SVGImage {
-                    anchors.top: parent.top
-                    anchors.topMargin: Style.current.padding
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    source: "../../../img/caret.svg"
-                    width: 13
-                    height: 7
-                    rotation: -90
-                    ColorOverlay {
-                        anchors.fill: parent
-                        source: parent
-                        color: Style.current.secondaryText
-                    }
-                }
-            }
-        }
-
-        CommunityPopupButton {
-            id: notificationsBtn
-            //% "Notifications"
-            label: qsTrId("notifications")
-            iconName: "notifications"
-            width: parent.width
-            txtColor: Style.current.textColor
-            onClicked: function(){
-                notificationSwitch.checked = !notificationSwitch.checked
-            }
-            StatusSwitch {
-                id: notificationSwitch
-                anchors.right: parent.right
-                onCheckedChanged: function(value) {
-                    // TODO: enable/disable notifications
-                    console.log("TODO: toggle")
-                }
-            }
-        }
 
         Separator {
-            width: parent.width
+            anchors.top: headerDescription.bottom
+            anchors.topMargin: Style.current.padding
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.rightMargin: -Style.current.padding
+            anchors.leftMargin: -Style.current.padding
+        }
+    }
+
+    StackView {
+        id: stack
+        initialItem: profileOverview
+        width: parent.width
+
+
+        pushEnter: Transition { enabled: false }
+        pushExit: Transition { enabled: false }
+        popEnter: Transition { enabled: false }
+        popExit: Transition { enabled: false }
+
+        Component {
+            id: membersList
+            CommunityProfilePopupMembersList {
+                headerTitle: qsTr("Members")
+                headerDescription: popup.nbMembers.toString()
+            }
         }
 
-        Loader {
-            active: isAdmin
-            width: parent.width
-            sourceComponent: CommunityPopupButton {
-                //% "Edit community"
-                label: qsTrId("edit-community")
-                iconName: "edit"
-                onClicked: openPopup(editCommunityPopup)
-                Component {
-                    id: editCommunityPopup
-                    CreateCommunityPopup {
-                        isEdit: true
+        Component {
+            id: profileOverview
+            CommunityProfilePopupOverview {
+                property bool useLetterIdenticon: !!!popup.source
+                headerTitle: popup.name
+                headerDescription: {
+                    switch(access) {
+                        //% "Public community"
+                        case Constants.communityChatPublicAccess: return qsTrId("public-community");
+                        //% "Invitation only community"
+                        case Constants.communityChatInvitationOnlyAccess: return qsTrId("invitation-only-community");
+                        //% "On request community"
+                        case Constants.communityChatOnRequestAccess: return qsTrId("on-request-community");
+                        //% "Unknown community"
+                        default: return qsTrId("unknown-community");
                     }
                 }
+                headerImageSource: popup.source
+                description: popup.description
             }
         }
+    }
 
-        Loader {
-            property string exportResult: ""
-
-            active: isAdmin
-            width: parent.width
-            sourceComponent: !exportResult ? exportBtn : resultComponent
-
-            Component {
-                id: exportBtn
-                CommunityPopupButton {
-                    //% "Export community"
-                    label: qsTrId("export-community")
-                    iconName: "../fetch"
-                    onClicked:  exportResult = chatsModel.exportComumnity()
-                }
-            }
-
-            Component {
-                id: resultComponent
-                StyledText {
-                    property bool isError: !exportResult.startsWith("0x")
-
-                    text: exportResult
-                    color: isError ? Style.current.danger : Style.current.textColor
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.rightMargin: Style.current.smallPadding + copyToClipboardBtn.width
-                    wrapMode: TextEdit.WrapAnywhere
-
-                    CopyToClipBoardButton {
-                        id: copyToClipboardBtn
-                        visible: !isError
-                        textToCopy: exportResult
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.right
-                        anchors.leftMargin: Style.current.smallPadding
-                    }
-                }
-            }
-        }
-
-        CommunityPopupButton {
-            //% "Leave community"
-            label: qsTrId("leave-community")
-            iconName: "leave"
-        }
-
-        Loader {
-            active: isAdmin
-            width: parent.width
-            sourceComponent: CommunityPopupButton {
-                id: deleteBtn
-                //% "Delete"
-                label: qsTrId("delete")
-                iconName: "delete"
-                txtColor: Style.current.red
-                //btnColor: Style.current.red // TODO: statusroundbutton should support changing color
+    footer: Item {
+        id: modalFooter
+        visible: stack.depth > 1
+        width: parent.width
+        height: modalFooter.visible ? btnBack.height : 0
+        StatusRoundButton {
+            id: btnBack
+            anchors.left: parent.left
+            icon.name: "arrow-right"
+            icon.width: 20
+            icon.height: 16
+            rotation: 180
+            onClicked: {
+                stack.pop()
             }
         }
     }

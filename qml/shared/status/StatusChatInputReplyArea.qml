@@ -7,7 +7,7 @@ import "../../shared"
 Rectangle {
     id: root
     height: 50
-    color: Style.current.lightGrey
+    color: Style.current.replyBackground
     radius: 16
     clip: true
 
@@ -29,7 +29,7 @@ Rectangle {
     StyledText {
         id: replyToUsername
         text: "↪ " + userName
-        color: Style.current.black
+        color: Style.current.textColor
         anchors.top: parent.top
         anchors.topMargin: Style.current.halfPadding
         anchors.left: parent.left
@@ -38,21 +38,26 @@ Rectangle {
         font.weight: Font.Medium
     }
 
-    StyledText {
-        id: replyText
-        text: Emoji.parse(replaceUsernamesOnMessageMentions(message))
+    Rectangle {
         anchors.left: replyToUsername.left
         anchors.top: replyToUsername.bottom
-        anchors.topMargin: 2
+        anchors.topMargin: -3
         anchors.right: parent.right
         anchors.rightMargin: Style.current.padding
         anchors.bottom: parent.bottom
-        elide: Text.ElideRight
-        font.pixelSize: 13
-        font.weight: Font.Normal
-        // Eliding only works for PlainText: https://bugreports.qt.io/browse/QTBUG-16567
-        textFormat: Text.PlainText
-        color: Style.current.black
+        clip: true
+        color: Style.current.transparent
+
+        StyledText {
+            id: replyText
+            text: Utils.getMessageWithStyle(Utils.linkifyAndXSS(Emoji.parse(message)), appSettings.useCompactMode, false)
+            anchors.fill: parent
+            elide: Text.ElideRight
+            font.pixelSize: 13
+            font.weight: Font.Normal
+            textFormat: Text.RichText
+            color: Style.current.textColor
+        }
     }
 
     RoundButton {
@@ -74,7 +79,7 @@ Rectangle {
             ColorOverlay {
                 anchors.fill: iconImg
                 source: iconImg
-                color: Style.current.black
+                color: Style.current.textColor
                 antialiasing: true
             }
         }

@@ -14,8 +14,6 @@ Rectangle {
     color: Style.current.background
     height: 56
     Layout.fillWidth: true
-    border.color: Style.current.border
-    border.width: 1
 
     Loader {
       property bool isGroupChatOrOneToOne: chat.chatType == ChatType.PrivateGroupChat || chat.chatType == ChatType.OneToOne
@@ -32,7 +30,6 @@ Rectangle {
             id: groupInfoPopup
         }
     }
-
     Component {
         id: chatInfoButton
         StatusChatInfoButton {
@@ -62,6 +59,7 @@ Rectangle {
         id: chatInfo
         StatusChatInfo {
             identiconSize: 36
+            chatId: chat.chatId
             chatName: chat.name
             chatType: chat.chatType
             chatColor: chat.color

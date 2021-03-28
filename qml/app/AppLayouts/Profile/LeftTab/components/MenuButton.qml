@@ -16,10 +16,10 @@ Rectangle {
     id: menuButton
     color: {
          if (active) {
-            return Style.current.secondaryBackground
+            return Style.current.menuBackgroundActive
          }
          if (hovered) {
-            return Style.current.backgroundHover
+            return Style.current.menuBackgroundHover
          }
          return Style.current.transparent
     }
@@ -28,7 +28,7 @@ Rectangle {
     width: parent.width
     radius: Style.current.radius
 
-    Image {
+    SVGImage {
         id: iconImage
         height: 24
         width: 24
@@ -36,15 +36,6 @@ Rectangle {
         anchors.leftMargin: Style.current.padding
         anchors.verticalCenter: parent.verticalCenter
         source: menuButton.source
-        sourceSize: Qt.size(width, height)
-        fillMode: Image.PreserveAspectFit
-        smooth: true
-
-        ColorOverlay {
-            anchors.fill: parent
-            source: parent
-            color: Style.current.blue
-        }
     }
 
     StyledText {

@@ -8,9 +8,10 @@ Rectangle {
     property bool parentIsHovered: false
     signal hoverChanged(bool hovered)
     property int containerMargin: 2
+    property int contentType: 2
 
     id: buttonsContainer
-    visible: buttonsContainer.parentIsHovered || isMessageActive
+    visible: (buttonsContainer.parentIsHovered || isMessageActive) && contentType != Constants.transactionType
     width: buttonRow.width + buttonsContainer.containerMargin * 2
     height: 36
     radius: Style.current.radius
@@ -59,11 +60,11 @@ Rectangle {
             height: 32
             onClicked: {
                 isMessageActive = true
-                clickMessage(false, false, false, null, true)
-                messageContextMenu.x = buttonsContainer.x + buttonsContainer.width - messageContextMenu.width
+                const ctxMenu = openEmojiReactionMenu();
+                ctxMenu.x = buttonsContainer.x + buttonsContainer.width - ctxMenu.width
 
                 // The Math.max is to make sure that the menu is rendered
-                messageContextMenu.y -= Math.max(messageContextMenu.emojiContainer.height, 56) + Style.current.padding
+                ctxMenu.y -= Math.max(ctxMenu.emojiContainer.height, 56) + Style.current.padding
             }
             onHoveredChanged: {
                 buttonsContainer.hoverChanged(this.hovered)
@@ -82,7 +83,7 @@ Rectangle {
             width: 32
             height: 32
             onClicked: {
-                SelectedMessage.set(messageId, fromAuthor);
+                SelectedMessage.set(messageId);
                 showReplyArea()
             }
             onHoveredChanged: {

@@ -7,6 +7,7 @@ import im.status.desktop 1.0
 Item {
     id: root
 
+    property string chatId
     property string chatName
     property int chatType
     property string identicon
@@ -24,6 +25,7 @@ Item {
         id: letterIdenticon
 
         StatusLetterIdenticon {
+            chatId: root.chatId
             chatName: root.chatName
             chatColor: root.chatColor
             width: parent.width

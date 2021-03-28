@@ -18,11 +18,11 @@ Button {
     property color bgHoverColor: {
         if (type === "warn") {
             if (showBorder) {
-                return Style.current.buttonWarnBackgroundColor
+                return Style.current.buttonOutlineHoveredWarnBackgroundColor
             }
-            return Utils.setColorAlpha(Style.current.buttonHoveredWarnBackgroundColor, 0.2)
+            return Style.current.buttonHoveredWarnBackgroundColor
         }
-        return Utils.setColorAlpha(Style.current.buttonHoveredBackgroundColor, 0.2)
+        return Style.current.buttonBackgroundColorHover
     }
     property bool disableColorOverlay: false
     property bool showBorder: false

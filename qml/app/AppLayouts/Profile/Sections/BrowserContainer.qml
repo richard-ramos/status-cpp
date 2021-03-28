@@ -21,11 +21,9 @@ Item {
     Item {
         anchors.top: parent.top
         anchors.topMargin: topMargin
-        anchors.left: parent.left
-        anchors.leftMargin: contentMargin
-        anchors.right: parent.right
-        anchors.rightMargin: contentMargin
         anchors.bottom: parent.bottom
+        width: contentMaxWidth
+        anchors.horizontalCenter: parent.horizontalCenter
 
         Column {
             id: generalColumn
@@ -49,9 +47,9 @@ Item {
                 //% "Show favorites bar"
                 text: qsTrId("show-favorites-bar")
                 isSwitch: true
-                switchChecked: appSettings.showFavoritesBar
+                switchChecked: appSettings.shouldShowFavoritesBar
                 onClicked: function (checked) {
-                    appSettings.showFavoritesBar = checked
+                    appSettings.shouldShowFavoritesBar = checked
                 }
             }
 
@@ -59,7 +57,7 @@ Item {
                 //% "Search engine used in the address bar"
                 text: qsTrId("search-engine-used-in-the-address-bar")
                 currentValue: {
-                    switch (appSettings.browserSearchEngine) {
+                    switch (appSettings.shouldShowBrowserSearchEngine) {
                     case Constants.browserSearchEngineGoogle: return "Google"
                     case Constants.browserSearchEngineYahoo: return "Yahoo!"
                     case Constants.browserSearchEngineDuckDuckGo: return "DuckDuckGo"
@@ -76,7 +74,7 @@ Item {
                 //% "Ethereum explorer used in the address bar"
                 text: qsTrId("ethereum-explorer-used-in-the-address-bar")
                 currentValue: {
-                    switch (appSettings.browserEthereumExplorer) {
+                    switch (appSettings.useBrowserEthereumExplorer) {
                     case Constants.browserEthereumExplorerEtherscan: return "etherscan.io"
                     case Constants.browserEthereumExplorerEthplorer: return "ethplorer.io"
                     case Constants.browserEthereumExplorerBlockchair: return "blockchair.com"

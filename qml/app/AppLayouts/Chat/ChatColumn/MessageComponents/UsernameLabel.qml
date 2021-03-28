@@ -14,7 +14,7 @@ Item {
         id: chatName
         textFormat: Text.RichText
         text: Utils.getUsernameLabel(contact, isCurrentUser)
-        color: text.startsWith("@") || isCurrentUser || (contact.ensVerified && contact.name !== "") || contact.localNickname !== "" ? Style.current.blue : Style.current.secondaryText
+        color: text.startsWith("@") || isCurrentUser || (contact != undefined && ((contact.ensVerified && contact.name !== "") || contact.localNickname !== "")) ? Style.current.blue : Style.current.secondaryText
         font.weight: Font.Medium
         font.pixelSize: Style.current.secondaryTextFontSize
         font.underline: root.isHovered
@@ -40,8 +40,9 @@ Item {
 
     StyledText {
         id: ensOrAlias
-        visible: (contact.ensVerified && contact.name !== "") || contact.localNickname
+        visible: contact != undefined && ((contact.ensVerified && contact.name !== "") || contact.localNickname)
         text: {
+            if(contact == undefined) return ""
             if(contact.name !== ""){
                 if(contact.localNickname){
                     return contact.localNickname;

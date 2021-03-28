@@ -88,6 +88,7 @@ void DevicesModel::push(Device device)
 bool DevicesModel::isDeviceSetup()
 {
 	int index = m_devices.indexOf(Device{.installationId = Settings::instance()->installationId()});
+	if(index == -1) return false;
 	return index > -1 && !m_devices[index].name.isEmpty();
 }
 
@@ -104,7 +105,7 @@ void DevicesModel::setName(QString name)
 	const auto response = Status::instance()->callPrivateRPC(
 		"wakuext_setInstallationMetadata",
 		QJsonArray{Settings::instance()->installationId(), QJsonObject{{"name", name}, {"deviceType", deviceType}}}.toVariantList());
-	emit deviceSetupChanged();
+
 	int index = m_devices.indexOf(Device{.installationId = Settings::instance()->installationId()});
 	if(index > -1)
 	{
@@ -112,6 +113,8 @@ void DevicesModel::setName(QString name)
 		QModelIndex idx = createIndex(index, 0);
 		dataChanged(idx, idx);
 	}
+
+	emit deviceSetupChanged();
 }
 
 void DevicesModel::syncAll()

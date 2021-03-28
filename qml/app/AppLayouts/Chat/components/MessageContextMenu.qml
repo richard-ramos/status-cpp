@@ -13,11 +13,11 @@ PopupMenu {
     property bool isSticker: false
     property bool emojiOnly: false
     property string messageId: ""
+    property string linkUrls: ""
     property alias emojiContainer: emojiContainer
 
     id: messageContextMenu
     width: messageContextMenu.isProfile ? profileHeader.width : emojiContainer.width
-
 
     property var contact
     property var emojiReactionsReactedByUser: []
@@ -38,6 +38,9 @@ PopupMenu {
         }
         emojiReactionsReactedByUser = newEmojiReactions
 
+        const numLinkUrls = messageContextMenu.linkUrls.split(" ").length
+        copyLinkMenu.enabled = numLinkUrls > 1
+        copyLinkAction.enabled = !!messageContextMenu.linkUrls && numLinkUrls === 1 && !emojiOnly && !messageContextMenu.isProfile
         popup();
     }
 
@@ -89,8 +92,10 @@ PopupMenu {
         StyledText {
             id: username
             text: Utils.getUsernameLabel(contact, isCurrentUser)
+            elide: Text.ElideRight
+            maximumLineCount: 3
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
+            wrapMode: Text.Wrap
             anchors.top: profileImage.bottom
             anchors.topMargin: 4
             anchors.left: parent.left
@@ -123,16 +128,46 @@ PopupMenu {
     }
 
     Action {
+        id: copyLinkAction
+        text: qsTr("Copy link")
+        onTriggered: {
+            StatusUtils.copyToClipboard(linkUrls.split(" ")[0])
+            messageContextMenu.close()
+        }
+        icon.source: "../../../../shared/img/copy-to-clipboard-icon"
+        icon.width: 16
+        icon.height: 16
+        enabled: false
+    }
+
+    PopupMenu {
+        id: copyLinkMenu
+        title: qsTr("Copy link")
+        Repeater {
+            id: linksRepeater
+            model: messageContextMenu.linkUrls.split(" ")
+            delegate: MenuItem {
+                text: modelData
+                onTriggered: {
+                    StatusUtils.copyToClipboard(modelData)
+                    messageContextMenu.close()
+                }
+            }
+        }
+    }
+
+    Action {
         id: viewProfileAction
         //% "View profile"
         text: qsTrId("view-profile")
         onTriggered: {
             openProfilePopup(true, messageContextMenu.contact);
+            messageContextMenu.close()
         }
         icon.source: "../../../img/profileActive.svg"
         icon.width: 16
         icon.height: 16
-        enabled: !emojiOnly
+        enabled: !emojiOnly && !copyLinkAction.enabled
     }
     Action {
         text: messageContextMenu.isProfile ?

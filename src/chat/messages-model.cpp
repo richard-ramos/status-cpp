@@ -122,6 +122,9 @@ Message* MessagesModel::get(QString messageId) const
 
 Message* MessagesModel::get(int row) const
 {
+	if(row < 0 || row > m_messages.size() - 1){
+		return nullptr;
+	}
 	return m_messages[row];
 }
 

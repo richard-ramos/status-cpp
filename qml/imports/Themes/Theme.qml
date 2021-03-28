@@ -12,12 +12,15 @@ QtObject {
     property QtObject fontHexLight: FontLoader { id: _fontHexLight; source: "../../fonts/InterStatus/InterStatus-Light.otf"; }
     property QtObject fontHexRegular: FontLoader { id: _fontHexRegular; source: "../../fonts/InterStatus/InterStatus-Regular.otf"; }
 
+    property string name
+
     property color white
     property color white2
     property color black
-    property color grey
+    property color grey1
     property color lightBlue
     property color blue
+    property color translucentBlue
     property color transparent
     property color darkGrey
     property color darkerGrey
@@ -37,6 +40,9 @@ QtObject {
     property color secondaryText
     property color currentUserTextColor
     property color secondaryBackground
+    property color secondaryMenuBorder
+    property color menuBackgroundActive
+    property color menuBackgroundHover
     property color modalBackground
     property color codeBackground
     property color primarySelectioncolor
@@ -47,9 +53,13 @@ QtObject {
     property color mentionBgColor
     property color mentionMessageColor
     property color mentionMessageHoverColor
+    property color mainMenuBackground
+    property color secondaryMenuBackground
+    property color tabButtonBg
 
     property color buttonForegroundColor
     property color buttonBackgroundColor
+    property color buttonBackgroundColorHover
     property color buttonSecondaryColor
     property color buttonDisabledForegroundColor
     property color buttonDisabledBackgroundColor
@@ -67,14 +77,16 @@ QtObject {
     property int smallPadding: 10
     property int radius: 8
 
-    property int leftTabPrefferedSize: 340
+    property int leftTabPrefferedSize: 304
     property int leftTabMinimumWidth: 300
-    property int leftTabMaximumWidth: 500
+    property int leftTabMaximumWidth: 425
 
     property int primaryTextFontSize: 15
     property int secondaryTextFontSize: 14
     property int tertiaryTextFontSize: 12
     property int asideTextFontSize: 10
+
+    property var accountColors
 
     function updateFontSize(fontSize) {
         switch (fontSize) {

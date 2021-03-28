@@ -1,5 +1,6 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
+import QtGraphicalEffects 1.13
 import QtQuick.Layouts 1.13
 
 import "../../../imports"
@@ -8,12 +9,13 @@ import "../../../shared/status"
 import "./ContactsColumn"
 import "./CommunityComponents"
 
-Item {
+Rectangle {
     // TODO unhardcode
     property int chatGroupsListViewCount: channelList.channelListCount
 
     id: root
     Layout.fillHeight: true
+    color: Style.current.secondaryMenuBackground
 
     Component {
         id: createChannelPopup
@@ -28,68 +30,88 @@ Item {
         id: communityHeader
         width: parent.width
         height: communityHeaderButton.height
+        anchors.left: parent.left
+        anchors.leftMargin: 12
         anchors.top: parent.top
         anchors.topMargin: Style.current.padding
 
-        StatusIconButton {
-            id: backArrow
-            icon.name: "arrow-right"
-            iconRotation: 180
-            iconColor: Style.current.inputColor
-            anchors.left: parent.left
-            anchors.leftMargin: Style.current.bigPadding
-            anchors.verticalCenter: parent.verticalCenter
-            onClicked: chatsModel.activeCommunity.active = false
-        }
-
         CommunityHeaderButton {
             id: communityHeaderButton
-            anchors.left: backArrow.right
+            anchors.left: parent.left
             anchors.top: parent.top
             anchors.topMargin: -4
         }
 
-        StatusIconButton {
+        StatusRoundButton {
             id: optionsBtn
-            icon.name: "dots-icon"
-            iconColor: Style.current.inputColor
+            pressedIconRotation: 45
+            icon.name: "plusSign"
+            size: "medium"
+            type: "secondary"
+            width: 36
+            height: 36
             anchors.right: parent.right
             anchors.rightMargin: Style.current.bigPadding
-            anchors.verticalCenter: parent.verticalCenter
-            onClicked: optionsMenu.open()
-        }
+            anchors.top: parent.top
+            anchors.topMargin: 8
 
-        PopupMenu {
-            id: optionsMenu
-            x: optionsBtn.x + optionsBtn.width / 2 - optionsMenu.width / 2
-            y: optionsBtn.height
-
-            Action {
-                enabled: chatsModel.activeCommunity.admin
-                //% "Create channel"
-                text: qsTrId("create-channel")
-                icon.source: "../../img/hash.svg"
-                icon.width: 20
-                icon.height: 20
-                onTriggered: openPopup(createChannelPopup, {communityId: chatsModel.activeCommunity.id})
+            onClicked: {
+                optionsBtn.state = "pressed"
+                let x = optionsBtn.iconX + optionsBtn.icon.width / 2 - optionsMenu.width / 2
+                optionsMenu.popup(x, optionsBtn.icon.height + 14)
             }
 
-            Action {
-                //% "Leave community"
-                text: qsTrId("leave-community")
-                icon.source: "../../img/delete.svg"
-                icon.color: Style.current.red
-                icon.width: 20
-                icon.height: 20
-                onTriggered: chatsModel.leaveCurrentCommunity()
+            PopupMenu {
+                id: optionsMenu
+                x: optionsBtn.x + optionsBtn.width / 2 - optionsMenu.width / 2
+                y: optionsBtn.height
+
+                Action {
+                    enabled: chatsModel.communities.activeCommunity.admin
+                    //% "Create channel"
+                    text: qsTrId("create-channel")
+                    icon.source: "../../img/hash.svg"
+                    icon.width: 20
+                    icon.height: 20
+                    onTriggered: openPopup(createChannelPopup, {communityId: chatsModel.communities.activeCommunity.id})
+                }
+
+                Action {
+                    //% "Leave community"
+                    text: qsTrId("leave-community")
+                    icon.source: "../../img/delete.svg"
+                    icon.color: Style.current.red
+                    icon.width: 20
+                    icon.height: 20
+                    onTriggered: chatsModel.communities.leaveCurrentCommunity()
+                }
+
+                onAboutToHide: {
+                    optionsBtn.state = "default"
+                }
             }
         }
     }
 
+    Loader {
+        id: membershipRequestsLoader
+        width: parent.width
+        active: chatsModel.communities.activeCommunity.admin
+        anchors.top: communityHeader.bottom
+        anchors.topMargin: item && item.visible ? Style.current.halfPadding : 0
+
+        sourceComponent: Component {
+            MembershipRequestsButton {}
+        }
+    }
+
+    MembershipRequestsPopup {
+        id: membershipRequestPopup
+    }
 
     ScrollView {
         id: chatGroupsContainer
-        anchors.top: communityHeader.bottom
+        anchors.top: membershipRequestsLoader.bottom
         anchors.topMargin: Style.current.padding
         anchors.bottom: parent.bottom
         anchors.left: parent.left
@@ -103,12 +125,12 @@ Item {
         ChannelList {
             id: channelList
             searchStr: ""
-            channelModel: chatsModel.activeCommunity.chats
+            channelModel: chatsModel.communities.activeCommunity.chats
         }
 
         CommunityWelcomeBanner {
             id: emptyViewAndSuggestions
-            visible: chatsModel.activeCommunity.admin
+            visible: !appSettings.hiddenCommunityWelcomeBanners.includes(chatsModel.communities.activeCommunity.id) && chatsModel.communities.activeCommunity.admin
             width: parent.width
             anchors.top: channelList.bottom
             anchors.topMargin: Style.current.padding

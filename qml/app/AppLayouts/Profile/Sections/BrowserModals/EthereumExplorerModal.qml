@@ -15,54 +15,58 @@ ModalPopup {
     }
 
     Column {
-        spacing: Style.current.bigPadding
-        width: parent.width
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.rightMargin: Style.current.padding
+        anchors.leftMargin: Style.current.padding
+
+        spacing: 0
 
         ButtonGroup {
             id: searchEnginGroup
         }
 
-        StatusRadioButton {
+        StatusRadioButtonRow {
             //% "None"
             text: qsTrId("none")
-            ButtonGroup.group: searchEnginGroup
-            checked: appSettings.browserEthereumExplorer === Constants.browserEthereumExplorerNone
-            onCheckedChanged: {
+            buttonGroup: searchEnginGroup
+            checked: appSettings.useBrowserEthereumExplorer === Constants.browserEthereumExplorerNone
+            onRadioCheckedChanged: {
                 if (checked) {
-                    appSettings.browserEthereumExplorer = Constants.browserEthereumExplorerNone
+                    appSettings.useBrowserEthereumExplorer = Constants.browserEthereumExplorerNone
                 }
             }
         }
 
-        StatusRadioButton {
+        StatusRadioButtonRow {
             text: "etherscan.io"
-            ButtonGroup.group: searchEnginGroup
-            checked: appSettings.browserEthereumExplorer === Constants.browserEthereumExplorerEtherscan
-            onCheckedChanged: {
+            buttonGroup: searchEnginGroup
+            checked: appSettings.useBrowserEthereumExplorer === Constants.browserEthereumExplorerEtherscan
+            onRadioCheckedChanged: {
                 if (checked) {
-                    appSettings.browserEthereumExplorer = Constants.browserEthereumExplorerEtherscan
+                    appSettings.useBrowserEthereumExplorer = Constants.browserEthereumExplorerEtherscan
                 }
             }
         }
 
-        StatusRadioButton {
+        StatusRadioButtonRow {
             text: "ethplorer.io"
-            ButtonGroup.group: searchEnginGroup
-            checked: appSettings.browserEthereumExplorer === Constants.browserEthereumExplorerEthplorer
-            onCheckedChanged: {
+            buttonGroup: searchEnginGroup
+            checked: appSettings.useBrowserEthereumExplorer === Constants.browserEthereumExplorerEthplorer
+            onRadioCheckedChanged: {
                 if (checked) {
-                    appSettings.browserEthereumExplorer = Constants.browserEthereumExplorerEthplorer
+                    appSettings.useBrowserEthereumExplorer = Constants.browserEthereumExplorerEthplorer
                 }
             }
         }
 
-        StatusRadioButton {
+        StatusRadioButtonRow {
             text: "blockchair.com"
-            ButtonGroup.group: searchEnginGroup
-            checked: appSettings.browserEthereumExplorer === Constants.browserEthereumExplorerBlockchair
-            onCheckedChanged: {
+            buttonGroup: searchEnginGroup
+            checked: appSettings.useBrowserEthereumExplorer === Constants.browserEthereumExplorerBlockchair
+            onRadioCheckedChanged: {
                 if (checked) {
-                    appSettings.browserEthereumExplorer = Constants.browserEthereumExplorerBlockchair
+                    appSettings.useBrowserEthereumExplorer = Constants.browserEthereumExplorerBlockchair
                 }
             }
         }

@@ -36,9 +36,10 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             fillMode: Image.PreserveAspectFit
-            source: Universal.theme === Universal.Dark ? "img/keys-dark@2x.jpg" : "img/keys@2x.jpg"
+            source: "img/keys.png"
             width: 160
             height: 160
+            mipmap: true
         }
 
         StyledText {
@@ -55,7 +56,7 @@ Page {
 
         StyledText {
             id: txtDesc1
-            color: Style.current.darkGrey
+            color: Style.current.secondaryText
             //% "A set of keys controls your account. Your keys live on your device, so only you can use them."
             text: qsTrId("a-set-of-keys-controls-your-account.-your-keys-live-on-your-device,-so-only-you-can-use-them.")
             horizontalAlignment: Text.AlignHCenter

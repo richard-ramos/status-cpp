@@ -30,7 +30,7 @@ Item {
     function calculateTotal(){
         if(!walletModel.pricesLoaded || !walletModel.balancesLoaded) return "...";
         let accountBalance = 0;
-        for(let i = 0; i < walletModel.rowCount; i++){
+        for(let i = 0; i < walletModel.count; i++){
             const balances = walletModel.balances(i);
             for(let j = 0; j < balances.length; j++){
                 const price = walletModel.prices[balances[j].symbol];
@@ -74,7 +74,7 @@ Item {
 
         StyledText {
             id: totalValue
-            color: Style.current.darkGrey
+            color: Style.current.secondaryText
             //% "Total value"
             text: qsTrId("wallet-total-value")
             anchors.left: walletAmountValue.left
@@ -94,11 +94,11 @@ Item {
         id: walletDelegate
 
         Rectangle {
-            property bool selected: index == selectedAccount
+            property bool selected: index === selectedAccount
 
             id: rectangle
             height: 64
-            color: selected ? iconColor : Style.current.transparent
+            color: selected ? Style.current.menuBackgroundActive : Style.current.transparent
             radius: Style.current.radius
             anchors.right: parent.right
             anchors.rightMargin: Style.current.padding
@@ -118,7 +118,7 @@ Item {
             ColorOverlay {
                 anchors.fill: walletIcon
                 source: walletIcon
-                color: selected || !iconColor ? Style.current.white : iconColor  // change image color
+                color: Utils.getCurrentThemeAccountColor(iconColor) || Style.current.accountColors[0]
             }
             StyledText {
                 id: walletName
@@ -133,7 +133,7 @@ Item {
 
                 font.pixelSize: 15
                 font.weight: Font.Medium
-                color: selected ? Style.current.white : Style.current.textColor
+                color: Style.current.textColor
             }
             StyledText {
                 id: walletAddress
@@ -144,11 +144,10 @@ Item {
                 elide: Text.ElideMiddle
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: Style.current.smallPadding
-                anchors.left: walletName.left
-                anchors.leftMargin: 0
+                anchors.left: walletIcon.left
                 font.pixelSize: 15
                 font.weight: Font.Medium
-                color: selected ? Style.current.white : Style.current.darkGrey
+                color: Style.current.secondaryText
                 opacity: selected ? 0.7 : 1
             }
             StyledText {
@@ -171,7 +170,7 @@ Item {
                 anchors.rightMargin: Style.current.padding
                 font.pixelSize: 15
                 font.weight: Font.Medium
-                color: selected ? Style.current.white : Style.current.textColor
+                color: Style.current.textColor
             }
             MouseArea {
                 anchors.fill: parent

@@ -7,11 +7,12 @@ import im.status.desktop 1.0
 
 Item {
     property var contact;
+    property var chat
     property string userName: "Jotaro Kujo"
     property string message: "That's right. We're friends...  Of justice, that is."
     property string plainText: "That's right. We're friends...  Of justice, that is."
     property string identicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQAQMAAAC6caSPAAAABlBMVEXMzMz////TjRV2AAAAAWJLR0QB/wIt3gAAACpJREFUGBntwYEAAAAAw6D7Uw/gCtUAAAAAAAAAAAAAAAAAAAAAAAAAgBNPsAABAjKCqQAAAABJRU5ErkJggg=="
-    property bool isCurrentUser: StatusSettings.PublicKey == contact.id
+    property bool isCurrentUser: contact != undefined ? StatusSettings.PublicKey == contact.id : false
     property string timestamp: "1234567"
     property string sticker: "Qme8vJtyrEHxABcSVGPF95PtozDgUyfr1xGjePmFdZgk9v"
     property int contentType: 2 // constants don't work in default props
@@ -50,7 +51,7 @@ Item {
         if (contentType === Constants.chatIdentifier) {
             return chat.chatId
         }
-        return contact.id
+        return contact != undefined ? contact.id : ""
     }
     property bool useLargeImage: contentType === Constants.chatIdentifier
 
@@ -117,7 +118,7 @@ Item {
         }
 
         if (!isProfileClick) {
-            SelectedMessage.set(messageId, contact.id);
+            SelectedMessage.set(messageId);
         }
         
         const messageContextMenu = messageContextMenuComponent.createObject(root, {contact: root.contact});
@@ -127,7 +128,8 @@ Item {
         messageContextMenu.messageId = root.messageId;
         messageContextMenu.show(JSON.parse(root.emojiReactions))
         // Position the center of the menu where the mouse is
-        messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2
+        messageContextMenu.x = messageContextMenu.x - messageContextMenu.width / 2;
+        return messageContextMenu;
     }
 
     Loader {
@@ -168,7 +170,7 @@ Item {
         Item {
             visible: chat.chatType != ChatType.PrivateGroupChat && Status.IsOnline
             id: wrapper
-            height: wrapper.visible ? childrenRect.height + Style.current.smallPadding*2 : 0
+            height: childrenRect.height + Style.current.smallPadding * 2
             anchors.left: parent.left
             anchors.right: parent.right
             Separator {
@@ -185,7 +187,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: sep1.bottom
                 anchors.topMargin: Style.current.smallPadding
-                MouseArea {
+                 MouseArea {
                   cursorShape: Qt.PointingHandCursor
                   anchors.fill: parent
                   onClicked: {
@@ -203,7 +205,7 @@ Item {
                 anchors.topMargin: 3
                 anchors.horizontalCenter: parent.horizontalCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: Style.current.darkGrey
+                color: Style.current.secondaryText
                 //% "before %1"
                 text: {
                     const d = new Date(messages.oldestMsgTimestamp);
@@ -264,6 +266,7 @@ Item {
             isCurrentUser: root.isCurrentUser
             contentType: root.contentType
             container: root
+            chat: root.chat
         }
     }
 
@@ -283,12 +286,17 @@ Item {
             isCurrentUser: root.isCurrentUser
             contentType: root.contentType
             container: root
+            chat: root.chat
         }
     }
 
     Component {
         id: invitationBubble
-        InvitationBubble {}
+        InvitationBubble {
+            communityId: root.communityId
+            anchors.right: !appSettings.useCompactMode && isCurrentUser ? parent.right : undefined
+            anchors.rightMargin: Style.current.padding
+        }
     }
 }
 

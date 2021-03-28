@@ -41,6 +41,13 @@ Rectangle {
     property alias suggestionsList: suggestions
     property alias suggestions: suggestionsBox
 
+    property var imageErrorMessageLocation: StatusChatInput.ImageErrorMessageLocation.Top
+
+    enum ImageErrorMessageLocation {
+        Top,
+        Bottom
+    }
+
     height: {
         if (extendedArea.visible) {
             return messageInput.height + extendedArea.height + (control.isStatusUpdateInput ? 0 : Style.current.bigPadding)
@@ -68,7 +75,7 @@ Rectangle {
         messageInputField.insert(start, text.replace(/\n/g, "<br/>"));
     }
 
-    property var interpretMessage: function (msg)  {
+    property var interpretMessage: function (msg) {
         if (msg.startsWith("/shrug")) {
             return  msg.replace("/shrug", "") + " ¯\\\\\\_(ツ)\\_/¯"
         }
@@ -97,10 +104,10 @@ Rectangle {
 
     function parseMarkdown(markdownText) {
         const htmlText = markdownText
-          .replace(/\~\~([^*]+)\~\~/gim, '<span style="text-decoration: line-through">~~$1~~</span>')
-          .replace(/\*\*([^*]+)\*\*/gim, '<b>:asterisk::asterisk:$1:asterisk::asterisk:</b>')
-          .replace(/\`([^*]+)\`/gim, '<code>`$1`</code>')
-          .replace(/\*([^*]+)\*/gim, '<i>:asterisk:$1:asterisk:</i>')
+          .replace(/\~\~([^*]+)\~\~/gim, '~~<span style="text-decoration: line-through">$1</span>~~')
+          .replace(/\*\*([^*]+)\*\*/gim, ':asterisk::asterisk:<b>$1</b>:asterisk::asterisk:')
+          .replace(/\`([^*]+)\`/gim, '`<code>$1</code>`')
+          .replace(/\*([^*]+)\*/gim, ':asterisk:<i>$1</i>:asterisk:')
         return htmlText.replace(/\:asterisk\:/gim, "*")
     }
 
@@ -117,6 +124,7 @@ Rectangle {
             if (messageInputField.length < messageLimit) {
                 control.sendMessage(event)
                 control.hideExtendedArea();
+                event.accepted = true
                 return;
             }
             if(event) event.accepted = true
@@ -188,17 +196,38 @@ Rectangle {
         messageInputField.deselect()
         formatInputMessage()
     }
+    function getPlainText() {
+        const textWithoutMention = messageInputField.text.replace(/<span style="[ :#0-9a-z;\-\.,\(\)]+">(@([a-z\.]+(\ ?[a-z]+\ ?[a-z]+)?))<\/span>/ig, "\[\[mention\]\]$1\[\[mention\]\]")
+
+        const deparsedEmoji = Emoji.deparse(textWithoutMention);
+
+        return StatusUtils.plainText(deparsedEmoji);
+    }
+
+    function removeMentions(currentText) {
+        return currentText.replace(/\[\[mention\]\]/g, '')
+    }
+
+    function parseBackText(plainText) {
+        plainText = plainText.replace(/\[\[mention\]\](@([a-z\.]+(\ ?[a-z]+\ ?[a-z]+)?))\[\[mention\]\]/gi, `${Constants.mentionSpanTag}$1</span>`)
+
+
+        return parseMarkdown(Emoji.parse(plainText.replace(/\n/g, "<br />")))
+    }
 
     function formatInputMessage() {
         const posBeforeEnd = messageInputField.length - messageInputField.cursorPosition;
-        const deparsedEmoji = Emoji.deparse(messageInputField.text);
-        const plainText = StatusUtils.plainText(deparsedEmoji);
-        const formatted = parseMarkdown(Emoji.parse(plainText.replace(/\n/g, "<br />")))
+        const plainText = getPlainText()
+        const formatted = parseBackText(plainText)
         messageInputField.text = formatted
         messageInputField.cursorPosition = messageInputField.length - posBeforeEnd;
     }
 
     function onRelease(event) {
+        if (event.key === Qt.Key_Backspace && textFormatMenu.opened) {
+            textFormatMenu.close()
+        }
+
         // the text doesn't get registered to the textarea fast enough
         // we can only get it in the `released` event
         if (paste) {
@@ -248,7 +277,7 @@ Rectangle {
 
         if (madeChanges) {
             messageInputField.remove(0, messageInputField.length);
-        insertInTextInput(0, Emoji.parse(words.join('&nbsp;')));
+            insertInTextInput(0, Emoji.parse(words.join('&nbsp;')));
         }
     }
 
@@ -256,34 +285,51 @@ Rectangle {
     // to the actual position in the string. 
     function extrapolateCursorPosition() {
         // we need only the message part to be html
-        const text = StatusUtils.plainText(Emoji.deparse(messageInputField.text));
+        const text = getPlainText()
+        const completelyPlainText = removeMentions(text)
         const plainText = Emoji.parse(text);
 
+
         var bracketEvent = false;
+        var almostMention = false;
+        var mentionEvent = false;
         var length = 0;
 
-        for (var i = 0; i < plainText.length;) {
-            if (length >= messageInputField.cursorPosition) break;
 
-            if (!bracketEvent && plainText.charAt(i) !== '<')  {
-                i++;
+
+        // This loop calculates the cursor position inside the plain text which contains the image tags (<img>) and the mention tags ([[mention]])
+        const cursorPos = messageInputField.cursorPosition
+        for (var i = 0; i < plainText.length;) {
+            if (length >= cursorPos) break;
+
+            if (!bracketEvent && plainText.charAt(i) !== '<' && !mentionEvent && plainText.charAt(i) !== '[')  {
                 length++;
             } else if (!bracketEvent && plainText.charAt(i) === '<') {
                 bracketEvent = true;
-                i++;
-            } else if (bracketEvent && plainText.charAt(i) !== '>') {
-                i++;
             } else if (bracketEvent && plainText.charAt(i) === '>') {
                 bracketEvent = false;
-                i++;
                 length++;
+            } else if (!mentionEvent && almostMention && plainText.charAt(i) === '[') {
+                almostMention = false
+                mentionEvent = true
+            } else if (!mentionEvent && !almostMention && plainText.charAt(i) === '[') {
+                almostMention = true
+            } else if (!mentionEvent && almostMention && plainText.charAt(i) !== '[') {
+                almostMention = false
+            } else if (mentionEvent && !almostMention && plainText.charAt(i) === ']') {
+                almostMention = true
+            } else if (mentionEvent && almostMention && plainText.charAt(i) === ']') {
+                almostMention = false
+                mentionEvent = false
             }
+            i++
         }
 
         let textBeforeCursor = Emoji.deparseFromParse(plainText.substr(0, i));
+
         return {
-            cursor: countEmojiLengths(plainText.substr(0, i)) + messageInputField.cursorPosition,
-            data: Emoji.deparseFromParse(textBeforeCursor),
+            cursor: countEmojiLengths(plainText.substr(0, i)) + messageInputField.cursorPosition + text.length - completelyPlainText.length,
+            data: textBeforeCursor,
         };
     }
 
@@ -346,7 +392,7 @@ Rectangle {
             .replace(shortname, encodedCodePoint)
             .replace(/ /g, "&nbsp;");
         messageInputField.remove(0, messageInputField.cursorPosition);
-        insertInTextInput(0, Emoji.parse(newMessage));
+        insertInTextInput(0, parseBackText(newMessage));
         emojiSuggestions.close()
         emojiEvent = false
     }
@@ -381,17 +427,33 @@ Rectangle {
         isImage = false;
         isReply = false;
         control.fileUrls = []
-        imageArea.imageSource = "";
+        imageArea.imageSource = [];
         replyArea.userName = ""
         replyArea.identicon = ""
         replyArea.message = ""
+        for (let i=0; i<validators.children.length; i++) {
+            const validator = validators.children[i]
+            validator.images = []
+        }
     }
 
-    function showImageArea(imagePath) {
+    function validateImages(imagePaths) {
+        // needed because imageArea.imageSource is not a normal js array
+        const existing = (imageArea.imageSource || []).map(x => x.toString())
+        let validImages = Utils.deduplicate(existing.concat(imagePaths))
+        for (let i=0; i<validators.children.length; i++) {
+            const validator = validators.children[i]
+            validator.images = validImages
+            validImages = validImages.filter(validImage => validator.validImages.includes(validImage))
+        }
+        return validImages
+    }
+
+    function showImageArea(imagePaths) {
         isImage = true;
         isReply = false;
-        control.fileUrls = imageDialog.fileUrls
-        imageArea.imageSource = control.fileUrls[0]
+        imageArea.imageSource = imagePaths
+        control.fileUrls = imageArea.imageSource
     }
 
     function showReplyArea(message) {
@@ -404,24 +466,37 @@ Rectangle {
         messageInputField.forceActiveFocus();
     }
 
+    Connections {
+        target: applicationWindow.dragAndDrop
+        onDroppedOnValidScreen: (drop) => {
+            let validImages = validateImages(drop.urls)
+            if (validImages.length > 0) {
+                showImageArea(validImages)
+                drop.acceptProposedAction()
+            }
+        }
+    }
+
     ListModel {
         id: suggestions
     }
-
 
     FileDialog {
         id: imageDialog
         //% "Please choose an image"
         title: qsTrId("please-choose-an-image")
         folder: shortcuts.pictures
+        selectMultiple: true
         nameFilters: [
-            //% "Image files (*.jpg *.jpeg *.png)"
-            qsTrId("Image files (*.jpg *.jpeg *.png)") // TODO:
+            qsTr("Image files (%1)").arg(Constants.acceptedDragNDropImageExtensions.map(img => "*" + img).join(" "))
         ]
         onAccepted: {
             imageBtn.highlighted = false
             imageBtn2.highlighted = false
-            control.showImageArea()
+            let validImages = validateImages(imageDialog.fileUrls)
+            if (validImages.length > 0) {
+                control.showImageArea(validImages)
+            }
             messageInputField.forceActiveFocus();
         }
         onRejected: {
@@ -454,29 +529,38 @@ Rectangle {
         cursorPosition: messageInputField.cursorPosition
         property: "ensName, localNickname, alias"
         onItemSelected: function (item, lastAtPosition, lastCursorPosition) {
-            let hasEmoji = Emoji.hasEmoji(messageInputField.text)
-            let currentText = hasEmoji ?
-              StatusUtils.plainText(Emoji.deparse(messageInputField.text)) :
-              StatusUtils.plainText(messageInputField.text);
+            const hasEmoji = Emoji.hasEmoji(messageInputField.text)
+            const currentText = getPlainText()
 
-            var properties = "ensName, alias"; // Ignore localNickname
+            const completelyPlainText = removeMentions(currentText)
+
+            lastAtPosition += currentText.length - completelyPlainText.length
+            lastCursorPosition += currentText.length - completelyPlainText.length
+
+            const properties = "ensName, alias"; // Ignore localNickname
 
             let aliasName = item[properties.split(",").map(p => p.trim()).find(p => !!item[p])]
             aliasName = aliasName.replace(/(\.stateofus)?\.eth/, "")
             let nameLen = aliasName.length + 2 // We're doing a +2 here because of the `@` and the trailing whitespace
             let position = 0;
             let text = ""
+            const spanPlusAlias = `${Constants.mentionSpanTag}@${aliasName}</span> `
             if (currentText === "@") {
                 position = nameLen
-                text = "@" + aliasName + " "
+                text = spanPlusAlias
             } else {
                 let left = currentText.substring(0, lastAtPosition)
                 let right = currentText.substring(hasEmoji ? lastCursorPosition + 2 : lastCursorPosition)
-                text = `${left} @${aliasName} ${right}`
+                text = `${left} ${spanPlusAlias}${right}`
             }
 
-            messageInputField.text = hasEmoji ? Emoji.parse(text) : text
+            messageInputField.text = parseBackText(text)
             messageInputField.cursorPosition = lastAtPosition + aliasName.length + 2
+            if (messageInputField.cursorPosition === 0) {
+                // It reset to 0 for some reason, go back to the end
+                messageInputField.cursorPosition = messageInputField.length
+            }
+
             suggestionsBox.suggestionsModel.clear()
         }
     }
@@ -560,7 +644,7 @@ Rectangle {
 
     Rectangle {
         id: messageInput
-        property int maxInputFieldHeight: control.isStatusUpdateInput ? 123 : 112
+        property int maxInputFieldHeight: control.isStatusUpdateInput ? 124 : 112
         property int defaultInputFieldHeight: control.isStatusUpdateInput ? 56 : 40
         anchors.left: imageBtn.visible ? imageBtn.right : parent.left
         anchors.leftMargin: imageBtn.visible ? 5 : Style.current.smallPadding
@@ -569,10 +653,39 @@ Rectangle {
         anchors.bottomMargin: control.isStatusUpdateInput ? 0 : 12
         anchors.right: parent.right
         anchors.rightMargin: Style.current.smallPadding
-        height: scrollView.height
+        height: {
+            if (messageInputField.implicitHeight <= messageInput.defaultInputFieldHeight) {
+                return messageInput.defaultInputFieldHeight
+            }
+            if (messageInputField.implicitHeight >= messageInput.maxInputFieldHeight) {
+                return messageInput.maxInputFieldHeight
+            }
+            return messageInputField.implicitHeight
+        }
+
         color: Style.current.inputBackground
         radius: control.isStatusUpdateInput ? 36 :
           height > defaultInputFieldHeight + 1 || extendedArea.visible ? 16 : 32
+
+    ColumnLayout {
+        id: validators
+        anchors.bottom: control.imageErrorMessageLocation === StatusChatInput.ImageErrorMessageLocation.Top ? extendedArea.top : undefined
+        anchors.bottomMargin: control.imageErrorMessageLocation === StatusChatInput.ImageErrorMessageLocation.Top ? -4 : undefined
+        anchors.top: control.imageErrorMessageLocation === StatusChatInput.ImageErrorMessageLocation.Bottom ? extendedArea.bottom : undefined
+        anchors.topMargin: control.imageErrorMessageLocation === StatusChatInput.ImageErrorMessageLocation.Bottom ? (isImage ? -4 : 4) : undefined
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width
+        z: 1
+        StatusChatImageExtensionValidator {
+            Layout.alignment: Qt.AlignHCenter
+        }
+        StatusChatImageSizeValidator {
+            Layout.alignment: Qt.AlignHCenter
+        }
+        StatusChatImageQtyValidator {
+            Layout.alignment: Qt.AlignHCenter
+        }
+    }
 
         Rectangle {
             id: extendedArea
@@ -580,7 +693,7 @@ Rectangle {
             height: {
               if (visible) {
                   if (isImage) {
-                      return imageArea.height + Style.current.halfPadding
+                      return imageArea.height
                   }
 
                   if (isReply) {
@@ -617,9 +730,13 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: control.isStatusUpdateInput ? 0 : Style.current.halfPadding
                 visible: isImage
+                width: messageInputField.width - actions.width
                 onImageRemoved: {
-                    control.fileUrls = []
-                    isImage = false
+                    if (control.fileUrls.length > index && control.fileUrls[index]) {
+                        control.fileUrls.splice(index, 1)
+                    }
+                    isImage = control.fileUrls.length > 0
+                    validateImages(control.fileUrls)
                 }
             }
 
@@ -650,36 +767,27 @@ Rectangle {
 
         ScrollView {
             id: scrollView
+            anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: profileImage.visible ? profileImage.right : parent.left
             anchors.leftMargin: Style.current.smallPadding
             anchors.right: actions.left
             anchors.rightMargin: Style.current.halfPadding
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            height: {
-                if (messageInputField.implicitHeight <= messageInput.defaultInputFieldHeight) {
-                    return messageInput.defaultInputFieldHeight
-                }
-                if (messageInputField.implicitHeight >= messageInput.maxInputFieldHeight) {
-                    return messageInput.maxInputFieldHeight
-                }
-                return messageInputField.implicitHeight
-            }
 
             TextArea {
                 id: messageInputField
                 textFormat: Text.RichText
-                verticalAlignment: TextEdit.AlignVCenter
                 font.pixelSize: 15
                 font.family: Style.current.fontRegular.name
                 wrapMode: TextArea.Wrap
-                height: parent.height
-                placeholderText: chatInputPlaceholder
+                //% "Type a message"
+                placeholderText: qsTrId("type-a-message")
                 placeholderTextColor: Style.current.secondaryText
                 selectByMouse: true
                 color: Style.current.textColor
-                topPadding: Style.current.smallPadding
-                bottomPadding: 12
+                topPadding: control.isStatusUpdateInput ? 18 : Style.current.smallPadding
+                bottomPadding: control.isStatusUpdateInput ? 14 : 12
                 Keys.onPressed: onKeyPress(event)
                 Keys.onReleased: onRelease(event) // gives much more up to date cursorPosition
                 Keys.onShortcutOverride: event.accepted = isUploadFilePressed(event)
@@ -699,6 +807,10 @@ Rectangle {
 
                 StatusTextFormatMenu {
                     id: textFormatMenu
+                    function surroundedBy(chars) {
+                        return messageInputField.selectedText.trim().startsWith(chars) &&
+                          messageInputField.selectedText.trim().endsWith(chars)
+                    }
                     Action {
                         icon.name: "format-text-bold"
                         icon.width: 12
@@ -706,6 +818,7 @@ Rectangle {
                         onTriggered: wrapSelection("**")
                         //% "Bold"
                         text: qsTrId("bold")
+                        checked: textFormatMenu.surroundedBy("**")
                     }
                     Action {
                         icon.name: "format-text-italic"
@@ -714,6 +827,7 @@ Rectangle {
                         onTriggered: wrapSelection("*")
                         //% "Italic"
                         text: qsTrId("italic")
+                        checked: textFormatMenu.surroundedBy("*") && !textFormatMenu.surroundedBy("**")
                     }
                     Action {
                         icon.name: "format-text-strike-through"
@@ -722,6 +836,7 @@ Rectangle {
                         onTriggered: wrapSelection("~~")
                         //% "Strikethrough"
                         text: qsTrId("strikethrough")
+                        checked: textFormatMenu.surroundedBy("~~")
                     }
                     Action {
                         icon.name: "format-text-code"
@@ -730,6 +845,7 @@ Rectangle {
                         onTriggered: wrapSelection("`")
                         //% "Code"
                         text: qsTrId("code")
+                        checked: textFormatMenu.surroundedBy("`")
                     }
                 }
             }
@@ -871,7 +987,7 @@ Rectangle {
                 anchors.leftMargin: 2
                 anchors.bottom: parent.bottom
                 icon.name: "stickers_icon"
-                visible: profileModel.network.current === Constants.networkMainnet && emojiBtn.visible
+                visible: StatusSettings.CurrentNetwork === Constants.networkMainnet && emojiBtn.visible
                 width: visible ? 32 : 0
                 type: "secondary"
                 onClicked: {

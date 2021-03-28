@@ -18,8 +18,9 @@ StackLayout {
     property var chat
 
     property string chatId: chat.chatId
-
+    property bool profilePopupOpened: false
     property alias chatMessages: chatMessages
+    property var mailserverRequestTimer: null
 
     property int chatGroupsListViewCount: 0
     
@@ -45,24 +46,27 @@ StackLayout {
 
     currentIndex: 0
 
-    property var idMap: {}
+
+    property var idMap: ({})
+    property var suggestionsObj: ([])
 
     function addSuggestionFromMessageList(i){
         /* TODO:
         const contactAddr = chatsModel.messageList.getMessageData(i, "publicKey");
         if(idMap[contactAddr]) return;
-        chatInput.suggestionsList.append({
-            alias: chatsModel.messageList.getMessageData(i, "alias"),
-            ensName: chatsModel.messageList.getMessageData(i, "ensName"),
-            address: contactAddr,
-            identicon: chatsModel.messageList.getMessageData(i, "identicon"),
-            localNickname: chatsModel.messageList.getMessageData(i, "localName")
-        });
+        suggestionsObj.push({
+                                alias: chatsModel.messageList.getMessageData(i, "alias"),
+                                ensName: chatsModel.messageList.getMessageData(i, "ensName"),
+                                address: contactAddr,
+                                identicon: chatsModel.messageList.getMessageData(i, "identicon"),
+                                localNickname: chatsModel.messageList.getMessageData(i, "localName")
+                            })
+        chatInput.suggestionsList.append(suggestionsObj[suggestionsObj.length - 1]);
         idMap[contactAddr] = true;
         */
     }
 
-    function populateSuggestions(){
+    function populateSuggestions() {
         /*chatInput.suggestionsList.clear()
         const len = chatsModel.suggestionList.rowCount()
 
@@ -71,18 +75,22 @@ StackLayout {
         for (let i = 0; i < len; i++) {
             const contactAddr = chatsModel.suggestionList.rowData(i, "address");
             if(idMap[contactAddr]) continue;
-            chatInput.suggestionsList.append({
-                alias: chatsModel.suggestionList.rowData(i, "alias"),
-                ensName: chatsModel.suggestionList.rowData(i, "ensName"),
-                address: contactAddr,
-                identicon: chatsModel.suggestionList.rowData(i, "identicon"),
-                localNickname: chatsModel.suggestionList.rowData(i, "localNickname")
-            });
+            const contactIndex = profileModel.contacts.list.getContactIndexByPubkey(chatsModel.suggestionList.rowData(i, "address"));
+
+            suggestionsObj.push({
+                                    alias: chatsModel.suggestionList.rowData(i, "alias"),
+                                    ensName: chatsModel.suggestionList.rowData(i, "ensName"),
+                                    address: contactAddr,
+                                    identicon: profileModel.contacts.list.rowData(contactIndex, "thumbnailImage"),
+                                    localNickname: chatsModel.suggestionList.rowData(i, "localNickname")
+                                })
+
+            chatInput.suggestionsList.append(suggestionsObj[suggestionsObj.length - 1]);
             idMap[contactAddr] = true;
         }
         const len2 = chatsModel.messageList.rowCount();
-        for (let i = 0; i < len2; i++) {
-            addSuggestionFromMessageList(i);
+        for (let f = 0; f < len2; f++) {
+            addSuggestionFromMessageList(f);
         }*/
     }
 
@@ -113,6 +121,7 @@ StackLayout {
                                         tokenAddress)
         txModalLoader.close()
     }
+
 
     ColumnLayout {
         spacing: 0
@@ -193,6 +202,7 @@ StackLayout {
                 id: chatMessages
                 messageList: chat.messages
                 isActiveChat: root.isActiveChat
+                chat: root.chat
             }
        }
 
@@ -213,6 +223,38 @@ StackLayout {
             }
             onMessagePushed: {
                 addSuggestionFromMessageList(messageIndex);
+            }
+        }
+   
+        Loader {
+            id: loadingMessagesIndicator
+            active: false
+            sourceComponent: loadingIndicator
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.rightMargin: Style.current.padding
+            anchors.bottomMargin: Style.current.padding * 5
+        }
+
+        /** Begin: Extract to component **/
+
+        Component {
+            id: loadingIndicator
+            LoadingAnimation {}
+        }
+
+
+        Connections {
+            target: mailserverModel
+            onMailserverRequestSent: {
+                loadingMessagesIndicator.active = true;
+                
+                if(mailserverRequestTimer != null && mailserverRequestTimer.running){
+                    mailserverRequestTimer.stop();
+                }
+                mailserverRequestTimer = timer.setTimeout(function(){ 
+                    loadingMessagesIndicator.active = false;
+                }, 5000);
             }
         }
 

@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.13
 import "../../../../imports"
 import "../../../../shared"
 import "../../../../shared/status"
+import im.status.desktop 1.0
 
 Item {
     id: advancedContainer
@@ -15,23 +16,30 @@ Item {
         id: generalColumn
         anchors.top: parent.top
         anchors.topMargin: topMargin
-        anchors.left: parent.left
-        anchors.leftMargin: contentMargin
-        anchors.right: parent.right
-        anchors.rightMargin: contentMargin
+        width: contentMaxWidth
+        anchors.horizontalCenter: parent.horizontalCenter
 
         StatusSettingsLineButton {
             //% "Network"
             text: qsTrId("network")
-            currentValue: utilsModel.getNetworkName()
+            currentValue:  Utils.getNetworkName(StatusSettings.CurrentNetwork)
             onClicked: openPopup(networksModalComponent)
         }
 
         StatusSettingsLineButton {
             //% "Fleet"
             text: qsTrId("fleet")
-            currentValue: profileModel.fleets.fleet
+            currentValue: StatusSettings.Fleet
             onClicked: openPopup(fleetModalComponent)
+        }
+
+        StatusSettingsLineButton {
+            text: qsTr("Minimize on close")
+            isSwitch: true
+            switchChecked: !appSettings.quitOnClose
+            onClicked: function (checked) {
+                appSettings.quitOnClose = !checked
+            }
         }
 
         Item {

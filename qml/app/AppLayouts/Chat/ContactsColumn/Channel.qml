@@ -17,6 +17,14 @@ Rectangle {
     property var contact
     property bool hasMentions: false
     property int chatType: ChatType.Public
+    property int realChatType: {
+        if (chatType === Constants.chatTypeCommunity) {
+            // TODO add a check for private community chats once it is created
+            return ChatType.Public
+        }
+        return chatType
+    }
+
     property string searchStr: ""
     property bool isCompact: appSettings.useCompactMode
     property int contentType: 1
@@ -24,15 +32,15 @@ Rectangle {
     property bool hovered: false
     property bool enableMouseArea: true
 
-    property string profileImage: chatType == ChatType.OneToOne ? appMain.getProfileImage(contact) || ""  : ""
+    property string profileImage: realChatType == ChatType.OneToOne ? appMain.getProfileImage(contact) || ""  : ""
 
     id: wrapper
     color: {
       if (ListView.isCurrentItem) {
-        return Style.current.secondaryBackground
+        return Style.current.menuBackgroundActive
       }
       if (wrapper.hovered) {
-        return Style.current.backgroundHover
+        return Style.current.menuBackgroundHover
       }
       return Style.current.transparent
     }
@@ -50,11 +58,10 @@ Rectangle {
         height: !isCompact ? 40 : 28
         width: !isCompact ? 40 : 28
         chatColor: wrapper.chatColor
+        chatId: wrapper.chatId
         chatName: wrapper.name
-        chatType: wrapper.chatType
-        identicon: {
-            return wrapper.profileImage || wrapper.identicon
-        }
+        chatType: wrapper.realChatType
+        identicon: wrapper.profileImage || wrapper.identicon
         anchors.left: parent.left
         anchors.leftMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.verticalCenter: parent.verticalCenter
@@ -65,13 +72,13 @@ Rectangle {
         width: 16
         height: 16
         fillMode: Image.PreserveAspectFit
-        source: "../../../img/channel-icon-" + (wrapper.chatType == ChatType.Public ? "public-chat.svg" : "group.svg")
+        source: "../../../img/channel-icon-" + (wrapper.realChatType == ChatType.Public ? "public-chat.svg" : "group.svg")
         anchors.left: contactImage.right
         anchors.leftMargin: !isCompact ? Style.current.padding : Style.current.smallPadding
         anchors.top: !isCompact ? parent.top : undefined
         anchors.topMargin: !isCompact ? Style.current.smallPadding : 0
         anchors.verticalCenter: !isCompact ? undefined : parent.verticalCenter
-        visible: wrapper.chatType !== Constants.chatTypeOneToOne
+        visible: wrapper.realChatType != ChatType.OneToOne
     }
 
     StyledText {
@@ -124,7 +131,7 @@ Rectangle {
         font.pixelSize: 15
         anchors.left: contactImage.right
         anchors.leftMargin: Style.current.padding
-        color: Style.current.darkGrey
+        color: Style.current.secondaryText
     }
 
     StyledText {
@@ -136,7 +143,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: Style.current.smallPadding
         font.pixelSize: 11
-        color: Style.current.darkGrey
+        color: Style.current.secondaryText
     }
     Rectangle {
         id: contactNumberChatsCircle

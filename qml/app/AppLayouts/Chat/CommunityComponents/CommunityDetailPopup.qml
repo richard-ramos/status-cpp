@@ -6,14 +6,18 @@ import "../../../../shared/status"
 import "../ContactsColumn"
 
 ModalPopup {
-    property QtObject community: chatsModel.observedCommunity
+    property QtObject community: chatsModel.communities.observedCommunity
     property string communityId: community.id
     property string name: community.name
     property string description: community.description
     property int access: community.access
-    // TODO get the real image once it's available
-    property string source: "../../../img/ens-header-dark@2x.png"
+    property string source: community.thumbnailImage
     property int nbMembers: community.nbMembers
+    property bool ensOnly: community.ensOnly
+    property bool canJoin: community.canJoin
+    property bool canRequestAccess: community.canRequestAccess
+    property bool isMember: community.isMember
+    property string communityColor: community.communityColor || Style.current.blue
 
     id: popup
 
@@ -21,11 +25,29 @@ ModalPopup {
         height: childrenRect.height
         width: parent.width
 
-        RoundedImage {
+
+        Loader {
             id: communityImg
-            source: popup.source
-            width: 40
-            height: 40
+            sourceComponent: !!popup.source ? commmunityImgCmp : letterIdenticonCmp
+        }
+
+        Component {
+            id: commmunityImgCmp
+            RoundedImage {
+                source: popup.source
+                width: 40
+                height: 40
+            }
+        }
+
+        Component {
+            id: letterIdenticonCmp
+            StatusLetterIdenticon {
+                width: 40
+                height: 40
+                chatName: popup.name
+                color: popup.communityColor
+            }
         }
 
         StyledTextEdit {
@@ -41,7 +63,7 @@ ModalPopup {
         }
 
         StyledText {
-            // TODO get this from access property
+            id: accessText
             text: {
                 switch(access) {
                 //% "Public community"
@@ -56,6 +78,17 @@ ModalPopup {
             }
             anchors.left: communityName.left
             anchors.top: communityName.bottom
+            anchors.topMargin: 2
+            font.pixelSize: 15
+            font.weight: Font.Thin
+            color: Style.current.secondaryText
+        }
+
+        StyledText {
+            visible: popup.ensOnly
+            text: qsTr(" - ENS Only")
+            anchors.left: accessText.right
+            anchors.verticalCenter: accessText.verticalCenter
             anchors.topMargin: 2
             font.pixelSize: 15
             font.weight: Font.Thin
@@ -168,11 +201,55 @@ ModalPopup {
         }
 
         StatusButton {
-            //% "Join ‘%1’"
-            text: qsTrId("join---1-").arg(popup.name)
+            property bool isPendingRequest: {
+                if (access !== Constants.communityChatOnRequestAccess) {
+                    return false
+                }
+                return chatsModel.communities.isCommunityRequestPending(communityId)
+            }
+            text: {
+                if (ensOnly && !profileModel.profile.ensVerified) {
+                    return qsTr("Membership requires an ENS username")
+                }
+                if (canJoin) {
+                    return qsTr("Join ‘%1’").arg(popup.name);
+                }
+                if (isPendingRequest) {
+                     return qsTr("Pending")
+                }
+                switch(access) {
+                case Constants.communityChatPublicAccess: return qsTr("Join ‘%1’").arg(popup.name);
+                case Constants.communityChatInvitationOnlyAccess: return qsTr("You need to be invited");
+                case Constants.communityChatOnRequestAccess: return qsTr("Request to join ‘%1’").arg(popup.name);
+                default: return qsTr("Unknown community");
+                }
+            }
+            enabled: {
+                if (ensOnly && !profileModel.profile.ensVerified) {
+                    return false
+                }
+                if (canJoin) {
+                    return true
+                }
+                if (access === Constants.communityChatInvitationOnlyAccess || isPendingRequest) {
+                    return false
+                }
+                return true
+            }
+
             anchors.right: parent.right
             onClicked: {
-                const error = chatsModel.joinCommunity(popup.communityId)
+                let error
+                if (access === Constants.communityChatOnRequestAccess && !popup.isMember) {
+                    error = chatsModel.communities.requestToJoinCommunity(popup.communityId,
+                                                              profileModel.profile.ensVerified ? profileModel.profile.username : "")
+                    if (!error) {
+                        enabled = false
+                        text = qsTr("Pending")
+                    }
+                } else {
+                    error = chatsModel.communities.joinCommunity(popup.communityId, true)
+                }
 
                 if (error) {
                     joiningError.text = error

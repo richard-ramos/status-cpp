@@ -38,11 +38,8 @@ ModalPopup {
                     id: addButton
                     icon.name: "plusSign"
                     size: "medium"
+                    type: "secondary"
                     anchors.verticalCenter: parent.verticalCenter
-                }
-
-                ButtonGroup {
-                    id: networkChainGroup
                 }
 
                 StyledText {
@@ -175,79 +172,54 @@ ModalPopup {
                         anchors.topMargin: Style.current.smallPadding
                         anchors.left: parent.left
                         anchors.right: parent.right
+                        anchors.rightMargin: Style.current.padding
+                        anchors.leftMargin: Style.current.padding
 
-                        RowLayout {
-                            width: parent.width
-                            StyledText {
-                                //% "Main network"
-                                text: qsTrId("mainnet-network")
-                                font.pixelSize: 15
-                            }
+                        ButtonGroup {
+                            id: networkChainGroup
+                        }
 
-                            StatusRadioButton {
-                                id: mainnetRadioBtn
-                                Layout.alignment: Qt.AlignRight
-                                ButtonGroup.group: networkChainGroup
-                                rightPadding: 0
-                                checked: true
-                                onClicked: {
+                        StatusRadioButtonRow {
+                            id: mainnetRadioBtn
+                            text: qsTr("Main network")
+                            buttonGroup: networkChainGroup
+                            checked: true
+                            onRadioCheckedChanged: {
+                                if (checked) {
                                     addNetworkPopup.networkId = 1;
                                     addNetworkPopup.networkType = Constants.networkMainnet;
                                 }
                             }
                         }
 
-                        RowLayout {
-                            width: parent.width
-                            StyledText {
-                                //% "Ropsten test network"
-                                text: qsTrId("ropsten-network")
-                                font.pixelSize: 15
-                            }
-                            StatusRadioButton {
-                                id: ropstenRadioBtn
-                                Layout.alignment: Qt.AlignRight
-                                ButtonGroup.group: networkChainGroup
-                                rightPadding: 0
-                                onClicked: {
+                        StatusRadioButtonRow {
+                            text: qsTr("Ropsten test network")
+                            buttonGroup: networkChainGroup
+                            onRadioCheckedChanged: {
+                                if (checked) {
                                     addNetworkPopup.networkId = 3;
                                     addNetworkPopup.networkType = Constants.networkRopsten;
                                 }
                             }
                         }
 
-                        RowLayout {
-                            width: parent.width
-                            StyledText {
-                                //% "Rinkeby test network"
-                                text: qsTrId("rinkeby-network")
-                                font.pixelSize: 15
-                            }
-                            StatusRadioButton {
-                                id: rinkebyRadioBtn
-                                Layout.alignment: Qt.AlignRight
-                                ButtonGroup.group: networkChainGroup
-                                rightPadding: 0
-                                onClicked: {
+                        StatusRadioButtonRow {
+                            text: qsTr("Rinkeby test network")
+                            buttonGroup: networkChainGroup
+                            onRadioCheckedChanged: {
+                                if (checked) {
                                     addNetworkPopup.networkId = 4;
                                     addNetworkPopup.networkType = Constants.networkRinkeby;
                                 }
                             }
                         }
 
-                        RowLayout {
-                            width: parent.width
-                            StyledText {
-                                //% "Custom"
-                                text: qsTrId("custom")
-                                font.pixelSize: 15
-                            }
-                            StatusRadioButton {
-                                id: customRadioBtn
-                                Layout.alignment: Qt.AlignRight
-                                ButtonGroup.group: networkChainGroup
-                                rightPadding: 0
-                                onClicked: {
+                        StatusRadioButtonRow {
+                            id: customRadioBtn
+                            text: qsTr("Custom")
+                            buttonGroup: networkChainGroup
+                            onRadioCheckedChanged: {
+                                if (checked) {
                                     addNetworkPopup.networkType = "";
                                 }
                             }
@@ -265,64 +237,78 @@ ModalPopup {
                     }
                 }
             }
+            Column {
+                spacing: Style.current.smallPadding
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: Style.current.padding
+                anchors.rightMargin: Style.current.padding
 
-            StatusSectionHeadline {
-                //% "Main networks"
-                text: qsTrId("main-networks")
-            }
 
-            NetworkRadioSelector {
-                network: Constants.networkMainnet
-                parentPopup: popup
-            }
+                StatusSectionHeadline {
+                    //% "Main networks"
+                    text: qsTrId("main-networks")
+                }
 
-            NetworkRadioSelector {
-                network: Constants.networkPOA
-                parentPopup: popup
-            }
 
-            NetworkRadioSelector {
-                network: Constants.networkXDai
-                parentPopup: popup
-            }
-
-            StatusSectionHeadline {
-                //% "Test networks"
-                text: qsTrId("test-networks")
-            }
-
-            NetworkRadioSelector {
-                network: Constants.networkGoerli
-                parentPopup: popup
-            }
-
-            NetworkRadioSelector {
-                network: Constants.networkRinkeby
-                parentPopup: popup
-            }
-
-            NetworkRadioSelector {
-                network: Constants.networkRopsten
-                parentPopup: popup
-            }
-
-            StatusSectionHeadline {
-                //% "Custom Networks"
-                text: qsTrId("custom-networks")
-                visible: customNetworksRepeater.count > 0
-            }
-
-            CustomNetworksModel {
-                id: customNetworksModel
-            }
-
-            Repeater {
-                id: customNetworksRepeater
-                model: customNetworksModel
-                delegate: NetworkRadioSelector {
-                    networkName: name
-                    network: networkId
+                NetworkRadioSelector {
+                    network: Constants.networkMainnet
                     parentPopup: popup
+                }
+
+                NetworkRadioSelector {
+                    network: Constants.networkPOA
+                    parentPopup: popup
+                }
+
+                NetworkRadioSelector {
+                    network: Constants.networkXDai
+                    parentPopup: popup
+                }
+
+                StatusSectionHeadline {
+                    //% "Test networks"
+                    text: qsTrId("test-networks")
+                    anchors.leftMargin: -Style.current.padding
+                    anchors.rightMargin: -Style.current.padding
+                }
+
+                NetworkRadioSelector {
+                    network: Constants.networkGoerli
+                    parentPopup: popup
+                }
+
+                NetworkRadioSelector {
+                    network: Constants.networkRinkeby
+                    parentPopup: popup
+                }
+
+                NetworkRadioSelector {
+                    network: Constants.networkRopsten
+                    parentPopup: popup
+                }
+
+                StatusSectionHeadline {
+                    //% "Custom Networks"
+                    text: qsTrId("custom-networks")
+                    anchors.leftMargin: -Style.current.padding
+                    anchors.rightMargin: -Style.current.padding
+                    visible: customNetworksRepeater.count > 0
+
+                }
+
+                CustomNetworksModel {
+                    id: customNetworksModel
+                }
+
+                Repeater {
+                    id: customNetworksRepeater
+                    model: customNetworksModel
+                    delegate: NetworkRadioSelector {
+                        networkName: name
+                        network: networkId
+                        parentPopup: popup
+                    }
                 }
             }
         }

@@ -42,7 +42,7 @@ ModalPopup {
         label: ""
         showAccountDetails: false
         accounts: walletModel
-        currency: walletModel.defaultCurrency
+        currency: StatusSettings.Currency
         anchors.top: qrCodeBox.bottom
         anchors.topMargin: Style.current.padding
         anchors.horizontalCenter: parent.horizontalCenter

@@ -14,8 +14,17 @@ Item {
     property bool isCurrentUser: false
     property bool isHovered: false
     property bool isMessageActive: false
+    property var chat
+
 
     id: root
+
+    property var messageContextMenu
+
+    function openEmojiReactionMenu(){
+        root.messageContextMenu = clickMessage(false, false, false, null, true);
+        return messageContextMenu;
+    }
 
     width: parent.width
     height: messageContainer.height + messageContainer.anchors.topMargin
@@ -29,6 +38,7 @@ Item {
     }
 
     ChatButtons {
+        contentType: root.contentType
         parentIsHovered: root.isHovered
         onHoverChanged: root.isHovered = hovered
         anchors.right: parent.right
@@ -59,7 +69,8 @@ Item {
         id: messageContainer
         anchors.top: dateGroupLbl.visible ? dateGroupLbl.bottom : parent.top
         anchors.topMargin: dateGroupLbl.visible ? Style.current.padding : 0
-        height: childrenRect.height + (chatName.visible || emojiReactionLoader.active ? Style.current.smallPadding : 0)
+        height: childrenRect.height
+                + (chatName.visible || emojiReactionLoader.active ? Style.current.smallPadding : 0)
                 + (chatName.visible && emojiReactionLoader.active ? 5 : 0)
                 + (emojiReactionLoader.active ? emojiReactionLoader.height: 0)
                 + (retry.visible && !chatTime.visible ? Style.current.smallPadding : 0)
@@ -68,10 +79,9 @@ Item {
         color: root.isHovered || isMessageActive ? (hasMention ? Style.current.mentionMessageHoverColor : Style.current.backgroundHoverLight) :
                                                    (hasMention ? Style.current.mentionMessageColor : Style.current.transparent)
 
-
         UserImage {
             id: chatImage
-            visible: authorCurrentMsg != authorPrevMsg
+            active: authorCurrentMsg != authorPrevMsg
             anchors.left: parent.left
             anchors.leftMargin: Style.current.padding
             anchors.top: parent.top
@@ -109,6 +119,7 @@ Item {
                 container: root.container
                 chatHorizontalPadding: root.chatHorizontalPadding
                 width: parent.width
+                chat: root.chat
             }
 
             ChatText {
@@ -238,6 +249,10 @@ Item {
     }
 
     HoverHandler {
+        enabled:{
+            if(!messageContextMenu) return true;
+            return !messageContextMenu.opened && !profilePopupOpened
+        } 
         onHoveredChanged: {
             root.isHovered = hovered;
         }

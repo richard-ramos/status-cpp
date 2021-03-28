@@ -173,7 +173,7 @@ void ChatsModel::join(ChatType chatType, QString id, QString ensName)
 {
 	if(!m_chatMap.contains(id))
 	{
-		qDebug() << "Chat does not exist. Creating chat: " << id;
+		qDebug() << "Chat does not exist. Creating chat: " << id << ensName;
 		try
 		{
 			Chat* c = new Chat(this, id, chatType, ensName);
@@ -394,6 +394,9 @@ void ChatsModel::deleteChatHistory(int row)
 
 void ChatsModel::update(QJsonValue updates)
 {
+
+	qCritical() << updates;
+
 	// Process chats
 	foreach(QJsonValue chatJson, updates["chats"].toArray())
 	{

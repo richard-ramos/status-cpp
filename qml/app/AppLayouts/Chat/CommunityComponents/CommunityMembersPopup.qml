@@ -9,7 +9,7 @@ import "../components"
 
 ModalPopup {
     id: popup
-    property QtObject community: chatsModel.activeCommunity 
+    property QtObject community: chatsModel.communities.activeCommunity 
 
     header: Item {
         height: childrenRect.height
@@ -28,13 +28,23 @@ ModalPopup {
         }
 
         StyledText {
+            id: nbMembersText
             text: community.nbMembers.toString()
             width: 160
             anchors.left: parent.left
             anchors.top: groupName.bottom
             anchors.topMargin: 2
             font.pixelSize: 14
-            color: Style.current.darkGrey
+            color: Style.current.secondaryText
+        }
+
+        Separator {
+            anchors.top: nbMembersText.bottom
+            anchors.topMargin: Style.current.padding
+            anchors.left: parent.left
+            anchors.leftMargin: -Style.current.padding
+            anchors.right: parent.right
+            anchors.rightMargin: -Style.current.padding
         }
     }
 
@@ -42,7 +52,7 @@ ModalPopup {
         id: inviteBtn
         //% "Invite People"
         label: qsTrId("invite-people")
-        width: popup.width
+        width: parent.width
         iconName: "invite"
         onClicked: openPopup(inviteFriendsPopup)
         Component {
@@ -65,11 +75,32 @@ ModalPopup {
         anchors.rightMargin: -Style.current.padding
     }
 
+    MembershipRequestsButton {
+        id: membershipRequestsBtn
+        anchors.top: sep.bottom
+        anchors.topMargin: visible ? Style.current.smallPadding : 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: -Style.current.padding
+        anchors.rightMargin: -Style.current.padding
+    }
+
+    Separator {
+        id: sep2
+        visible: membershipRequestsBtn.visible
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: membershipRequestsBtn.bottom
+        anchors.topMargin: Style.current.smallPadding
+        anchors.leftMargin: -Style.current.padding
+        anchors.rightMargin: -Style.current.padding
+    }
+
     ListView {
         id: memberList
-        anchors.top: sep.bottom
+        anchors.top: sep2.visible ? sep2.bottom : sep.bottom
         anchors.topMargin: Style.current.smallPadding
-        anchors.bottom: popup.bottom
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottomMargin: Style.current.halfPadding

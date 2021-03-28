@@ -76,7 +76,7 @@ public:
 	QML_WRITABLE_PROPERTY(TokenModel*, tokens);
 
 	Q_PROPERTY(QMap<QString, QVariant> prices READ getPrices NOTIFY pricesChanged)
-	Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
+	Q_PROPERTY(int count READ rowCount NOTIFY rowCountChanged)
 
 	QMap<QString, QVariant> getPrices();
 

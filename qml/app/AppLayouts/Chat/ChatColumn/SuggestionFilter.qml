@@ -1,5 +1,4 @@
 import QtQuick 2.13
-import im.status.desktop 1.0
 
 Item {
     id: component
@@ -75,6 +74,7 @@ Item {
         }
 
         let filterWithoutAt = filter.substring(lastAtPosition + 1, this.cursorPosition)
+        filterWithoutAt = filterWithoutAt.replace(/\*/g, "")
 
         return !properties.every(p => item[p].toLowerCase().match(filterWithoutAt.toLowerCase()) === null)
     }

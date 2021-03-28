@@ -16,16 +16,15 @@ Item {
         spacing: Style.current.bigPadding
         anchors.top: parent.top
         anchors.topMargin: 46
-        anchors.left: parent.left
-        anchors.leftMargin: contentMargin
-        anchors.right: parent.right
-        anchors.rightMargin: contentMargin
+        width: contentMaxWidth
+        anchors.horizontalCenter: parent.horizontalCenter
 
         StatusSectionDescItem {
             //% "App version"
             name: qsTrId("version")
             //% "Version: %1"
-            description: qsTrId("version---1").arg("beta.5")
+            description: qsTrId("version---1").arg("beta.8.rc1")
+            tooltipUnder: true
         }
 
         StatusSectionDescItem {

@@ -6,11 +6,21 @@ import "../../../../shared"
 import "../../../../shared/status"
 import im.status.desktop 1.0
 
-RowLayout {
+StatusRadioButtonRow {
     property string fleetName: ""
     property string newFleet: ""
     property var parentPopup;
-
+    id: root
+    text: fleetName
+    buttonGroup: fleetSettings
+    checked: StatusSettings.Fleet === fleetName
+    onRadioCheckedChanged: {
+        if (checked) {
+            if (StatusSettings.Fleet === fleetName) return;
+            newFleet = fleetName;
+            confirmDialog.open();
+        }
+    }
     ConfirmationDialog {
         id: confirmDialog
         //% "Warning!"
@@ -23,27 +33,7 @@ RowLayout {
             root.parentPopup.close();
             Status.closeSession();
         }
-        onClosed: {
-            StatusSettings.fleetChanged()
-        }
-    }
-
-
-    width: parent.width
-    StyledText {
-        text: fleetName
-        font.pixelSize: 15
-    }
-    StatusRadioButton {
-        id: radioProd
-        Layout.alignment: Qt.AlignRight
-        ButtonGroup.group: fleetSettings
-        rightPadding: 0
-        checked: StatusSettings.Fleet === fleetName
-        onClicked: {
-            if (StatusSettings.Fleet === fleetName) return;
-            newFleet = fleetName;
-            confirmDialog.open();
-        }
+        onClosed: StatusSettings.fleetChanged()
     }
 }
+
