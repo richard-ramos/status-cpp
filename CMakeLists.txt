@@ -36,6 +36,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(Filesystem REQUIRED)
 find_package(OpenSSL REQUIRED)
 
+find_package(Boost 1.75 REQUIRED COMPONENTS system)
 
 
 ################################################################################
@@ -144,6 +145,7 @@ target_compile_features(status-cpp
 
 target_link_libraries(status-cpp
     PRIVATE
+        Boost::headers
         Qt5::Core
         Qt5::Widgets
         Qt5::Quick

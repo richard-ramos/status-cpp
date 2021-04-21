@@ -7,8 +7,10 @@ class ConanPackage(ConanFile):
     generators = 'cmake_find_package'
 
     requires = [
-        ('openssl/1.1.1h')
+        ('openssl/1.1.1h'),
+        ('boost/1.75.0')
     ]
 
     default_options = (
+        'boost:shared=False',
     )
