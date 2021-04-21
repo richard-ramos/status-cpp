@@ -188,10 +188,6 @@ QString Utils::gwei2Wei(QString input){
 	return QString::fromStdString(outp);
 }
 
-
-
-
-
 bool Utils::isContract(QString address)
 {
 		const auto response = Status::instance()->callPrivateRPC("eth_getCode", QJsonArray{address, "latest"}.toVariantList()).toJsonObject();
