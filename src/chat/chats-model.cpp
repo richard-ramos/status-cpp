@@ -394,9 +394,6 @@ void ChatsModel::deleteChatHistory(int row)
 
 void ChatsModel::update(QJsonValue updates)
 {
-
-	qCritical() << updates;
-
 	// Process chats
 	foreach(QJsonValue chatJson, updates["chats"].toArray())
 	{

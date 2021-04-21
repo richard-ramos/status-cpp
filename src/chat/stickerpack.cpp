@@ -29,14 +29,12 @@ void StickerPack::loadContent(QScopedPointer<QNetworkAccessManager>& manager)
 	request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
 	QScopedPointer<QNetworkReply> netReply(manager->get(request));
 
-	// TODO: don't use a event loop. Connect the reply finished signal to a lambda and delete it
-
 	// Wait
 	QEventLoop loop;
 	connect(netReply.get(), SIGNAL(finished()), &loop, SLOT(quit()));
-	connect(netReply.get(), SIGNAL(finished()), &loop, SLOT(quit()));
 
 	loop.exec();
+	loop.exit();
 
 	if(netReply->error() != QNetworkReply::NoError)
 	{
@@ -92,4 +90,6 @@ void StickerPack::loadContent(QScopedPointer<QNetworkAccessManager>& manager)
 			}
 		}
 	}
+
+	netReply->deleteLater();
 }

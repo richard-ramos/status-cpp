@@ -108,6 +108,8 @@ void StickerPacksModel::loadStickerPacks()
 			stickerPack->moveToThread(QApplication::instance()->thread());
 			emit stickerPackLoaded(stickerPack);
 		}
+
+		manager->deleteLater();
 	});
 }
 
