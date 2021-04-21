@@ -5,7 +5,10 @@
 #include "uint256_t.h"
 #include <QClipboard>
 #include <QDebug>
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QGuiApplication>
+#include <QJSEngine>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -13,6 +16,10 @@
 #include <QString>
 #include <QTextDocumentFragment>
 #include <QVector>
+#include <QtConcurrent/QtConcurrent>
+#include "status.hpp"
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/math/constants/constants.hpp>
 
 Utils::Utils(QObject* parent)
 	: QObject(parent)
@@ -162,3 +169,45 @@ QString Utils::wei2Token(QString input, int decimals)
 
 	return QString::fromStdString(eth.str()) + decimalPart;
 }
+
+
+QString Utils::token2Wei(QString input, int decimals)
+{
+	boost::multiprecision::cpp_dec_float_50 inpf(input.toStdString());
+	boost::multiprecision::cpp_dec_float_50 decf(decimals);
+	boost::multiprecision::cpp_dec_float_50 decMult(pow(10, decimals));
+	boost::multiprecision::cpp_dec_float_50 result(inpf * decMult);
+	std::string outp = result.str(18);
+	return QString::fromStdString(outp);
+}
+
+QString Utils::gwei2Wei(QString input){
+	boost::multiprecision::cpp_dec_float_50 inpf(input.toStdString());
+	boost::multiprecision::cpp_dec_float_50 wei(inpf * 1000000000);
+	std::string outp = wei.str(18);
+	return QString::fromStdString(outp);
+}
+
+
+
+
+
+bool Utils::isContract(QString address)
+{
+		const auto response = Status::instance()->callPrivateRPC("eth_getCode", QJsonArray{address, "latest"}.toVariantList()).toJsonObject();
+		return response["result"].toString() != "0x";
+}
+
+void Utils::isContract(QString address, const QJSValue& callback)
+{
+	auto* watcher = new QFutureWatcher<bool>(this);
+	QObject::connect(watcher, &QFutureWatcher<bool>::finished, this, [this, watcher, callback]() {
+		bool result = watcher->result();
+		QJSValue cbCopy(callback); // needed as callback is captured as const
+		QJSEngine* engine = qjsEngine(this);
+		cbCopy.call(QJSValueList{engine->toScriptValue(result)});
+		watcher->deleteLater();
+	});
+	watcher->setFuture(QtConcurrent::run(this, &Utils::isContract, address));
+}
+
