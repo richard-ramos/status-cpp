@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import "../imports"
 import "./"
+import im.status.desktop 1.0
 
 Item {
     id: root
@@ -21,12 +22,16 @@ Item {
             return root.isValid
         }
         txtValidationError.text = ""
-        if (walletModel.isKnownTokenContract(selectedRecipient.address)) {
-            // do not set isValid = false here because it would make the
-            // TransactionStackGroup invalid and therefore not let the user
-            // continue in the modal
-            txtValidationError.text = sendToContractWarningMessage
-        }
+
+        StatusUtils.isContract(selectedRecipient.address, function(isContract){
+            if(isContract){
+                // do not set isValid = false here because it would make the
+                // TransactionStackGroup invalid and therefore not let the user
+                // continue in the modal
+                txtValidationError.text = sendToContractWarningMessage;
+            }
+        });
+
         return isValid
     }
 

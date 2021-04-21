@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.3
 import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     property string commandTitle: "Send"
@@ -37,7 +38,7 @@ ModalPopup {
                 id: selectFromAccount
                 accounts: walletModel.accounts
                 selectedAccount: walletModel.currentAccount
-                currency: walletModel.defaultCurrency
+                currency: StatusSettings.Currency
                 width: stack.width
                 label: {
                     return root.isRequested ? 
@@ -91,7 +92,7 @@ ModalPopup {
             AssetAndAmountInput {
                 id: txtAmount
                 selectedAccount: selectFromAccount.selectedAccount
-                defaultCurrency: walletModel.defaultCurrency
+                defaultCurrency: StatusSettings.Currency
                 getFiatValue: walletModel.getFiatValue
                 getCryptoValue: walletModel.getCryptoValue
                 validateBalance: !root.isRequested

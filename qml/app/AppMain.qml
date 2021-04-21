@@ -62,7 +62,7 @@ RowLayout {
     }
 
     function replaceUsernamesOnMessageMentions(message){
-        return message.replace(/(0x[A-Fa-f0-9]{130})/g, (match, p1) => Utils.getUsernameLabel(contactsModel.get_or_create(p1)));
+        return message.replace(/(0x[A-Fa-f0-9]{130})(?!\")/g, (match, p1, p2) => Utils.getUsernameLabel(contactsModel.get_or_create(p1)));
     }
 
     signal settingsLoaded()
@@ -215,24 +215,13 @@ RowLayout {
         id: toastMessage
     }
 
-    // Add SenmdModal here as it is used by the Wallet as well as the Browser
-    Loader {
-        id: sendModal
 
-        function open() {
-            this.active = true
-            this.item.open()
-        }
-        function closed() {
-            // this.sourceComponent = undefined // kill an opened instance
-            this.active = false
-        }
-        sourceComponent: SendModal {
-            onOpened: {
-                walletModel.getGasPricePredictions()
-            }
+    // Add SendModal here as it is used by the Wallet as well as the Browser
+    Component {
+        id: sendModalComponent
+        SendModal {
             onClosed: {
-                sendModal.closed()
+                destroy();
             }
         }
     }

@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
 import "../imports"
+import im.status.desktop 1.0
 
 Item {
     id: root
@@ -12,9 +13,13 @@ Item {
     readonly property var validateAsync: Backpressure.debounce(inpAddress, debounceDelay, function (inputValue) {
         root.isPending = true
         var name = inputValue.startsWith("@") ? inputValue.substring(1) : inputValue
-        walletModel.resolveENS(name, uuid)
+        EnsUtils.address(name, function(address){
+            root.isPending = false;
+            root.resolved(name, address)
+        });
     });
-    signal resolved(string resolvedAddress)
+
+    signal resolved(string name, string resolvedAddress)
 
     function resolveEns(name) {
         if (Utils.isValidEns(name)) {
@@ -35,17 +40,6 @@ Item {
         LoadingImage {
             width: root.width
             height: root.height
-        }
-    }
-
-    Connections {
-        target: walletModel
-        onEnsWasResolved: {
-            if (uuid !== root.uuid) {
-                return
-            }
-            root.isPending = false
-            root.resolved(resolvedAddress)
         }
     }
 }

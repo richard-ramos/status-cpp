@@ -26,7 +26,7 @@ Item {
     function resolveEns() {
         if (selectedContact.ensVerified) {
             root.isResolvedAddress = false
-            ensResolver.resolveEns(selectedContact.name)
+            ensResolver.resolveEns("@" + selectedContact.name)
         }
     }
 
@@ -53,7 +53,7 @@ Item {
                 (selectedContact.ensVerified && isResolvedAddress)
             )
         ) {
-            select.validationError = !selectedContact.ensVerified ? noEnsAddressMessage : validationError
+            select.validationError = (!selectedContact.ensVerified || (isResolvedAddress && selectedContact.address == "")) ? noEnsAddressMessage : validationError
         }
         root.isValid = isValid
         return isValid
@@ -133,6 +133,7 @@ Item {
         anchors.topMargin: Style.current.halfPadding
         debounceDelay: 0
         onResolved: {
+            if(name != root.selectedContact.name) return;
             root.isResolvedAddress = true
             var selectedContact = root.selectedContact
             selectedContact.address = resolvedAddress
@@ -167,7 +168,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Text {
-                    text: name
+                    text: "@" + name
                     font.pixelSize: 15
                     font.family: Style.current.fontRegular.name
                     font.weight: Font.Medium
@@ -221,7 +222,7 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: itemContainer
                 onClicked: {
-                    root.selectedContact = { address, name, alias, isContact, identicon, ensVerified }
+                    root.selectedContact = { name, alias, ensVerified }
                     resolveEns()
                     select.menu.close()
                 }

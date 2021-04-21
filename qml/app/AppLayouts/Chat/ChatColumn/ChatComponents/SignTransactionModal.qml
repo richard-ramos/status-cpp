@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.3
 import "../../../../../imports"
 import "../../../../../shared"
 import "../../../../../shared/status"
+import im.status.desktop 1.0
 
 ModalPopup {
     property var selectedAccount
@@ -82,7 +83,7 @@ ModalPopup {
             AccountSelector {
                 id: selectFromAccount
                 accounts: walletModel.accounts
-                currency: walletModel.defaultCurrency
+                currency: StatusSettings.Currency
                 width: stack.width
                 selectedAccount: root.selectedAccount
                 //% "Choose account"
@@ -117,7 +118,7 @@ ModalPopup {
                 fastestGasPrice: parseFloat(walletModel.fastestGasPrice)
                 getGasEthValue: walletModel.getGasEthValue
                 getFiatValue: walletModel.getFiatValue
-                defaultCurrency: walletModel.defaultCurrency
+                defaultCurrency: StatusSettings.Currency
                 width: stack.width
     
                 property var estimateGas: Backpressure.debounce(gasSelector, 600, function() {
@@ -183,7 +184,7 @@ ModalPopup {
                 toAccount: selectRecipient.selectedRecipient
                 asset: root.selectedAsset
                 amount: { "value": root.selectedAmount, "fiatValue": root.selectedFiatAmount }
-                currency: walletModel.defaultCurrency
+                currency: StatusSettings.Currency
                 isFromEditable: false
                 trxData: root.trxData
                 isGasEditable: true

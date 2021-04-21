@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
 import "../imports"
+import im.status.desktop 1.0
 
 Item {
     //% "Insufficient balance"
@@ -64,15 +65,34 @@ Item {
     }
 
     onSelectedAccountChanged: {
-        selectAsset.assets = Qt.binding(function() { 
+        selectAsset.balances = Qt.binding(function() { 
             if (selectedAccount) {
-                return selectedAccount.assets
+                return selectedAccount.balances
             }
         })
+
         txtBalance.text = Qt.binding(function() { 
             return selectAsset.selectedAsset ? Utils.stripTrailingZeros(selectAsset.selectedAsset.value) : ""
         })
     }
+
+    function getFiatAmount(amount, symbol){
+        const price = walletModel.prices[symbol];
+        if(price == undefined){
+            return "...";
+        }
+        return (parseFloat(amount) * price).toFixed(2);
+    }
+
+    function getCryptoAmount(amount, symbol){
+        const price = walletModel.prices[symbol];
+        if(price == undefined){
+            return "0.00";
+        }
+
+        return parseFloat(amount) / price;
+    }
+
 
     Item {
         visible: root.validateBalance
@@ -112,7 +132,7 @@ Item {
                 }
                 onClicked: {
                     inputAmount.text = Utils.stripTrailingZeros(selectAsset.selectedAsset.value)
-                    txtFiatBalance.text = root.getFiatValue(inputAmount.text, selectAsset.selectedAsset.symbol, root.defaultCurrency)
+                    txtFiatBalance.text = root.getFiatAmount(inputAmount.text, selectAsset.selectedAsset.symbol)
                 }
             }
         }
@@ -136,7 +156,7 @@ Item {
             if (amount === "") {
                 txtFiatBalance.text = "0.00"
             } else {
-                txtFiatBalance.text = root.getFiatValue(amount, selectAsset.selectedAsset.symbol, root.defaultCurrency)
+                txtFiatBalance.text = root.getFiatAmount(amount, selectAsset.selectedAsset.symbol)
             }
         }
         onTextChanged: {
@@ -161,7 +181,7 @@ Item {
             if (inputAmount.text === "" || isNaN(inputAmount.text)) {
                 return
             }
-            txtFiatBalance.text = root.getFiatValue(inputAmount.text, selectAsset.selectedAsset.symbol, root.defaultCurrency)
+            txtFiatBalance.text = root.getFiatAmount(inputAmount.text, selectAsset.selectedAsset.symbol)
             root.validate(true)
         }
     }
@@ -191,7 +211,7 @@ Item {
                 if (balance === "" || isNaN(balance)) {
                     return
                 }
-                inputAmount.text = root.getCryptoValue(balance, root.defaultCurrency, selectAsset.selectedAsset.symbol)
+                inputAmount.text = root.getCryptoAmount(balance, selectAsset.selectedAsset.symbol)
             }
         }
 

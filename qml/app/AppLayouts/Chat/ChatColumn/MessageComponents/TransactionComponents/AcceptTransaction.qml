@@ -88,9 +88,6 @@ Item {
     Component {
         id: signTxComponent
         SignTransactionModal {
-            onOpened: {
-                walletModel.getGasPricePredictions()
-            }
             onClosed: {
                 destroy();
             }

@@ -403,9 +403,6 @@ StackLayout {
         id: cmpSendTransactionWithEns
         SendModal {
             id: sendTransactionWithEns
-            onOpened: {
-                walletModel.getGasPricePredictions()
-            }
             onClosed: {
                 txModalLoader.closed()
             }

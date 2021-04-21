@@ -24,7 +24,8 @@ Column {
 
     function validate() {
         let isValid = true
-        if (!(selectedAccount && selectedAccount.assets && selectedAsset && selectedGasEthValue > 0)) {
+
+         if (!(selectedAccount && selectedAccount.balances && selectedAsset && selectedGasEthValue > 0)) {
             return root.isValid
         }
         isValid = true
@@ -32,8 +33,9 @@ Column {
         if (selectedAsset && selectedAsset.symbol && selectedAsset.symbol.toUpperCase() === "ETH") {
             gasTotal += selectedAmount
         }
-        const currAcctGasAsset = Utils.findAssetBySymbol(selectedAccount.assets, "ETH")
-        if (currAcctGasAsset && currAcctGasAsset.value < gasTotal) {
+
+        const currAcctGasAsset = selectedAccount.balances.find(x => x.symbol == "ETH");
+        if (currAcctGasAsset && currAcctGasAsset.balance < gasTotal) {
             isValid = false
         }
         root.isValid = isValid

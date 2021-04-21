@@ -43,6 +43,7 @@ ModalPopup {
         showAccountDetails: false
         accounts: walletModel
         currency: StatusSettings.Currency
+        showWatchOnly: true
         anchors.top: qrCodeBox.bottom
         anchors.topMargin: Style.current.padding
         anchors.horizontalCenter: parent.horizontalCenter

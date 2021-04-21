@@ -4,14 +4,16 @@ import QtQuick.Layouts 1.13
 import "../imports"
 import "./status"
 import "./"
+import im.status.desktop 1.0
 
 Item {
     id: root
     anchors.left: parent.left
     anchors.right: parent.right
     height: sliderWrapper.height + Style.current.smallPadding + txtNetworkFee.height + buttonAdvanced.height
-    property double slowestGasPrice: 0
-    property double fastestGasPrice: 100
+    property double slowestGasPrice: 1
+    property double fastestGasPrice: 1
+    property double currentGasPrice: 1
     property double stepSize: ((root.fastestGasPrice - root.slowestGasPrice) / 10).toFixed(1)
     property var getGasEthValue: function () {}
     property var getFiatValue: function () {}
@@ -27,10 +29,41 @@ Item {
     //% "Please enter an amount"
     property string noInputErrorMessage: qsTrId("please-enter-an-amount")
     property bool isValid: true
+
+    property bool etherChainGasPricesAvailable: true
+    property bool currentGasPriceAvailable: true
+
     readonly property string uuid: Utils.uuid()
 
+    Component.onCompleted: {
+        walletModel.getGasPrices();
+    }
+
+    Connections {
+        target: walletModel
+        onEtherChainGasPrices: {
+            root.etherChainGasPricesAvailable = !isError;
+            if(StatusSettings.CurrentNetwork === Constants.networkMainnet && !isError){
+                root.slowestGasPrice = safeLow > 0 ? safeLow : 1;
+                root.fastestGasPrice = fastest > 0 ? fastest : 1;
+            }
+            // TODO: show error?
+        }
+        onCurrentGasPrice: {
+            root.currentGasPriceAvailable = isError;
+            root.currentGasPrice = amount > 0 ? amount : 1;
+            // TODO: show error?
+        }
+    }
+
     function defaultGasPrice() {
-        return ((50 * (root.fastestGasPrice - root.slowestGasPrice) / 100) + root.slowestGasPrice)
+        if(root.etherChainGasPricesAvailable){
+            return ((50 * (root.fastestGasPrice - root.slowestGasPrice) / 100) + root.slowestGasPrice)
+        } else if(root.currentGasPriceAvailable){
+            return root.currentGasPrice;
+        } else {
+            return 1;
+        }
     }
 
     function updateGasEthValue() {
@@ -38,8 +71,9 @@ Item {
         if (!inputGasPrice || !inputGasLimit) {
             return
         }
-        let ethValue = root.getGasEthValue(inputGasPrice.text, inputGasLimit.text)
-        let fiatValue = root.getFiatValue(ethValue, "ETH", root.defaultCurrency)
+        let ethValue =  walletModel.feesToEth(inputGasPrice.text, inputGasLimit.text)
+        let fiatValue = (parseFloat(ethValue) * walletModel.prices["ETH"]).toFixed(2);
+        
         let summary = Utils.stripTrailingZeros(ethValue) + " ETH ~" + fiatValue + " " + root.defaultCurrency.toUpperCase()
         labelGasPriceSummary.text = summary
         labelGasPriceSummaryAdvanced.text = summary
@@ -73,7 +107,7 @@ Item {
         anchors.top: labelGasPriceSummary.bottom
         height: sliderWrapper.visible ? gasSlider.height + labelSlow.height + Style.current.padding : 0
         width: parent.width
-        visible: Number(root.selectedGasPrice) >= Number(root.slowestGasPrice) && Number(root.selectedGasPrice) <= Number(root.fastestGasPrice)
+        visible: etherChainGasPricesAvailable && Number(root.selectedGasPrice) >= Number(root.slowestGasPrice) && Number(root.selectedGasPrice) <= Number(root.fastestGasPrice)
 
         StatusSlider {
             id: gasSlider
@@ -194,10 +228,10 @@ Item {
             }
             let inputLimit = parseFloat(inputGasLimit.text || "0.00")
             let inputPrice = parseFloat(inputGasPrice.text || "0.00")
-            if (inputLimit === 0.00) {
+            if (inputLimit <= 0.00) {
                 inputGasLimit.validationError = root.greaterThan0ErrorMessage
             }
-            if (inputPrice === 0.00) {
+            if (inputPrice <= 0.00) {
                 inputGasPrice.validationError = root.greaterThan0ErrorMessage
             }
             const isValid = inputGasLimit.validationError === "" && inputGasPrice.validationError === ""

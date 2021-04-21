@@ -13,11 +13,6 @@ ModalPopup {
     property string packPrice
     property bool showBackBtn: false
 
-    Component.onCompleted: {
-        // TODO:
-        // walletModel.getGasPricePredictions()
-    }
-
     //% "Authorize %1 %2"
     title: qsTrId("authorize--1--2").arg(Utils.stripTrailingZeros(packPrice)).arg(asset.symbol)
 

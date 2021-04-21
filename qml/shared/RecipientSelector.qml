@@ -151,7 +151,6 @@ Item {
                 if (!selAddressSource.selectedSource || (selAddressSource.selectedSource && selAddressSource.selectedSource.value !== RecipientSelector.Type.Address)) {
                     return
                 }
-
                 root.selectedRecipient = { address: selectedAddress, type: RecipientSelector.Type.Address }
             }
             onIsValidChanged: root.validate()

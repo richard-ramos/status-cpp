@@ -6,6 +6,8 @@ import "../../../imports"
 import "../../../shared"
 import "../../../shared/status"
 import "./components"
+import im.status.desktop 1.0
+import SortFilterProxyModel 0.2
 
 ModalPopup {
     id: root
@@ -33,8 +35,7 @@ ModalPopup {
                                                  txtAmount.selectedAmount,
                                                  gasSelector.selectedGasLimit,
                                                  gasSelector.selectedGasPrice,
-                                                 transactionSigner.enteredPassword,
-                                                 stack.uuid)
+                                                 transactionSigner.enteredPassword)
     }
 
     TransactionStackView {
@@ -55,9 +56,9 @@ ModalPopup {
 
             AccountSelector {
                 id: selectFromAccount
-                accounts: walletModel.accounts
+                accounts: walletModel
                 selectedAccount: walletModel.currentAccount
-                currency: walletModel.defaultCurrency
+                currency: StatusSettings.Currency
                 width: stack.width
                 //% "From account"
                 label: qsTrId("from-account")
@@ -70,8 +71,19 @@ ModalPopup {
             }
             RecipientSelector {
                 id: selectRecipient
-                accounts: walletModel.accounts
-                contacts: profileModel.contacts.addedContacts
+                accounts: walletModel
+                contacts: SortFilterProxyModel {
+                    id: ensContacts
+                    sourceModel: addedContacts
+                    filters: [
+                    ExpressionFilter {
+                            expression: {
+                                return name !== "" && ensVerified;
+                            }
+                        }
+                    ]
+                    sorters: StringSorter { roleName: "name" }
+                }
                 //% "Recipient"
                 label: qsTrId("recipient")
                 anchors.top: separator.bottom
@@ -90,7 +102,7 @@ ModalPopup {
             AssetAndAmountInput {
                 id: txtAmount
                 selectedAccount: selectFromAccount.selectedAccount
-                defaultCurrency: walletModel.defaultCurrency
+                defaultCurrency: StatusSettings.Currency
                 getFiatValue: walletModel.getFiatValue
                 getCryptoValue: walletModel.getCryptoValue
                 width: stack.width
@@ -105,13 +117,13 @@ ModalPopup {
                 fastestGasPrice: parseFloat(walletModel.fastestGasPrice)
                 getGasEthValue: walletModel.getGasEthValue
                 getFiatValue: walletModel.getFiatValue
-                defaultCurrency: walletModel.defaultCurrency
+                defaultCurrency: StatusSettings.Currency
                 width: stack.width
                 property var estimateGas: Backpressure.debounce(gasSelector, 600, function() {
                     if (!(selectFromAccount.selectedAccount && selectFromAccount.selectedAccount.address &&
                         selectRecipient.selectedRecipient && selectRecipient.selectedRecipient.address &&
                         txtAmount.selectedAsset && txtAmount.selectedAsset.address &&
-                        txtAmount.selectedAmount)) return
+                        txtAmount.selectedAmount)) return;
                     
                     let gasEstimate = JSON.parse(walletModel.estimateGas(
                         selectFromAccount.selectedAccount.address,
@@ -157,7 +169,7 @@ ModalPopup {
                 toAccount: selectRecipient.selectedRecipient
                 asset: txtAmount.selectedAsset
                 amount: { "value": txtAmount.selectedAmount, "fiatValue": txtAmount.selectedFiatAmount }
-                currency: walletModel.defaultCurrency
+                currency: StatusSettings.Currency
             }
             SendToContractWarning {
                 id: sendToContractWarning
@@ -175,7 +187,7 @@ ModalPopup {
             TransactionSigner {
                 id: transactionSigner
                 width: stack.width
-                signingPhrase: walletModel.signingPhrase
+                signingPhrase: StatusSettings.SigningPhrase
             }
         }
     }

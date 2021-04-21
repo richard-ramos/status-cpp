@@ -3,16 +3,17 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
 import "../imports"
+import im.status.desktop 1.0
 
 Item {
     id: root
-    property var assets
+    property var balances
     property var selectedAsset
     width: 86
     height: 24
 
     function resetInternal() {
-        assets = undefined
+        balances = undefined
         selectedAsset = undefined
     }
 
@@ -23,17 +24,13 @@ Item {
         }
     }
 
-    onAssetsChanged: {
-        if (!assets) {
-            return
-        }
+    onBalancesChanged: {
+        if(!balances) return;
         selectedAsset = {
-            name: assets.rowData(0, "name"),
-            symbol: assets.rowData(0, "symbol"),
-            value: assets.rowData(0, "value"),
-            fiatBalanceDisplay: assets.rowData(0, "fiatBalanceDisplay"),
-            address: assets.rowData(0, "address"),
-            fiatBalance: assets.rowData(0, "fiatBalance")
+            name: balances[0].name,
+            symbol: balances[0].symbol.toUpperCase(),
+            value: balances[0].balance,
+            address: balances[0].address
         }
     }
 
@@ -42,7 +39,7 @@ Item {
         width: parent.width
         bgColor: Style.current.transparent
         bgColorHover: Style.current.secondaryHover
-        model: root.assets
+        model: balances
         caretRightMargin: 7
         select.radius: 6
         select.height: root.height
@@ -78,7 +75,7 @@ Item {
         MenuItem {
             id: itemContainer
             property bool isFirstItem: index === 0
-            property bool isLastItem: index === assets.rowCount() - 1
+            property bool isLastItem: index === balances.length - 1
 
             width: parent.width
             height: 72
@@ -92,7 +89,7 @@ Item {
                 sourceSize.height: height
                 sourceSize.width: width
                 fillMode: Image.PreserveAspectFit
-                source: "../app/img/tokens/" + symbol.toUpperCase() + ".png"
+                source: "../app/img/tokens/" + modelData.symbol.toUpperCase() + ".png"
             }
             Column {
                 anchors.left: iconImg.right
@@ -100,13 +97,13 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 StyledText {
-                    text: symbol.toUpperCase()
+                    text: modelData.symbol.toUpperCase()
                     font.pixelSize: 15
                     height: 22
                 }
 
                 StyledText {
-                    text: name
+                    text: modelData.symbol === "ETH" ? "Ethereum" : modelData.name
                     color: Style.current.secondaryText
                     font.pixelSize: 15
                     height: 22
@@ -119,13 +116,19 @@ Item {
                 StyledText {
                     font.pixelSize: 15
                     height: 22
-                    text: parseFloat(value).toFixed(4) + " " + symbol
+                    text: parseFloat(modelData.balance).toFixed(4) + " " + modelData.symbol.toUpperCase()
                 }
                 StyledText {
                     font.pixelSize: 15
                     anchors.right: parent.right
                     height: 22
-                    text: fiatBalanceDisplay.toUpperCase()
+                    text: {
+                        const price = walletModel.prices[modelData.symbol];
+                        if(price == undefined){
+                            return "...";
+                        }
+                        return Utils.toLocaleString(parseFloat(modelData.balance) * price, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase()
+                    }
                     color: Style.current.secondaryText
                 }
             }
@@ -157,7 +160,7 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 anchors.fill: itemContainer
                 onClicked: {
-                    root.selectedAsset = { address, name, value, symbol, fiatBalance, fiatBalanceDisplay }
+                    root.selectedAsset = { address: modelData.address, name: modelData.name, value: modelData.balance, symbol: modelData.symbol }
                     select.menu.close()
                 }
             }

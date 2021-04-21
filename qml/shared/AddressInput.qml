@@ -22,7 +22,6 @@ Item {
 
     onSelectedAddressChanged: validate()
     onTextChanged: {
-        metrics.text = text
         root.isResolvedAddress = false
         if (Utils.isValidAddress(text)) {
             root.selectedAddress = text
@@ -36,7 +35,6 @@ Item {
     function resetInternal() {
         selectedAddress = ""
         inpAddress.resetInternal()
-        metrics.text = ""
         isValid = false
         isPending = false
         isResolvedAddress = false
@@ -61,22 +59,7 @@ Item {
         customHeight: 56
         validationErrorAlignment: TextEdit.AlignRight
         validationErrorTopMargin: 8
-        textField.onFocusChanged: {
-            let isValid = true
-            if (text !== "" && Utils.isValidAddress(metrics.text)) {
-                if (textField.focus) {
-                    text = metrics.text
-                } else {
-                    text = metrics.elidedText
-                }
-            }
-        }
         textField.rightPadding: 73
-        TextMetrics {
-            id: metrics
-            elideWidth: 97
-            elide: Text.ElideMiddle
-        }
         TertiaryButton {
             anchors.right: parent.right
             anchors.rightMargin: 8
@@ -100,6 +83,7 @@ Item {
         anchors.topMargin: Style.current.halfPadding
         debounceDelay: root.readOnly ? 0 : 600
         onResolved: {
+            if(name !== text) return;
             root.isResolvedAddress = true
             root.selectedAddress = resolvedAddress
             root.validate()

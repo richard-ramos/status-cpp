@@ -142,7 +142,7 @@ Item {
             //% "Send"
             text: qsTrId("command-button-send")
             onClicked: function() {
-                sendModal.open()
+                openPopup(sendModalComponent)
             }
         }
 

@@ -3,12 +3,14 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtGraphicalEffects 1.13
 import "../imports"
+import im.status.desktop 1.0
 
 Item {
     id: root
     //% "Choose account"
     property string label: qsTrId("choose-account")
     property bool showAccountDetails: true
+    property bool showWatchOnly: false
     property var accounts
     property var selectedAccount
     property string currency: "usd"
@@ -47,21 +49,23 @@ Item {
         if (selectedAccount.address) {
             textSelectedAddress.text = selectedAccount.address  + " • "
         }
-        // TODO:
-        /*
-        if (selectedAccount.fiatBalance) {
-            textSelectedAddressFiatBalance.text = selectedAccount.fiatBalance + " " + currency.toUpperCase()
-        }
-        if (selectedAccount.assets && showBalanceForAssetSymbol) {
-            assetFound = Utils.findAssetBySymbol(selectedAccount.assets, showBalanceForAssetSymbol)
-            if (!assetFound) {
-                //% "Cannot find asset '%1'. Ensure this asset has been added to the token list."
-                console.warn(qsTrId("cannot-find-asset---1---ensure-this-asset-has-been-added-to-the-token-list-").arg(showBalanceForAssetSymbol))
+        
+        if (selectedAccount.balances) {
+            let accountBalance = 0;
+            for(let i = 0; i < selectedAccount.balances.length; i++){
+                const price = walletModel.prices[selectedAccount.balances[i].symbol];
+                if(price == undefined){
+                    continue;
+                }
+                accountBalance += parseFloat(selectedAccount.balances[i].balance) * price;
             }
-        }*/
+            textSelectedAddressFiatBalance.text = Utils.toLocaleString(accountBalance, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase();
+        }        
+        
         if (!selectedAccount.type) {
             selectedAccount.type = RecipientSelector.Type.Account
         }
+
         validate()
     }
 
@@ -160,18 +164,17 @@ Item {
         id: menuItem
         MenuItem {
             id: itemContainer
-            visible: walletType !== 'watch'
+            visible: showWatchOnly || walletType !== 'watch'
             property bool isFirstItem: index === 0
             property bool isLastItem: index === accounts.rowCount() - 1
 
             Component.onCompleted: {
                 if (!root.selectedAccount && isFirstItem) {
-                    // TODO:
-                    root.selectedAccount = { address, name, iconColor, /* assets, fiatBalance*/ }
+                    root.selectedAccount = { address, name, iconColor, balances }
                 }
             }
 
-            height: walletType === 'watch' ? 0 : (accountName.height + 14 + accountAddress.height + 14)
+            height: (walletType === 'watch' && !showWatchOnly) ? 0 : (accountName.height + 14 + accountAddress.height + 14)
             SVGImage {
                 id: iconImg
                 anchors.left: parent.left
@@ -224,7 +227,17 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 15
                 height: 22
-                text: fiatBalance
+                text: {
+                    let accountBalance = 0;
+                    for(let i = 0; i < balances.length; i++){
+                        const price = walletModel.prices[balances[i].symbol];
+                        if(price == undefined){
+                            continue;
+                        }
+                        accountBalance += parseFloat(balances[i].balance) * price;
+                    }
+                    return Utils.toLocaleString(accountBalance, appSettings.locale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + StatusSettings.Currency.toUpperCase();
+                }
             }
             StyledText {
                 id: fiatCurrencySymbol
@@ -234,7 +247,7 @@ Item {
                 font.pixelSize: 15
                 height: 22
                 color: Style.current.secondaryText
-                text: root.currency.toUpperCase()
+                text: StatusSettings.Currency.toUpperCase()
             }
             background: Rectangle {
                 color: itemContainer.highlighted ? Style.current.backgroundHover : Style.current.background
@@ -265,7 +278,7 @@ Item {
                 anchors.fill: itemContainer
                 onClicked: {
                     // TODO:
-                    root.selectedAccount = { address, name, iconColor /*, assets, fiatBalance*/ }
+                    root.selectedAccount = { address, name, iconColor, balances }
                     select.menu.close()
                 }
             }
