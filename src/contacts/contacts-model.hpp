@@ -24,7 +24,9 @@ public:
 		IsBlocked = Qt::UserRole + 5,
 		Image = Qt::UserRole + 6,
 		LocalNickname = Qt::UserRole + 7,
-		Alias = Qt::UserRole + 8
+		Alias = Qt::UserRole + 8,
+		Address = Qt::UserRole + 9,
+		EnsVerified = Qt::UserRole + 10
 	};
 
 	explicit ContactsModel(QObject* parent = nullptr);

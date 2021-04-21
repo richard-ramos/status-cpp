@@ -68,8 +68,7 @@ QString Ens::Utils::pubKey(QString username)
 	QString usernameHash(namehash(formatUsername(username)));
 	QString ensResolver(resolver(usernameHash));
 
-	if(ensResolver == Constants::ZeroAddress)
-		return "";
+	if(ensResolver == Constants::ZeroAddress) return "";
 
 	QJsonObject payload{
 		{"to", ensResolver},
@@ -94,8 +93,7 @@ QString Ens::Utils::address(QString username)
 	QString usernameHash(namehash(formatUsername(username)));
 	QString ensResolver(resolver(usernameHash));
 
-	if(ensResolver == Constants::ZeroAddress)
-		return "";
+	if(ensResolver == Constants::ZeroAddress) return "";
 
 	QJsonObject payload{
 		{"to", ensResolver},
@@ -107,8 +105,7 @@ QString Ens::Utils::address(QString username)
 
 	QString address(response["result"].toString());
 
-	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000")
-		return "";
+	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000") return "";
 
 	return "0x" + address.right(40);
 }
@@ -152,8 +149,7 @@ QString Ens::Utils::owner(QString username)
 	const auto response = Status::instance()->callPrivateRPC("eth_call", QJsonArray{payload, "latest"}.toVariantList()).toJsonObject();
 	QString address(response["result"].toString());
 
-	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000")
-		return "";
+	if(address == "0x" or address == "0x0000000000000000000000000000000000000000000000000000000000000000") return "";
 
 	return "0x" + address.right(40);
 }

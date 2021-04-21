@@ -37,6 +37,8 @@ QHash<int, QByteArray> ContactsModel::roleNames() const
 	roles[IsAdded] = "isAdded";
 	roles[IsBlocked] = "isBlocked";
 	roles[Image] = "image";
+	roles[Address] = "address";
+	roles[EnsVerified] = "ensVerified";
 	return roles;
 }
 
@@ -63,7 +65,9 @@ QVariant ContactsModel::data(const QModelIndex& index, int role) const
 	case Identicon: return QVariant(contact->get_identicon());
 	case IsAdded: return QVariant(contact->isAdded());
 	case IsBlocked: return QVariant(contact->isBlocked());
+	case Address: return QVariant(contact->get_address());
 	case Image: return QVariant(contact->image());
+	case EnsVerified: return QVariant(contact->get_ensVerified());
 	}
 
 	return QVariant();
