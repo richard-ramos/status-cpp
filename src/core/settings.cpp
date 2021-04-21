@@ -227,7 +227,7 @@ void Settings::setAppearance(int value)
 
 void Settings::setLatestDerivedPath(int value)
 {
-	if(saveSetting(SettingTypes::LatestDerivedPath, m_appearance, value))
+	if(saveSetting(SettingTypes::LatestDerivedPath, m_latestDerivedPath, value))
 	{
 		emit latestDerivedPathChanged();
 	}
@@ -343,6 +343,7 @@ QJsonObject Settings::getNodeConfig() const
 		QJsonObject UpstreamConfig = nodeConfigJson["UpstreamConfig"].toObject();
 		UpstreamConfig["URL"] = network["config"]["UpstreamConfig"]["URL"].toString();
 		nodeConfigJson["UpstreamConfig"] = UpstreamConfig;
+		nodeConfigJson["NetworkId"] = network["config"]["NetworkId"].toInt();
 		break;
 	}
 
