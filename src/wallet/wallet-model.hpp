@@ -23,10 +23,12 @@ struct Asset
 	QString symbol;
 	QString balance;
 	QString name;
+	QString address;
 
 	Q_PROPERTY(QString symbol MEMBER symbol)
 	Q_PROPERTY(QString name MEMBER name)
 	Q_PROPERTY(QString balance MEMBER balance)
+	Q_PROPERTY(QString address MEMBER address)
 	Q_GADGET
 };
 
@@ -69,6 +71,10 @@ public:
 	Q_INVOKABLE void updateBalance(QString address, QMap<QString, QString> balances);
 	Q_INVOKABLE void updatePrices(QString currency, QMap<QString, double> prices);
 	Q_INVOKABLE QVariant balances(int i) const;
+	Q_INVOKABLE void getGasPrices();
+	Q_INVOKABLE QString feesToEth(QString gasPrice, QString gasLimit);
+
+	Q_INVOKABLE void sendTransaction(QString from, QString to, QString assetAddress, QString value, QString gas, QString gasPrice, QString password, QString data = "0x");
 
 	QML_READONLY_PROPERTY(QString, id)
 	QML_READONLY_PROPERTY(bool, balancesLoaded);
@@ -87,6 +93,8 @@ signals:
 	void accountCreated(bool success, QString message = "");
 	void pricesChanged();
 	void rowCountChanged();
+	void currentGasPrice(bool isError, double amount, QString message = "");
+	void etherChainGasPrices(bool isError, double fast, double fastest, double safeLow, double standard, QString message = "");
 
 private:
 	void loadWallets();
@@ -103,6 +111,7 @@ private:
 
 	QMap<QString, QVector<Asset>> m_balances;
 	QMap<QString, QVariant> m_prices;
+
 };
 
 } // namespace Wallet

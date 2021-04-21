@@ -5,6 +5,7 @@
 #include "settings.hpp"
 #include "status.hpp"
 #include "token-model.hpp"
+#include "uint256_t.h"
 #include "utils.hpp"
 #include <QAbstractListModel>
 #include <QApplication>
@@ -86,9 +87,12 @@ QVector<Asset> WalletModel::getAssetList(QMap<QString, QString> balances)
 	{
 		auto tokenData = m_tokens->token(symbol);
 		QString tokenName = tokenData.has_value() ? tokenData.value().name : "";
-		Asset a{.symbol = symbol, .balance = balances[symbol], .name = tokenName};
+		QString tokenAddress = tokenData.has_value() ? tokenData.value().address : "";
+
+		Asset a{.symbol = symbol, .balance = balances[symbol], .name = tokenName, .address = tokenAddress};
 		if(symbol == "ETH")
 		{
+			a.address = Constants::ZeroAddress;
 			b.insert(0, a);
 		}
 		else if(symbol == "SNT" || symbol == "STT")
@@ -279,7 +283,7 @@ void WalletModel::addAccountFromSeed(QString seed, QString password, QString nam
 {
 	seed = seed.replace(',', ' ');
 
-	QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256));
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -343,7 +347,7 @@ void WalletModel::addAccountFromSeed(QString seed, QString password, QString nam
 
 void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password, QString name, QString color)
 {
-	QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256));
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -390,7 +394,7 @@ void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password,
 
 void WalletModel::generateNewAccount(QString password, QString name, QString color)
 {
-	QString hashedPassword = QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256));
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -454,6 +458,87 @@ void WalletModel::generateNewAccount(QString password, QString name, QString col
 
 	emit walletLoaded(new Wallet(name, address, Generated, color, path));
 	emit accountCreated(true);
+}
+
+void WalletModel::getGasPrices()
+{
+	QString currentNetwork = Settings::instance()->currentNetwork();
+	QJsonObject gasPriceResult = Status::instance()->callPrivateRPC("eth_gasPrice", QJsonArray{}.toVariantList()).toJsonObject();
+
+	if(!gasPriceResult["error"].isUndefined())
+	{
+		emit currentGasPrice(true, 0, gasPriceResult["error"].toString());
+	}
+	else
+	{
+		double price = Utils::wei2Token(QString::fromStdString(uint256_t(gasPriceResult["result"].toString().toStdString()).str()), 9).toDouble();
+		emit currentGasPrice(false, price);
+	}
+
+	if(currentNetwork != "mainnet_rpc") return;
+
+	QNetworkAccessManager* manager = new QNetworkAccessManager(); // TODO have a single QNetworkAccessManager in the app
+	QUrl url("https://etherchain.org/api/gasPriceOracle");
+	QNetworkRequest request(url);
+	request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+	request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+	QNetworkReply* netReply(manager->get(request));
+	QObject::connect(netReply, &QNetworkReply::finished, this, [this, manager, netReply]() {
+		if(netReply->error() != QNetworkReply::NoError)
+		{
+			qWarning() << "Could not obtain gas price" << netReply->error();
+			emit etherChainGasPrices(true, 0, 0, 0, 0, "TODO: get error message");
+			return;
+		}
+
+		const QJsonObject gasPrices = QJsonDocument::fromJson(netReply->readAll()).object();
+		emit this->etherChainGasPrices(
+			false, gasPrices["fast"].toDouble(), gasPrices["fastest"].toDouble(), gasPrices["safeLow"].toDouble(), gasPrices["standard"].toDouble());
+
+		netReply->deleteLater();
+		manager->deleteLater();
+	});
+}
+
+QString WalletModel::feesToEth(QString gasPrice, QString gasLimit)
+{
+	uint256_t totalFee = uint256_t(QString::number(gasPrice.toDouble(), 'f', 4).toStdString(), 10) * uint256_t(QString("10000").toStdString(), 10) *
+						 uint256_t(gasLimit.toStdString(), 10);
+	return Utils::wei2Token(QString::fromStdString(totalFee.str()));
+}
+
+void WalletModel::sendTransaction(
+	QString from, QString to, QString assetAddress, QString value, QString gas, QString gasPrice, QString password, QString data)
+{
+	data = "";
+
+	QString gasHex = "0x" + QString::fromStdString(uint256_t(gas.toStdString(), 10).str(16));
+	QString gasPriceHex = "0x" + QString::fromStdString(uint256_t(Utils::gwei2Wei(gasPrice).toStdString(), 10).str(16));
+	QString valueHex = "0x" + QString::fromStdString(uint256_t(Utils::token2Wei(value, 18).toStdString(), 10).str(16));
+
+	if(assetAddress == Constants::ZeroAddress)
+	{
+		QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+		qCritical() << from;
+		const char* sendTransactionResult = SendTransaction(
+			Utils::jsonToStr(QJsonObject{{"from", from}, {"to", to}, {"gas", gasHex}, {"gasPrice", gasPriceHex}, {"data", data}, {"value", valueHex}})
+				.toUtf8()
+				.data(),
+			hashedPassword.toUtf8().data());
+
+		qCritical() << sendTransactionResult;
+
+		// TODO: Watch Transaction
+		// TODO: Track Transaction
+		// TODO: Show Notification
+		// TODO: Close Popup
+
+	}
+	else if(!assetAddress.isEmpty())
+	{
+		// TODO: token
+		//    response = wallet.sendTokenTransaction(arg.from_addr, arg.to, arg.assetAddress, arg.value, arg.gas, arg.gasPrice, arg.password, success)
+	}
 }
 
 } // namespace Wallet
