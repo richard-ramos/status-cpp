@@ -16,3 +16,9 @@
 [submodule "vendor/edn-cpp"]
 	path = vendor/edn-cpp
 	url = https://github.com/shaunxcode/edn-cpp
+[submodule "vendor/Bitcoin-Cryptography-Library"]
+	path = vendor/Bitcoin-Cryptography-Library
+	url = https://github.com/nayuki/Bitcoin-Cryptography-Library
+[submodule "vendor/js-cid"]
+	path = vendor/js-cid
+	url = https://github.com/multiformats/js-cid/
