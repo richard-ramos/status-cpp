@@ -87,7 +87,7 @@ export PATH="${QTDIR}/bin:${PATH}"
 
 ### 2. Clone the repo and build `status-cpp`
 ```
-git clone https://github.com/richard-ramos/status-cpp
+git clone --recurse-submodules https://github.com/richard-ramos/status-cpp
 cd status-cpp/build
 conan install .. --profile ../conanprofile.toml --build missing 
 cmake .. -GNinja
