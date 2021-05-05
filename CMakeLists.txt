@@ -107,6 +107,10 @@ add_definitions(-DUSE_INSTALL_TARGET)
 # End: Qt
 ################################################################################
 
+if( OPENSSL_FOUND )
+    include_directories(${OPENSSL_INCLUDE_DIR})
+endif()
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib-qt-qml-tricks/include
@@ -146,6 +150,8 @@ target_compile_features(status-cpp
 target_link_libraries(status-cpp
     PRIVATE
         Boost::headers
+        OpenSSL::SSL
+        OpenSSL::Crypto
         Qt5::Core
         Qt5::Widgets
         Qt5::Quick
@@ -156,7 +162,6 @@ target_link_libraries(status-cpp
         login
         profile
         wallet
-        OpenSSL::OpenSSL
         # std::filesystem
         status
         qrcodegen
