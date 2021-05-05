@@ -107,7 +107,7 @@ void MailserverCycle::timeoutConnection(QString enode)
 	if(nodes[enode] != MailserverStatus::Connecting) return;
 
 	qDebug() << "Connection attempt failed due to timeout";
-	nodes[enode] == MailserverStatus::Disconnected;
+	nodes[enode] = MailserverStatus::Disconnected;
 	if(get_activeMailserver() == enode) update_activeMailserver("");
 }
 

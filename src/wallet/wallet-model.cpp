@@ -283,7 +283,7 @@ void WalletModel::addAccountFromSeed(QString seed, QString password, QString nam
 {
 	seed = seed.replace(',', ' ');
 
-	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -347,7 +347,7 @@ void WalletModel::addAccountFromSeed(QString seed, QString password, QString nam
 
 void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password, QString name, QString color)
 {
-	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -394,7 +394,7 @@ void WalletModel::addAccountFromPrivateKey(QString privateKey, QString password,
 
 void WalletModel::generateNewAccount(QString password, QString name, QString color)
 {
-	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
 
 	if(!validatePassword(hashedPassword))
 	{
@@ -518,7 +518,7 @@ void WalletModel::sendTransaction(
 
 	if(assetAddress == Constants::ZeroAddress)
 	{
-		QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+		QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
 		qCritical() << from;
 		const char* sendTransactionResult = SendTransaction(
 			Utils::jsonToStr(QJsonObject{{"from", from}, {"to", to}, {"gas", gasHex}, {"gasPrice", gasPriceHex}, {"data", data}, {"value", valueHex}})

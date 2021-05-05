@@ -257,7 +257,7 @@ QJsonArray getSubAccountData(GeneratedAccount* account)
 
 bool saveAccountAndLogin(GeneratedAccount* genAccount, QString password)
 {
-	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+	QString hashedPassword = "0x" + QString::fromUtf8(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
 
 	storeDerivedAccount(genAccount->id, hashedPassword);
 

@@ -133,7 +133,8 @@ QJsonObject getAccountData(NodeAccount* account)
 QJsonObject loginAccount(NodeAccount* nodeAccount, QString password)
 {
 	QString hashedPassword = "0x" + QString::fromUtf8(
-		QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex());
+		QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Keccak_256).toHex()).toUpper();
+
 	QJsonObject accountData(getAccountData(nodeAccount));
 	const char* result{
 		Login(Utils::jsonToStr(accountData).toUtf8().data(), hashedPassword.toUtf8().data())};
